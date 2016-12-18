@@ -1,0 +1,5693 @@
+<?xml version="1.0"?>
+
+<Devices>
+
+<!-- Almanac -->
+
+  <Device
+    id="wundergroundAlmanac"
+    type="custom">
+    <Name>WUnderground Almanac</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>Almanac information available to all Weather Underground plans (Stratus, Cumulus, Anvil)</Label>
+      </Field>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space02"
+        type="checkbox"
+        tooltip="Check to show sample settings.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space03"
+        type="label"
+        visibleBindingId="space02"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="space06"
+        type="checkbox"
+        tooltip="Check to show display units settings.">
+        <Label>Display Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space07"
+        type="label"
+        fontSize="small">
+        <Label>Controls how values will be displayed on control pages, etc.</Label>
+      </Field>
+
+      <Field
+        id="temperatureUnits"
+        type="textfield"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        defaultValue="°"
+        tooltip="Appended to all temperature values. (75°)">
+        <Label>Temperature:</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempHighNormalF">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Average High Temperature (F)</TriggerLabel>
+        <ControlPageLabel>Average High Temperature (F)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempHighNormalC">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Average High Temperature (C)</TriggerLabel>
+        <ControlPageLabel>Average High Temperature (C)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempHighRecordF">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Record High Temperature (F)</TriggerLabel>
+        <ControlPageLabel>Record High Temperature (F)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempHighRecordC">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Record High Temperature (C)</TriggerLabel>
+        <ControlPageLabel>Record High Temperature (C)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempHighRecordYear">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Record High Temperature Year</TriggerLabel>
+        <ControlPageLabel>Record High Temperature Year</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="tempLowNormalF">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Average Low Temperature (F)</TriggerLabel>
+        <ControlPageLabel>Average Low Temperature (F)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempLowNormalC">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Average Low Temperature (C)</TriggerLabel>
+        <ControlPageLabel>Average Low Temperature (C)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempLowRecordF">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Record Low Temperature (F)</TriggerLabel>
+        <ControlPageLabel>Record Low Temperature (F)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempLowRecordC">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Record Low Temperature (C)</TriggerLabel>
+        <ControlPageLabel>Record Low Temperature (C)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempLowRecordYear">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Record Low Temperature Year</TriggerLabel>
+        <ControlPageLabel>Record Low Temperature Year</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="airportCode">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Observed Location</TriggerLabel>
+        <ControlPageLabel>Observed Location</ControlPageLabel>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Estimated Conditions</TriggerLabel>
+        <ControlPageLabel>Wunderground - Estimated Conditions</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Almanac Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Almanac Device State</ControlPageLabel>
+      </State>
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Astronomy -->
+
+  <Device
+    id="wundergroundAstronomy" type="custom">
+    <Name>WUnderground Astronomy</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>Astronomy information available to all Weather Underground plans (Stratus, Cumulus, Anvil)</Label>
+      </Field>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space02"
+        type="checkbox"
+        tooltip="Check to show observation location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space03"
+        type="label"
+        visibleBindingId="space02"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="ageOfMoon">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Age of Moon</TriggerLabel>
+        <ControlPageLabel>Age of Moon</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentTimeHour">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Time (Hour)</TriggerLabel>
+        <ControlPageLabel>Curent Time (Hour)</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentTimeMinute">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Time (Minute)</TriggerLabel>
+        <ControlPageLabel>Current Time (Minute)</ControlPageLabel>
+      </State>
+
+      <State
+        id="hemisphere">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Hemisphere</TriggerLabel>
+        <ControlPageLabel>Hemisphere</ControlPageLabel>
+      </State>
+
+      <State
+        id="percentIlluminated">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Percent Illuminated</TriggerLabel>
+        <ControlPageLabel>Percent Illuminated</ControlPageLabel>
+      </State>
+
+      <State
+        id="phaseOfMoon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Phase of Moon</TriggerLabel>
+        <ControlPageLabel>Phase of Moon</ControlPageLabel>
+      </State>
+
+      <State
+        id="phaseOfMoonIcon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Phase of Moon (icon)</TriggerLabel>
+        <ControlPageLabel>Phase of Moon (icon)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunriseHourMoonphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunrise Hour (Moon Phase)</TriggerLabel>
+        <ControlPageLabel>Sunrise Hour (Moon Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunriseMinuteMoonphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunrise Minute (Moon Phase)</TriggerLabel>
+        <ControlPageLabel>Sunrise Minute (Moon Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunsetHourMoonphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunset Hour (Moon Phase)</TriggerLabel>
+        <ControlPageLabel>Sunset Hour (Moon Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunsetMinuteMoonphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunset Minute (Moon Phase)</TriggerLabel>
+        <ControlPageLabel>Sunset Minute (Moon Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunriseHourSunphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunrise Hour (Sun Phase)</TriggerLabel>
+        <ControlPageLabel>Sunrise Hour (Sun Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunriseMinuteSunphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunrise Minute (Sun Phase)</TriggerLabel>
+        <ControlPageLabel>Sunrise Minute (Sun Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunsetHourSunphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunset Hour (Sun Phase)</TriggerLabel>
+        <ControlPageLabel>Sunset Hour (Sun Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="sunsetMinuteSunphase">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Sunset Minute (Sun Phase)</TriggerLabel>
+        <ControlPageLabel>Sunset Minute (Sun Phase)</ControlPageLabel>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Estimated Conditions</TriggerLabel>
+        <ControlPageLabel>Wunderground - Estimated Conditions</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Astronomy Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Astronomy Device State</ControlPageLabel>
+      </State>
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Hourly Forecast -->
+
+  <Device
+    id="wundergroundHourly" type="custom">
+    <Name>WUnderground Hourly Forecast</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>NOTE: you must have a cumulus or anvil plan to obtain hourly forecast data.</Label>
+      </Field>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space02"
+        type="checkbox"
+        tooltip="Check to show observation location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space03"
+        type="label"
+        visibleBindingId="space02"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="separator00"
+        type="separator"/>
+
+      <Field
+        id="space04"
+        type="checkbox"
+        tooltip="Check to show weather units settings.">
+        <Label>Weather Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space05"
+        type="label"
+        fontSize ="small">
+        <Label>Controls how values will be displayed throughout Indigo. They are independent of the Display Units settings below.</Label>
+      </Field>
+
+      <Field
+        id="configMenuUnits"
+        type="menu"
+        defaultValue="S"
+        visibleBindingId="space04"
+        visibleBindingValue="true"
+        tooltip="Please select the desired measurement units for this location.">
+        <Label>Standard or Metric:</Label>
+        <List>
+          <Option value = "S">Standard (°F and MPH)</Option>
+          <Option value = "M">Metric (°C and KPH)</Option>
+          <Option value = "I">Mixed (°C and MPH)</Option>
+          <Option value = "MS">Mixed SI (°C and MPS)</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="configWindDirUnits"
+        type="menu"
+        defaultValue="DIR"
+        visibleBindingId="space04"
+        visibleBindingValue="true"
+        tooltip="Please select the desired wind direction units for this location.">
+        <Label>Wind Direction:</Label>
+        <List>
+          <Option value = "DIR">Text (N-E-S-W)</Option>
+          <Option value = "DEG">Degrees (0-90-180-270)</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="separator01"
+        type="separator"/>
+
+      <Field
+        id="space06"
+        type="checkbox"
+        tooltip="Check to show display units settings.">
+        <Label>Display Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space07"
+        type="label"
+        fontSize="small">
+        <Label>Controls how values will be displayed on control pages, etc.</Label>
+      </Field>
+
+      <Field
+        id="space08"
+        type="label"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>These settings are independent of the Weather Units settings above. They do not affect the underlying value of the data point.</Label>
+      </Field>
+
+      <Field
+        id="percentageUnits"
+        type="textfield"
+        defaultValue="%"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        tooltip="Appended to all probability and percentage values. (80%)">
+        <Label>Percentage:</Label>
+      </Field>
+
+      <Field
+        id="temperatureUnits"
+        type="textfield"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        defaultValue="°"
+        tooltip="Appended to all temperature values. (75°)">
+        <Label>Temperature:</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h01_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 1</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 2</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 3</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 4</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 5</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 6</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 7</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 8</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 9</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 10</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 11</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 12</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 13</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 14</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 15</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 16</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 17</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 18</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 19</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 20</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 21</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 22</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 23</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_cond">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Hour 24</TriggerLabel>
+        <ControlPageLabel>Conditions - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 1</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 2</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 3</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 4</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 5</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 6</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 7</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 8</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 9</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 10</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 11</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 12</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 13</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 14</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 15</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 16</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 17</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 18</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 19</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 20</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 21</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 22</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 23</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 24</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 1 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 1 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 2 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 2 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 3 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 3 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 4 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 4 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 5 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 5 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 6 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 6 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 7 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 7 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 8 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 8 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 9 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 9 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 10 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 10 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 11 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 11 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 12 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 12 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 13 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 13 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 14 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 14 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 15 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 15 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 16 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 16 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 17 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 17 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 18 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 18 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 19 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 19 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 20 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 20 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 21 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 21 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 22 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 22 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 23 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 23 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_proper_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Hour 24 (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Icon - Hour 24 (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 1</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 2</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 3</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 4</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 5</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 6</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 7</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 8</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 9</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 10</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 11</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 12</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 13</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 14</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 15</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 16</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 17</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 18</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 19</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 20</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 21</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 22</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 23</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Hour 24</TriggerLabel>
+        <ControlPageLabel>Humidity - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 1</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 2</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 3</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 4</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 5</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 6</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 7</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 8</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 9</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 10</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 11</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 12</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 13</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 14</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 15</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 16</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 17</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 18</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 19</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 20</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 21</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 22</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 23</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_precip">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Hour 24</TriggerLabel>
+        <ControlPageLabel>Precipitation - Hour 24</ControlPageLabel>
+      </State>
+
+      <State
+        id="h01_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 1</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 2</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 3</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 4</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 5</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 6</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 7</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 8</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 9</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 10</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 11</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 12</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 13</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 14</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 15</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 16</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 17</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 18</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 19</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 20</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 21</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 22</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 23</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Hour 24</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Hour 24</ControlPageLabel>
+      </State>
+
+      <State
+        id="h01_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 1</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 2</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 3</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 4</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 5</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 6</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 7</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 8</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 9</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 10</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 11</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 12</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 13</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 14</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 15</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 16</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 17</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 18</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 19</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 20</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 21</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 22</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 23</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Hour 24</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 1</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 2</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 3</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 4</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 5</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 6</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 7</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 8</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 9</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 10</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 11</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 12</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 13</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 14</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 15</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 16</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 17</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 18</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 19</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 20</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 21</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 22</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 23</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Temperature - Hour 24</TriggerLabel>
+        <ControlPageLabel>Temperature - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 1</TriggerLabel>
+        <ControlPageLabel>Time - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 2</TriggerLabel>
+        <ControlPageLabel>Time - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 3</TriggerLabel>
+        <ControlPageLabel>Time - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 4</TriggerLabel>
+        <ControlPageLabel>Time - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 5</TriggerLabel>
+        <ControlPageLabel>Time - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 6</TriggerLabel>
+        <ControlPageLabel>Time - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 7</TriggerLabel>
+        <ControlPageLabel>Time - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 8</TriggerLabel>
+        <ControlPageLabel>Time - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 9</TriggerLabel>
+        <ControlPageLabel>Time - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 10</TriggerLabel>
+        <ControlPageLabel>Time - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 11</TriggerLabel>
+        <ControlPageLabel>Time - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 12</TriggerLabel>
+        <ControlPageLabel>Time - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 13</TriggerLabel>
+        <ControlPageLabel>Time - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 14</TriggerLabel>
+        <ControlPageLabel>Time - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 15</TriggerLabel>
+        <ControlPageLabel>Time - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 16</TriggerLabel>
+        <ControlPageLabel>Time - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 17</TriggerLabel>
+        <ControlPageLabel>Time - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 18</TriggerLabel>
+        <ControlPageLabel>Time - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 19</TriggerLabel>
+        <ControlPageLabel>Time - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 20</TriggerLabel>
+        <ControlPageLabel>Time - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 21</TriggerLabel>
+        <ControlPageLabel>Time - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 22</TriggerLabel>
+        <ControlPageLabel>Time - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 23</TriggerLabel>
+        <ControlPageLabel>Time - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_time">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Time - Hour 24</TriggerLabel>
+        <ControlPageLabel>Time - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 1</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 2</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 3</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 4</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 5</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 6</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 7</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 8</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 9</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 10</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 11</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 12</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 13</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 14</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 15</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 16</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 17</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 18</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 19</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 20</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 21</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 22</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 23</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_timeLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Long Time - Hour 24</TriggerLabel>
+        <ControlPageLabel>Long Time - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 1</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 2</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 3</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 4</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 5</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 6</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 7</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 8</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 9</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 10</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 11</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 12</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 13</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 14</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 15</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 16</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 17</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 18</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 19</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 20</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 21</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 22</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 23</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Hour 24</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="h01_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 1</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="h02_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 2</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="h03_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 3</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="h04_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 4</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="h05_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 5</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="h06_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 6</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="h07_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 7</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="h08_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 8</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="h09_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 9</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="h10_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 10</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 10</ControlPageLabel>
+      </State>
+
+      <State
+        id="h11_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 11</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 11</ControlPageLabel>
+      </State>
+
+      <State
+        id="h12_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 12</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 12</ControlPageLabel>
+      </State>
+
+      <State
+        id="h13_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 13</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 13</ControlPageLabel>
+      </State>
+
+      <State
+        id="h14_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 14</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 14</ControlPageLabel>
+      </State>
+
+      <State
+        id="h15_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 15</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 15</ControlPageLabel>
+      </State>
+
+      <State
+        id="h16_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 16</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 16</ControlPageLabel>
+      </State>
+
+      <State
+        id="h17_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 17</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 17</ControlPageLabel>
+      </State>
+
+      <State
+        id="h18_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 18</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 18</ControlPageLabel>
+      </State>
+
+      <State
+        id="h19_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 19</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 19</ControlPageLabel>
+      </State>
+
+      <State
+        id="h20_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 20</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 20</ControlPageLabel>
+      </State>
+
+      <State
+        id="h21_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 21</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 21</ControlPageLabel>
+      </State>
+
+      <State
+        id="h22_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 22</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 22</ControlPageLabel>
+      </State>
+
+      <State
+        id="h23_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 23</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 23</ControlPageLabel>
+      </State>
+
+      <State
+        id="h24_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Hour 24</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Hour 24</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Estimated Conditions</TriggerLabel>
+        <ControlPageLabel>Wunderground - Estimated Conditions</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Hourly Forecast Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Hourly Forecast Device State</ControlPageLabel>
+      </State>
+
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Satellite Image Downloader -->
+
+  <Device
+    id="satelliteImageDownloader" type="custom">
+    <Name>WUnderground Satellite Image Downloader</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>The image downloader only supports gif, jpg, jpeg, and png extensions. There is no limit to the number of downloader devices you can have.</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label">
+        <Label> </Label>
+      </Field>
+
+      <Field
+        id="imageSourceLocation"
+        type="textfield"
+        defaultValue="http://www.url.com/imagefile.png"
+        tooltip="Please enter the URL for the image file you want to download.">
+        <Label>Source Location:</Label>
+      </Field>
+
+      <Field
+        id="imageDestinationLocation"
+        type="textfield"
+        defaultValue="file:///User/username/Desktop"
+        tooltip="Please enter the location where you would like the image to be saved.">
+        <Label>Destination Location:</Label>
+      </Field>
+
+      <Field
+        id="imageExamples"
+        type="checkbox"
+        tooltip="Check to show destination location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space02"
+        type="label"
+        fontSize="small"
+        visibleBindingId="imageExamples"
+        visibleBindingValue="true">
+        <Label>
+Source:
+  http://www.website.com/imagefile.png
+  file:///Users/username/Desktop/imagefile.png
+
+Destination:
+  /Users/username/Desktop/imagefile.png</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Image Downloader State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Image Downloader State</ControlPageLabel>
+      </State>
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Ten Day Forecast -->
+
+  <Device
+    id="wundergroundTenDay" type="custom">
+    <Name>WUnderground Ten Day Forecast</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>NOTE: you must have a cumulus or anvil plan to obtain 10-day forecast data.</Label>
+      </Field>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space02"
+        type="checkbox"
+        tooltip="Check to show observation location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space03"
+        type="label"
+        visibleBindingId="space02"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="separator00"
+        type="separator"/>
+
+      <Field
+        id="space04"
+        type="checkbox"
+        tooltip="Check to show weather units settings.">
+        <Label>Weather Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space05"
+        type="label"
+        fontSize ="small">
+        <Label>Controls how values will be displayed throughout Indigo. They are independent of the Display Units settings below.</Label>
+      </Field>
+
+      <Field
+        id="configMenuUnits"
+        type="menu"
+        defaultValue="S"
+        visibleBindingId="space04"
+        visibleBindingValue="true"
+        tooltip="Please select the desired measurement units for this location.">
+        <Label>Standard or Metric:</Label>
+        <List>
+          <Option value = "S">Standard (°F and MPH)</Option>
+          <Option value = "M">Metric (°C and KPH)</Option>
+          <Option value = "I">Mixed (°C and MPH)</Option>
+          <Option value = "MS">Mixed SI (°C and MPS)</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="configWindSpdUnits"
+        type="menu"
+        defaultValue="AVG"
+        visibleBindingId="space04"
+        visibleBindingValue="true"
+        tooltip="Please select the desired wind speed measure for this location.">
+        <Label>Wind Speed:</Label>
+        <List>
+          <Option value = "AVG">Average</Option>
+          <Option value = "MAX">Maximum</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="configWindDirUnits"
+        type="menu"
+        defaultValue="DIR"
+        visibleBindingId="space04"
+        visibleBindingValue="true"
+        tooltip="Please select the desired wind direction units for this location.">
+        <Label>Wind Direction:</Label>
+        <List>
+          <Option value = "DIR">Text (N-E-S-W)</Option>
+          <Option value = "DEG">Degrees (0-90-180-270)</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="separator01"
+        type="separator"/>
+
+      <Field
+        id="space06"
+        type="checkbox"
+        tooltip="Check to show display units settings.">
+        <Label>Display Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space07"
+        type="label"
+        fontSize="small">
+        <Label>Controls how values will be displayed on control pages, etc.</Label>
+      </Field>
+
+      <Field
+        id="space08"
+        type="label"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>These settings are independent of the Weather Units settings above. They do not affect the underlying value of the data point.</Label>
+      </Field>
+
+      <Field
+        id="percentageUnits"
+        type="textfield"
+        defaultValue="%"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        tooltip="Appended to all probability and percentage values. (80%)">
+        <Label>Percentage:</Label>
+      </Field>
+
+      <Field
+        id="rainAmountUnits"
+        type="textfield"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        tooltip="Appended to all rain volume units.(Values reported in either in. or mm.)">
+        <Label>Rain (Amount):</Label>
+      </Field>
+
+      <Field
+        id="snowAmountUnits"
+        type="textfield"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">
+        <Label>Snow (Amount):</Label>
+      </Field>
+
+      <Field
+        id="temperatureUnits"
+        type="textfield"
+        visibleBindingId="space06"
+        visibleBindingValue="true"
+        defaultValue="°"
+        tooltip="Appended to all temperature values. (75°)">
+        <Label>Temperature:</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="d01_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 1</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 2</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 3</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 4</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 5</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 6</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 7</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 8</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 9</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_conditions">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Conditions - Day 10</TriggerLabel>
+        <ControlPageLabel>Conditions - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 1</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 2</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 3</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 4</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 5</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 6</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 7</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 8</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 9</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_date">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Date Name - Day 10</TriggerLabel>
+        <ControlPageLabel>Date Name - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 1</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 2</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 3</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 4</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 5</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 6</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 7</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 8</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 9</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_day">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Day Name - Day 10</TriggerLabel>
+        <ControlPageLabel>Day Name - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 1</TriggerLabel>
+        <ControlPageLabel>High - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 2</TriggerLabel>
+        <ControlPageLabel>High - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 3</TriggerLabel>
+        <ControlPageLabel>High - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 4</TriggerLabel>
+        <ControlPageLabel>High - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 5</TriggerLabel>
+        <ControlPageLabel>High - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 6</TriggerLabel>
+        <ControlPageLabel>High - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 7</TriggerLabel>
+        <ControlPageLabel>High - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 8</TriggerLabel>
+        <ControlPageLabel>High - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 9</TriggerLabel>
+        <ControlPageLabel>High - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_high">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>High - Day 10</TriggerLabel>
+        <ControlPageLabel>High - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 1</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 2</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 3</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 4</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 5</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 6</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 7</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 8</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 9</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_humidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Humidity - Day 10</TriggerLabel>
+        <ControlPageLabel>Humidity - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 1</TriggerLabel>
+        <ControlPageLabel>Icon - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 2</TriggerLabel>
+        <ControlPageLabel>Icon - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 3</TriggerLabel>
+        <ControlPageLabel>Icon - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 4</TriggerLabel>
+        <ControlPageLabel>Icon - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 5</TriggerLabel>
+        <ControlPageLabel>Icon - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 6</TriggerLabel>
+        <ControlPageLabel>Icon - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 7</TriggerLabel>
+        <ControlPageLabel>Icon - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 8</TriggerLabel>
+        <ControlPageLabel>Icon - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 9</TriggerLabel>
+        <ControlPageLabel>Icon - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_icon">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Icon - Day 10</TriggerLabel>
+        <ControlPageLabel>Icon - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 1</TriggerLabel>
+        <ControlPageLabel>Low - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 2</TriggerLabel>
+        <ControlPageLabel>Low - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 3</TriggerLabel>
+        <ControlPageLabel>Low - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 4</TriggerLabel>
+        <ControlPageLabel>Low - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 5</TriggerLabel>
+        <ControlPageLabel>Low - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 6</TriggerLabel>
+        <ControlPageLabel>Low - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 7</TriggerLabel>
+        <ControlPageLabel>Low - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 8</TriggerLabel>
+        <ControlPageLabel>Low - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 9</TriggerLabel>
+        <ControlPageLabel>Low - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_low">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Low - Day 10</TriggerLabel>
+        <ControlPageLabel>Low - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 1</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 2</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 3</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 4</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 5</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 6</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 7</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 8</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 9</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_pop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation (Chance) - Day 10</TriggerLabel>
+        <ControlPageLabel>Precipitation (Chance) - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 1</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 2</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 3</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 4</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 5</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 6</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 7</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 8</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 9</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_qpf">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Rain (Amount) - Day 10</TriggerLabel>
+        <ControlPageLabel>Rain (Amount) - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 1</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 2</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 3</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 4</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 5</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 6</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 7</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 8</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 9</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_snow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Snow (Amount) - Day 10</TriggerLabel>
+        <ControlPageLabel>Snow (Amount) - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 1</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 2</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 3</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 4</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 5</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 6</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 7</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 8</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 9</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_windDir">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wind Direction - Day 10</TriggerLabel>
+        <ControlPageLabel>Wind Direction - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="d01_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 1</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="d02_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 2</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="d03_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 3</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="d04_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 4</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="d05_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 5</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="d06_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 6</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="d07_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 7</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="d08_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 8</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="d09_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 9</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 9</ControlPageLabel>
+      </State>
+
+      <State
+        id="d10_windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Wind Speed - Day 10</TriggerLabel>
+        <ControlPageLabel>Wind Speed - Day 10</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Estimated Conditions</TriggerLabel>
+        <ControlPageLabel>Wunderground - Estimated Conditions</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - 10-day Forecast Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - 10-day Forecast Device State</ControlPageLabel>
+      </State>
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Tide Forecast -->
+
+  <Device
+    id="wundergroundTides" type="custom">
+    <Name>WUnderground Tides</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>NOTE: you must have a cumulus or anvil plan to obtain tide data.</Label>
+      </Field>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space02"
+        type="checkbox"
+        tooltip="Check to show observation location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space03"
+        type="label"
+        visibleBindingId="space02"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="tideSite">
+        <ValueType>string</ValueType>
+        <TriggerLabel>Tide Site</TriggerLabel>
+        <ControlPageLabel>Tide Site</ControlPageLabel>
+      </State>
+
+      <State
+        id="minHeight">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Minimum Height</TriggerLabel>
+        <ControlPageLabel>Minimum Height</ControlPageLabel>
+      </State>
+
+      <State
+        id="maxHeight">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Maximum Height</TriggerLabel>
+        <ControlPageLabel>Maximum Height</ControlPageLabel>
+      </State>
+
+      <State
+        id="p1_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (1)</TriggerLabel>
+        <ControlPageLabel>Date (1)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p2_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (2)</TriggerLabel>
+        <ControlPageLabel>Date (2)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p3_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (3)</TriggerLabel>
+        <ControlPageLabel>Date (3)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p4_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (4)</TriggerLabel>
+        <ControlPageLabel>Date (4)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p5_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (5)</TriggerLabel>
+        <ControlPageLabel>Date (5)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p6_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (6)</TriggerLabel>
+        <ControlPageLabel>Date (6)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p7_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (7)</TriggerLabel>
+        <ControlPageLabel>Date (7)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p8_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (8)</TriggerLabel>
+        <ControlPageLabel>Date (8)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p9_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (9)</TriggerLabel>
+        <ControlPageLabel>Date (9)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p10_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (10)</TriggerLabel>
+        <ControlPageLabel>Date (10)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p11_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (11)</TriggerLabel>
+        <ControlPageLabel>Date (11)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p12_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (12)</TriggerLabel>
+        <ControlPageLabel>Date (12)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p13_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (13)</TriggerLabel>
+        <ControlPageLabel>Date (13)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p14_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (14)</TriggerLabel>
+        <ControlPageLabel>Date (14)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p15_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (15)</TriggerLabel>
+        <ControlPageLabel>Date (15)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p16_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (16)</TriggerLabel>
+        <ControlPageLabel>Date (16)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p17_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (17)</TriggerLabel>
+        <ControlPageLabel>Date (17)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p18_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (18)</TriggerLabel>
+        <ControlPageLabel>Date (18)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p19_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (19)</TriggerLabel>
+        <ControlPageLabel>Date (19)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p20_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (20)</TriggerLabel>
+        <ControlPageLabel>Date (20)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p21_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (21)</TriggerLabel>
+        <ControlPageLabel>Date (21)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p22_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (22)</TriggerLabel>
+        <ControlPageLabel>Date (22)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p23_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (23)</TriggerLabel>
+        <ControlPageLabel>Date (23)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p24_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (24)</TriggerLabel>
+        <ControlPageLabel>Date (24)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p25_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (25)</TriggerLabel>
+        <ControlPageLabel>Date (25)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p26_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (26)</TriggerLabel>
+        <ControlPageLabel>Date (26)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p27_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (27)</TriggerLabel>
+        <ControlPageLabel>Date (27)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p28_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (28)</TriggerLabel>
+        <ControlPageLabel>Date (28)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p29_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (29)</TriggerLabel>
+        <ControlPageLabel>Date (29)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p30_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (30)</TriggerLabel>
+        <ControlPageLabel>Date (30)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p31_pretty">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Date (31)</TriggerLabel>
+        <ControlPageLabel>Date (31)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="p1_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (1)</TriggerLabel>
+        <ControlPageLabel>Height (1)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p2_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (2)</TriggerLabel>
+        <ControlPageLabel>Height (2)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p3_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (3)</TriggerLabel>
+        <ControlPageLabel>Height (3)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p4_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (4)</TriggerLabel>
+        <ControlPageLabel>Height (4)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p5_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (5)</TriggerLabel>
+        <ControlPageLabel>Height (5)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p6_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (6)</TriggerLabel>
+        <ControlPageLabel>Height (6)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p7_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (7)</TriggerLabel>
+        <ControlPageLabel>Height (7)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p8_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (8)</TriggerLabel>
+        <ControlPageLabel>Height (8)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p9_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (9)</TriggerLabel>
+        <ControlPageLabel>Height (9)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p10_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (10)</TriggerLabel>
+        <ControlPageLabel>Height (10)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p11_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (11)</TriggerLabel>
+        <ControlPageLabel>Height (11)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p12_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (12)</TriggerLabel>
+        <ControlPageLabel>Height (12)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p13_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (13)</TriggerLabel>
+        <ControlPageLabel>Height (13)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p14_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (14)</TriggerLabel>
+        <ControlPageLabel>Height (14)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p15_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (15)</TriggerLabel>
+        <ControlPageLabel>Height (15)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p16_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (16)</TriggerLabel>
+        <ControlPageLabel>Height (16)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p17_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (17)</TriggerLabel>
+        <ControlPageLabel>Height (17)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p18_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (18)</TriggerLabel>
+        <ControlPageLabel>Height (18)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p19_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (19)</TriggerLabel>
+        <ControlPageLabel>Height (19)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p20_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (20)</TriggerLabel>
+        <ControlPageLabel>Height (20)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p21_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (21)</TriggerLabel>
+        <ControlPageLabel>Height (21)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p22_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (22)</TriggerLabel>
+        <ControlPageLabel>Height (22)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p23_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (23)</TriggerLabel>
+        <ControlPageLabel>Height (23)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p24_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (24)</TriggerLabel>
+        <ControlPageLabel>Height (24)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p25_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (25)</TriggerLabel>
+        <ControlPageLabel>Height (25)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p26_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (26)</TriggerLabel>
+        <ControlPageLabel>Height (26)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p27_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (27)</TriggerLabel>
+        <ControlPageLabel>Height (27)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p28_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (28)</TriggerLabel>
+        <ControlPageLabel>Height (28)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p29_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (29)</TriggerLabel>
+        <ControlPageLabel>Height (29)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p30_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (30)</TriggerLabel>
+        <ControlPageLabel>Height (30)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p31_height">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Height (31)</TriggerLabel>
+        <ControlPageLabel>Height (31)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="p1_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (1)</TriggerLabel>
+        <ControlPageLabel>Type (1)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p2_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (2)</TriggerLabel>
+        <ControlPageLabel>Type (2)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p3_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (3)</TriggerLabel>
+        <ControlPageLabel>Type (3)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p4_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (4)</TriggerLabel>
+        <ControlPageLabel>Type (4)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p5_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (5)</TriggerLabel>
+        <ControlPageLabel>Type (5)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p6_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (6)</TriggerLabel>
+        <ControlPageLabel>Type (6)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p7_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (7)</TriggerLabel>
+        <ControlPageLabel>Type (7)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p8_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (8)</TriggerLabel>
+        <ControlPageLabel>Type (8)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p9_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (9)</TriggerLabel>
+        <ControlPageLabel>Type (9)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p10_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (10)</TriggerLabel>
+        <ControlPageLabel>Type (10)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p11_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (11)</TriggerLabel>
+        <ControlPageLabel>Type (11)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p12_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (12)</TriggerLabel>
+        <ControlPageLabel>Type (12)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p13_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (13)</TriggerLabel>
+        <ControlPageLabel>Type (13)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p14_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (14)</TriggerLabel>
+        <ControlPageLabel>Type (14)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p15_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (15)</TriggerLabel>
+        <ControlPageLabel>Type (15)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p16_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (16)</TriggerLabel>
+        <ControlPageLabel>Type (16)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p17_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (17)</TriggerLabel>
+        <ControlPageLabel>Type (17)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p18_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (18)</TriggerLabel>
+        <ControlPageLabel>Type (18)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p19_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (19)</TriggerLabel>
+        <ControlPageLabel>Type (19)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p20_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (20)</TriggerLabel>
+        <ControlPageLabel>Type (20)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p21_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (21)</TriggerLabel>
+        <ControlPageLabel>Type (21)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p22_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (22)</TriggerLabel>
+        <ControlPageLabel>Type (22)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p23_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (23)</TriggerLabel>
+        <ControlPageLabel>Type (23)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p24_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (24)</TriggerLabel>
+        <ControlPageLabel>Type (24)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p25_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (25)</TriggerLabel>
+        <ControlPageLabel>Type (25)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p26_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (26)</TriggerLabel>
+        <ControlPageLabel>Type (26)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p27_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (27)</TriggerLabel>
+        <ControlPageLabel>Type (27)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p28_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (28)</TriggerLabel>
+        <ControlPageLabel>Type (28)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p29_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (29)</TriggerLabel>
+        <ControlPageLabel>Type (29)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p30_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (30)</TriggerLabel>
+        <ControlPageLabel>Type (30)</ControlPageLabel>
+      </State>
+
+      <State
+        id="p31_type">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Type (31)</TriggerLabel>
+        <ControlPageLabel>Type (31)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Weather Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Weather Device State</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Device State</TriggerLabel>
+        <ControlPageLabel>Device State</ControlPageLabel>
+      </State>
+
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+<!-- Weather Device -->
+  <Device
+    id="wunderground" type="custom">
+    <Name>WUnderground Weather</Name>
+
+    <ConfigUI>
+
+      <Field
+        id="location"
+        type="textfield"
+        defaultValue="autoip"
+        tooltip="Please enter the desired location information for this device. It must follow the format of the examples below.">
+        <Label>Location:</Label>
+      </Field>
+
+      <Field
+        id="space00"
+        type="label"
+        fontSize="small">
+        <Label>Enter the observation location. Locations must follow one of the example formats provided.</Label>
+      </Field>
+
+      <Field
+        id="space01"
+        type="checkbox"
+        tooltip="Check to show observation location examples.">
+        <Label>Examples:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space02"
+        type="label"
+        visibleBindingId="space01"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>  - Automatic IP detection (autoip)
+  - City (i.e., CA/San_Francisco, Canada/Toronto)
+  - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+  - ICAO Airport Station (i.e., KORD, CYYZ)
+  - Personal Weather Station (i.e., pws:KMNCHASK10)
+  - US ZIP (i.e., 12345)</Label>
+      </Field>
+
+      <Field
+        id="separator00"
+        type="separator"/>
+
+      <Field
+        id="space03"
+        type="checkbox"
+        tooltip="Check to show weather units settings.">
+        <Label>Weather Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space04"
+        type="label"
+        fontSize ="small">
+        <Label>Controls how values will be displayed throughout Indigo. They are independent of the Display Units settings below.</Label>
+      </Field>
+
+      <Field
+        id="configMenuUnits"
+        type="menu"
+        defaultValue="S"
+        visibleBindingId="space03"
+        visibleBindingValue="true"
+        tooltip="Please select the desired measurement units for this location.">
+        <Label>Standard or Metric:</Label>
+        <List>
+          <Option value = "S">Standard (°F and MPH)</Option>
+          <Option value = "M">Metric (°C and KPH)</Option>
+          <Option value = "I">Mixed (°C and MPH)</Option>
+          <Option value = "MS">Mixed SI Wind (°C and MPS)</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="itemListUiUnits"
+        type="menu"
+        defaultValue="S"
+        visibleBindingId="space03"
+        visibleBindingValue="true"
+        tooltip="Please select how you would like temperatures displayed in the main Indigo Item List window.">
+        <Label>Item List Display:</Label>
+        <List>
+          <Option value = "S">Standard Units - °F</Option>
+          <Option value = "M">Metric Units - °C</Option>
+          <Option value = "SM">Standard Units Plus Metric - °F (°C)</Option>
+          <Option value = "MS">Metric Units Plus Standard - °C (°F)</Option>
+          <Option value = "SN">Standard no Units</Option>
+          <Option value = "MN">Metric no Units</Option>
+        </List>
+      </Field>
+
+      <Field
+        id="separator01"
+        type="separator"/>
+
+      <Field
+        id="space05"
+        type="checkbox"
+        tooltip="Check to show display units settings.">
+        <Label>Display Units:</Label>
+        <Description>Show/Hide</Description>
+      </Field>
+
+      <Field
+        id="space06"
+        type="label"
+        fontSize="small">
+        <Label>Controls how values will be displayed on control pages, etc.</Label>
+      </Field>
+
+      <Field
+        id="space07"
+        type="label"
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        fontSize="small">
+        <Label>These settings are independent of the Weather Units settings above. They do not affect the underlying value of the data point.</Label>
+      </Field>
+
+      <Field
+        id="distanceUnits"
+        type="textfield"
+        defaultValue=" mi."
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        tooltip="Appended to all distance values. (5 mi.)">
+        <Label>Distance:</Label>
+      </Field>
+
+      <Field
+        id="percentageUnits"
+        type="textfield"
+        defaultValue="%"
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        tooltip="Appended to all probability and percentage values. (80%)">
+        <Label>Percentage:</Label>
+      </Field>
+
+      <Field
+        id="pressureUnits"
+        type="textfield"
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        defaultValue=" in."
+        tooltip="Appended to all pressure values. (30.05 in.)">
+        <Label>Pressure:</Label>
+      </Field>
+
+      <Field
+        id="rainUnits"
+        type="textfield"
+        defaultValue=" in."
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        tooltip="Appended to all rain values. (0.5 in.)">
+        <Label>Rainfall:</Label>
+      </Field>
+
+      <Field
+        id="temperatureUnits"
+        type="textfield"
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        defaultValue="°"
+        tooltip="Appended to all temperature values. (75°)">
+        <Label>Temperature:</Label>
+      </Field>
+
+      <Field
+        id="windUnits"
+        type="textfield"
+        defaultValue=" mph"
+        visibleBindingId="space05"
+        visibleBindingValue="true"
+        tooltip="Appended to all wind values. (5 mph)">
+        <Label>Wind:</Label>
+      </Field>
+
+      <Field
+        id="separator02"
+        type="separator"/>
+
+      <Field
+        id="suppressWeatherAlerts"
+        type="checkbox"
+        defaultValue="false"
+        tooltip="Check to suppress severe weather alerts for this device only.">
+        <Label>Suppress Severe Weather Alerts:</Label>
+      </Field>
+
+      <Field
+        id="space11"
+        type="label"
+        fontSize="small">
+        <Label>If severe weather alert logging is enabled, checking this box will suppress alerts for this device only.</Label>
+      </Field>
+
+      <Field
+        id="weatherSummaryEmail"
+        type="checkbox"
+        defaultValue="false"
+        tooltip="Check to enable daily weather summary email messages.">
+        <Label>Receive Email Summary:</Label>
+      </Field>
+
+      <Field
+        id="weatherSummaryEmailSent"
+        type="checkbox"
+        defaultValue="false"
+        hidden = "true"
+        tooltip="Check to enable daily weather summary email messages.">
+        <Label>Receive Email Summary:</Label>
+      </Field>
+
+      <Field
+        id="space12"
+        type="label"
+        fontSize="small">
+        <Label>If checked, the plugin will send one email each day with a summary of select weather information. In order to receive the summary, you must enable notifications of plugin updates within the WUnderground plugin settings dialog.</Label>
+      </Field>
+
+      <Field
+        id="deviceVersion"
+        type="textfield"
+        defaultValue="1"
+        hidden="True">
+      </Field>
+
+    </ConfigUI>
+
+    <States>
+
+      <State
+        id="alertDescription1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Description 1</TriggerLabel>
+        <ControlPageLabel>Alert - Description 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertDescription2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Description 2</TriggerLabel>
+        <ControlPageLabel>Alert - Description 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertDescription3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Description 3</TriggerLabel>
+        <ControlPageLabel>Alert - Description 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertDescription4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Description 4</TriggerLabel>
+        <ControlPageLabel>Alert - Description 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertDescription5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Description 5</TriggerLabel>
+        <ControlPageLabel>Alert - Description 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertExpires1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Expires 1</TriggerLabel>
+        <ControlPageLabel>Alert - Expires 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertExpires2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Expires 2</TriggerLabel>
+        <ControlPageLabel>Alert - Expires 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertExpires3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Expires 3</TriggerLabel>
+        <ControlPageLabel>Alert - Expires 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertExpires4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Expires 4</TriggerLabel>
+        <ControlPageLabel>Alert - Expires 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertExpires5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Expires 5</TriggerLabel>
+        <ControlPageLabel>Alert - Expires 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertMessage1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Message 1</TriggerLabel>
+        <ControlPageLabel>Alert - Message 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertMessage2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Message 2</TriggerLabel>
+        <ControlPageLabel>Alert - Message 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertMessage3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Message 3</TriggerLabel>
+        <ControlPageLabel>Alert - Message 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertMessage4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Message 4</TriggerLabel>
+        <ControlPageLabel>Alert - Message 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertMessage5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Message 5</TriggerLabel>
+        <ControlPageLabel>Alert - Message 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertType1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Type 1</TriggerLabel>
+        <ControlPageLabel>Alert - Type 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertType2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Type 2</TriggerLabel>
+        <ControlPageLabel>Alert - Type 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertType3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Type 3</TriggerLabel>
+        <ControlPageLabel>Alert - Type 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertType4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Type 4</TriggerLabel>
+        <ControlPageLabel>Alert - Type 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertType5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Type 5</TriggerLabel>
+        <ControlPageLabel>Alert - Type 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="alertStatus">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Alert - Status</TriggerLabel>
+        <ControlPageLabel>Alert - Status</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="pressure">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Barometric Pressure</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Barometric Pressure</ControlPageLabel>
+      </State>
+
+      <State
+        id="pressureIcon">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Conditions - Barometric Pressure (Icon)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Barometric Pressure (Icon)</ControlPageLabel>
+      </State>
+
+      <State
+        id="pressureTrend">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Barometric Pressure Trend</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Barometric Pressure Trend</ControlPageLabel>
+      </State>
+
+      <State
+        id="dewpoint">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Dew Point</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Dew Point</ControlPageLabel>
+      </State>
+
+      <State
+        id="feelslike">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Feels Like</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Feels Like</ControlPageLabel>
+      </State>
+
+      <State
+        id="heatIndex">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Heat Index</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Heat Index</ControlPageLabel>
+      </State>
+
+      <State
+        id="relativeHumidity">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Humidity</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Humidity</ControlPageLabel>
+      </State>
+
+      <State
+        id="properIconNameAllDay">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Icon (All Day)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Icon (All Day)</ControlPageLabel>
+      </State>
+
+      <State
+        id="properIconName">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Icon (Day/Night)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Icon (Day/Night)</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservation">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentObservationEpoch">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Observation Time (Epoch)</ControlPageLabel>
+      </State>
+
+      <State
+        id="solarradiation">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Solar Radiation</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Solar Radiation</ControlPageLabel>
+      </State>
+
+      <State
+        id="temp">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Temperature</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Temperature</ControlPageLabel>
+      </State>
+
+      <State
+        id="tempIcon">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Conditions - Temperature (Icon)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Temperature (Icon)</ControlPageLabel>
+      </State>
+
+      <State
+        id="uv">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - UV</TriggerLabel>
+        <ControlPageLabel>Current Conditions - UV</ControlPageLabel>
+      </State>
+
+      <State
+        id="visibility">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Visibility</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Visibility</ControlPageLabel>
+      </State>
+
+      <State
+        id="currentWeather">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Weather</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Weather</ControlPageLabel>
+      </State>
+
+      <State
+        id="windchill">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Wind Chill</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Chill</ControlPageLabel>
+      </State>
+
+      <State
+        id="windDegrees">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Conditions - Wind Degrees</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Degrees</ControlPageLabel>
+      </State>
+
+      <State
+        id="windDIR">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Wind Direction</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Direction</ControlPageLabel>
+      </State>
+
+      <State
+        id="windGust">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Wind Gust</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Gust</ControlPageLabel>
+      </State>
+
+      <State
+        id="windGustIcon">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Conditions - Wind Gust (Icon)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Gust (Icon)</ControlPageLabel>
+      </State>
+
+      <State
+        id="windShortString">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Wind Short String</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Short String</ControlPageLabel>
+      </State>
+
+      <State
+        id="windSpeed">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Current Conditions - Wind Speed</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Speed</ControlPageLabel>
+      </State>
+
+      <State
+        id="windSpeedIcon">
+        <ValueType>Integer</ValueType>
+        <TriggerLabel>Current Conditions - Wind Speed (Icon)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Speed (Icon)</ControlPageLabel>
+      </State>
+
+      <State
+        id="windString">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Wind Long String</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Long String</ControlPageLabel>
+      </State>
+
+      <State
+        id="windStringMetric">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Current Conditions - Wind Long String (Metric)</TriggerLabel>
+        <ControlPageLabel>Current Conditions - Wind Long String (Metric)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="foreTitle1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 1</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 2</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 3</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 4</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 5</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle6">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 6</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle7">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 7</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTitle8">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - 8</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 1</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 2</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 3</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 4</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 5</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon6">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 6</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon7">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 7</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="icon8">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Icon 8</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Icon 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 1</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 1</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 2</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 3</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 4</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText5">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 5</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 5</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText6">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 6</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 6</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText7">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 7</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 7</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreText8">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Text 8</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Text 8</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTextLong">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Trend (Long)</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Trend (Long)</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreTextShort">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Detailed Forecast - Trend (Short)</TriggerLabel>
+        <ControlPageLabel>Detailed Forecast - Trend (Short)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="conditions1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Conditions- Today</TriggerLabel>
+        <ControlPageLabel>Forecast Conditions - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="conditions2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Conditions - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Conditions - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="conditions3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Conditions - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Conditions - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="conditions4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Conditions - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Conditions - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreDay1">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Day Name - Today</TriggerLabel>
+        <ControlPageLabel>Forecast Day Name - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreDay2">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Day Name - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Day Name - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreDay3">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Day Name - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Day Name - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreDay4">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Forecast Day Name - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Day Name - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHigh1">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast High - Today</TriggerLabel>
+        <ControlPageLabel>Forecast High - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHigh2">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast High - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast High - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHigh3">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast High - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast High - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHigh4">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast High - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast High - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreLow1">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Low - Today</TriggerLabel>
+        <ControlPageLabel>Forecast Low - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreLow2">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Low - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Low - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreLow3">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Low - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Low - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreLow4">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Low - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Low - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHum1">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Humidity - Today</TriggerLabel>
+        <ControlPageLabel>Forecast Humidity - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHum2">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Humidity - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Humidity - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHum3">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Humidity - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Humidity - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreHum4">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Humidity - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Humidity - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="forePop1">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Precipitation - Today</TriggerLabel>
+        <ControlPageLabel>Forecast Precipitation - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="forePop2">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Precipitation - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Precipitation - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="forePop3">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Precipitation - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Precipitation - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="forePop4">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Precipitation - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Precipitation - Day 4</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreWind1">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Wind - Today</TriggerLabel>
+        <ControlPageLabel>Forecast Wind - Today</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreWind2">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Wind - Day 2</TriggerLabel>
+        <ControlPageLabel>Forecast Wind - Day 2</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreWind3">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Wind - Day 3</TriggerLabel>
+        <ControlPageLabel>Forecast Wind - Day 3</ControlPageLabel>
+      </State>
+
+      <State
+        id="foreWind4">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Forecast Wind - Day 4</TriggerLabel>
+        <ControlPageLabel>Forecast Wind - Day 4</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="historyDate">
+        <ValueType>String</ValueType>
+        <TriggerLabel>History - Date</TriggerLabel>
+        <ControlPageLabel>History - Date</ControlPageLabel>
+      </State>
+
+      <State
+        id="historyHigh">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>History - High</TriggerLabel>
+        <ControlPageLabel>History - High</ControlPageLabel>
+      </State>
+
+      <State
+        id="historyLow">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>History - Low</TriggerLabel>
+        <ControlPageLabel>History - Low</ControlPageLabel>
+      </State>
+
+      <State
+        id="historyPop">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>History - Precipitation</TriggerLabel>
+        <ControlPageLabel>History - Precipitation</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="precip_today">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Today Actual</TriggerLabel>
+        <ControlPageLabel>Precipitation - Today Actual</ControlPageLabel>
+      </State>
+
+      <State
+        id="precip_1hr">
+        <ValueType>Float</ValueType>
+        <TriggerLabel>Precipitation - Today Actual (1 hr.)</TriggerLabel>
+        <ControlPageLabel>Precipitation - Today Actual (1 hr.)</ControlPageLabel>
+      </State>
+
+      <State id="separator">
+        <ValueType>Separator</ValueType>
+      </State>
+
+      <State
+        id="locationCity">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wunderground - Location</TriggerLabel>
+        <ControlPageLabel>Wunderground - Location</ControlPageLabel>
+      </State>
+
+      <State
+        id="estimated">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Estimated Conditions</TriggerLabel>
+        <ControlPageLabel>Wunderground - Estimated Conditions</ControlPageLabel>
+      </State>
+
+      <State
+        id="onOffState">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Weather Device State</TriggerLabel>
+        <ControlPageLabel>Wunderground - Weather Device State</ControlPageLabel>
+      </State>
+
+      <State
+        id="stationID">
+        <ValueType>String</ValueType>
+        <TriggerLabel>Wunderground - Station ID</TriggerLabel>
+        <ControlPageLabel>Wunderground - Station ID</ControlPageLabel>
+      </State>
+
+      <State
+        id="weatherSummaryEmailSent">
+        <ValueType>boolean</ValueType>
+        <TriggerLabel>Wunderground - Weather Summary Email Sent</TriggerLabel>
+        <ControlPageLabel>Wunderground - Weather Summary Email Sent</ControlPageLabel>
+      </State>
+
+    </States>
+    <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+  </Device>
+
+</Devices>

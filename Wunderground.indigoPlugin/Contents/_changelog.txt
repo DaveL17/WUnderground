@@ -1,0 +1,643 @@
+WUnderground Plugin - Developed by: DaveL17
+
+v1.0.05
+-
+
+v1.0.04
+- Fixes bug in the Write Weather Data to File routine where the plugin would
+  write only the date/time.
+- Fixes bug in the Write Weather Data to FIle routine where the plugin would
+  only write to Indigo 6 log folder.  Now the plugin tries the Indigo 7 log
+  folder and falls back to Indigo 6 only if needed.
+- Ups the amount of time that the plugin waits for a response from Weather
+  Underground from 15 seconds to 30 seconds (per weather location).
+- Logging refinements.
+
+v1.0.03
+- New plugin setting to ignore updates when weather data are estimated.
+- Implements alternative version of API that includes more stable data
+  structure (hopefully) and native day/night icon names.
+
+v1.0.02
+- Increased protection against defective data from the Weather Underground API.
+- Minor logging updates.
+
+v1.0.01
+- New! Adds solar radiation to Weather Device type (units: W/^2).
+- Fixes a bug for older installs where certain device props were instantiated
+  incorrectly (improves upon change in v0.9.38).
+- Minor changes to debug logging.
+
+v0.9.43
+- Fixes a bug that shows up when WUnderground does not send history data for a
+  weather location.
+
+v0.9.41
+- Fixes a bug that shows up when WUnderground sends a malformed temperature
+  value.
+
+v0.9.39
+- Migrates dynamic plugin settings from Indigo preferences file to custom
+  plugin preferences file (i.e., call count, email sent, etc.)
+- Converts most string substitution operations to .format() method to make way
+  for future enhancements.
+
+v0.9.38
+- Reinstates menu items that were mistakenly deleted in prior update.
+- Better accounts for legacy device types for forecast email settings (where
+  setting was saved as a string instead of a boolean.)
+
+v0.9.37
+- Fixes bug in setting for 'UV' value (broken custom image heuristics.)
+- Fixes bug in setting for 'windGustIcon' value (broken custom image
+  heuristics.)
+- Fixes inaccurate descriptions of detailed forecast items in triggers and
+  control page labels.
+- Improved plugin settings handling.
+
+v0.9.36
+
+- Adds plugin setting to control the decimal precision of wind values.
+- Fixes bug in setting for MPS devices where setting was sometimes over-ridden
+  as KPH.
+- Fixes typo in config dialog for 10 Day Forecast devices (now MPS instead of
+  KPS.)
+
+v0.9.35
+- Ensures that all uiValue assignments are coerced to a string.
+- Refinements to plugin sleep routines.
+- Refinements to device updates to ensure that device instances
+  aren't reloaded unnecessarily.
+- Minor code refinements.
+
+v0.9.34
+- Fixes TypeError where certain values won't float. Fix returns a
+  string value instead of a float.
+- Fixes 'variable undefined' error for some uses of SI wind.
+- Improves plugin configuration validation.
+- Adds window screen error messages to the plugin config dialog.
+- Code refinements.
+
+v0.9.33
+- Consolidates or eliminates some internal control functions that may
+  have caused the Indigo server to get caught in an endless loop
+  (does not impact user-facing functionality.)
+
+v0.9.32
+- Adds Weather Device State for last observation (epoch.)
+- Fixes bug in long wind string where wind gust was reported using
+  wind gust icon data (wrong decimal point placement.)
+- Fixes bug for forecast precipitation units (where units displayed
+  temperature format rather than percentage format - only standard was
+  broken.)
+- Fixes bug for precipitation value when weather station is not online
+  (estimated conditions = True).
+- Fixes bug for email forecast when weather station in not online
+  (estimated conditions = True).
+- More robust error logging.
+
+v0.9.31
+- Additional work on the comparison of yesterday's high to today's.
+
+v0.9.30
+- Revises forecast email data to remove redundant precipitation
+  forecast. Retains forecast QPF.
+- Fixes a bug in comparison of yesterday's high to today's forecast.
+  
+v0.9.29
+- Fixes a bug in precipitation (actual) display value where precip
+  total was being improperly rounded.
+
+v0.9.28
+- Adds an error trap for WU return where history data is called for
+  but is not returned.
+- Adjusts forecast email text to include probability of precipitation
+  for the forecast evening period. This avoids the weirdness where the
+  text would show 0% chance of daytime precipitation and then a non-zero
+  amount of total QPF.
+- Simplified import of datetime module.
+
+v0.9.27
+- Fixes bug in weather device history data when Metric preference
+  selected.
+- Fixes bug in update checker (updates url to use https.)
+- Fixes bug in parsing of tide info (not all arguments converted during
+  string formatting.)
+- Removes all urllib2 hooks since we don't use that anymore.
+- Simplifies code related to the main thread a refresh weather data
+  method, consolidating all code into a single method.
+- Significantly simplifies code for dumping JSON data to the log.
+- Further refines debug logging.
+
+v0.9.26a
+- Hot fix to fix bug in tide parsing. (Global variable tide_summary not
+  defined.)
+
+v0.9.26
+- Fixes bug in email forecast routine causing "Send email error: empty
+  string for float()" error.
+- Properly establishes icons 5-8 in weather device forecast.
+- Fixes bug causing "local variable 'avg_wind_dir_state' referenced
+  before assignment" error.
+- Fixes bug in default download frequency setting.
+- Code refinements.
+
+v0.9.25
+- Doubles the forecast states for standard Weather Devices.
+- Further standardizes Trigger and Action Item labels among devices.
+- Fixes a bug in the definitions of certain devices states.
+
+v0.9.24
+- Hotfix to correct implementation of QPF and Snow forecasts.
+
+v0.9.23
+- Hotfix to correct implementation of QPF and Snow forecasts.
+
+v0.9.22
+- Adds new device states to Hourly Forecast Devices
+  - Quantitative Precipitation Forecast (QPF)
+  - Snow Forecast
+- Expands exception debug logging.
+
+v0.9.21
+- Fixes bug in encoding for Standard Plus Metric display preference.
+- Fixes string format error bug. 
+
+v0.9.20
+- Refines email forecast and adds additional forecast period (i.e.,
+  Monday and now Monday night.)
+- Refines UI notices during plugin refreshes and reloads.
+- Adds Indigo custom device icon enumeration (device list, Indigo
+  Touch, etc.)
+- Code refinements:
+  - Increases compliance with PEP8.
+  - Improves compliance with WU TOS.
+- Fixes minor bug in suppression of severe weather alerts.
+- Fixes minor bug in default plugin setting for debug.
+
+v0.9.19
+- Fixes a bug in the debug routine where reloading the plugin resets
+  the debug level to low.
+
+v0.9.18
+- Fixes bug in hourly forecast parsing.
+
+v0.9.17
+- Fixes another Unicode bug (Unicode element is not callable.)
+
+v0.9.16
+- Fixes Unicode bug (Unicode element is not callable.)
+
+v0.9.15
+- Fixes bug in forecast email method where plugin unable to send email
+  (tuple error.)
+
+v0.9.14
+- Updates email summary to include all units (Metric, Mixed, Mixed SI,
+  Standard)
+- Adds option to suppress severe weather alert logging for individual
+  devices.
+- Fixes bug in email summary configuration parameters where the plugin
+  tries to send email when preference is for none.
+
+v0.9.13
+- New! Adds humidity forecast to all forecast devices (Weather, 10-Day
+  Forecast, 24-Hour Forecast.)
+- New! Provides UI precision control for humidity (affects all weather
+  devices.)
+- New! Receive an optional daily email message with select weather
+  information. This only applies to basic Weather Devices, and must be
+  enabled on a per-device basis.
+- Adds capacity for fifth severe weather alert.
+- Clarifies notification when weather conditions are estimated (rather
+  than actual.)
+- UI refinements.
+- Fixes bug in UI display for Heat Index and Wind Chill (was always 1
+  decimal precision.)
+- Reduces overhead (for speedier operation.)
+
+v0.9.12
+- Adds Mixed SI configuration option for metric values with SI winds
+  (°C and MPS) to Weather, 24 Hour Forecast, 10 Day Forecast devices.
+- Adds forecast rain amount (in. or mm.) and forecast snow amount (in.
+  or cm.) to 10-Day forecast device.
+- Improved handling of communication enabled/disabled event.
+- Improved handling for plugin starts during Indigo server restart
+  (i.e., returning from power loss.)
+- Improved handling for plugin sleeps (for example, when call limit
+  reached or when plugin configuration parameters are not complete.)
+- Improved handling of improperly encoded JSON returns.
+- Fixes bug in reporting of relative humidity (now a float.)
+- Fixes unicode issue in dumpTheXML() method.
+- Code refinements.
+
+v0.9.11
+- Fixes bug in internal call counter.
+- Reduces frequency of automatic check for new plugin version to
+  maximum of once per day (not counting the "Check for Updates Now..."
+  menu item.
+
+v0.9.10
+- Adds option to suppress "no active alerts" log messages.
+- Adds forecast winds to standard weather device.
+- Adds separators to device state lists (triggers, control pages, etc.)
+- Further reduces instances where text is written to the log.
+- Refines presentation of barometric pressure (inches) to always be two
+  decimal points.
+- Refines characterization of device communication status.
+- Refines plugin device model names (shouldn't change existing devices
+  only new ones.)
+- Hammers out some more unicode gremlins.
+
+v0.9.09
+- Adds new WUnderground Almanac Device (average temps, record temps)
+- Fixes bug in current temperature icon routine when API data doesn't
+  fit the standard profile.
+
+v0.9.08 
+- Adds new state to 10 Day Forecast Device that provides a nicely
+  formatted datestamp to use when charting (d01_date, d02_date, ...)
+- Refines layout of plugin menu items.
+- Refines severe weather alert logging.
+- Fixes bug in plugin settings repair code.
+	
+v0.9.07
+- Adds wind direction adjustment (see v0.9.06) for hourly forecast
+  devices.
+
+v0.9.06
+- Adds additional code to account for when API sends bad data (i.e.,
+  if the API sends values that don't meet the API dictionary specs.)
+- Adds additional code to ensure that wind direction values are
+  standardized. This will result in all cardinal wind direction values
+  being words (i.e., North, South, East, West.) Intermediate values
+  should remain abbreviations (i.e., NNW, ENE.)
+- Added Plugin menu item to enable/disable all WU devices.
+- Fixed bug where poll interval was off by 5 seconds.
+- Fixed bug for windchill data in metric installations.
+- Fixed bug in percent illuminated value for astronomy devices.
+
+v0.9.05
+- Fixes unicode bug in history data parse routines.
+- Further standardizes unicode handling.
+
+v0.9.04
+- Adds new state to Hourly Forecast Device that provides a nicely
+  formatted datestamp to use when charting (h01_timeLong,
+  h02_timeLong, ...).
+- Traps instances where Weather Underground returns an empty string
+  when it shouldn't (i.e, returns a null string when a numeric value
+  is expected.)
+- Refines fixCorruptedData() method.
+- Fixes unicode bug that could cause a fail with certain combinations
+  of settings.
+
+v0.9.03
+- Adds state to Weather Device to support control page image selection
+  heuristics for:
+	- Temperature (F and C) -- values are rounded to nearest degree.
+- Adds internal logic to test the plugin preferences file, and attempts
+  to repair it if something is wrong.
+- Cleans up new Unicode gremlins.
+	
+v0.9.02
+- Fixes the v0.9.01 fix. <grin>
+
+v0.9.01
+- Fixes invalid literal for int() with base 10 from v0.9.0.
+
+v0.9.0
+- New! Astronomy Device type.
+- New! WUnderground now queries once per location rather than once per
+  device (substantially reducing the number of API calls.)
+- New attributes for existing devices.
+	- Adds states to Weather Device to support control page image
+      selection heuristics for:
+	  - Barometric Pressure (30.19 in. -> 3019 in., mb is no change)
+        i.e., image+3019.png
+	  - Wind Speed (2.4 -> 24, 24.5 -> 245) i.e., image+245.png
+	  - Wind Gust (2.4 -> 24, 24.5 -> 245) i.e., image+245.png
+	- Adds long and short states comparing today's forecast to
+      yesterday's actual temperature to support statements like:
+      "Today's forecast is going to be warmer than yesterday."
+	- Adds support for designation of device type icons in Indigo
+      UI in anticipation of Indigo 6.1 and Indigo Touch 2.
+- Bug fixes.
+	- Fixes bug where wind chill could not be used as trigger.
+- Code refinements.
+	- Implements a new handler for reaching out for data (thereby
+      eliminating the "invalid literal for base 16() error")
+      Thanks Rick!
+	- Reduces the footprint of the data written to log file.
+	- Reduces the number of global variables.
+	- Simplifies debug code.
+- User interface enhancements and bug corrections.
+	- Reduces the amount of text in instructions (favoring help
+      bubbles.)
+	- Corrects some typos.
+
+v0.8.02
+- Fixes 'Plugin' object has no attribute 'parsed_simplejson' error.
+
+v0.8.01
+- Fix for 'int + unicode' error.
+
+v0.8.0
+- New! Satellite Image Downloader.
+- New! Ten Day Forecasts.
+- New! Day/Night icon names for Hourly Forecast Devices.
+- New! Wind speed and wind direction for Hourly Forecast Devices.
+- More logical labeling of device status in Indigo UI (for example,
+  when server can't be reached, leave disabled devices marked as
+  "Disabled.")
+- Strips trailing carriage returns from weather alert message (cuts
+  down on log space used.)
+- Eliminates (erroneously created forecast states (5-7) for some
+  Weather Device states.
+- Standardizes Trigger and Control Page labels across all device types.
+- Code enhancements including:
+	- Eliminates the convStr() method.
+	- Changes fixPrecipitation() method into fixCorruptedData() method
+      to allow for additional fields to be accounted for. We'll start
+      with wind speed and wind direction (values -999.0 and -9999.0.)
+	- Better handling of instances where Weather Underground provides
+      data that is not in the expected format (i.e., when it provides
+      the string "NA" instead of a number.)
+	- Enhanced code labeling and documentation.
+
+v0.7.19
+- Yet more unicode gremlins.
+
+v0.7.18
+- Irons out some bugs in Unicode handling.
+
+v0.7.17
+- Fixes bug with visibility when value returned is non-numeric.
+
+v0.7.16
+- Fixes bug in how certain device states were being stored by the
+  plugin (i.e., value type such as string, real, etc.)
+- As usual, some code refinements.
+
+v0.7.15
+- Fixes bug in device settings validation method.
+
+v0.7.14
+- Configuration preferences testing improved.
+- More elegant handling of "query not found" responses.
+- Cleans out certain data elements after cycle to help ensure minimized
+  resource usage.
+
+v0.7.13
+- Adds device state for estimated conditions.
+- Code refinements.
+
+v0.7.12
+- New plugin menu item to dump weather data to a log file. Caution: can
+  be very long output and will result in a call to the API for each
+  enabled device. In testing, three weather devices was 20,000 lines
+  (1.4 MB).
+- Adjusts uiTempFormat when none type received.
+
+v0.7.11
+- Fixes bug in weather parse function for new device instances.
+
+v0.7.10
+- New: Now rounds temperature values to the nearest whole degree when
+  the temperature precision is set to zero decimal places. (71.9°
+  becomes 72° instead of 71° as it has been.)
+- Major code simplification and consolidation (more than 500 fewer
+  lines of code.)
+- Moves some code segments to distinct methods (alerts, forecasts.)
+- (Re)fixes bug in help url (invalid token error.)
+
+v0.7.09
+- Fixes bug in forecast parsing and expands the number of periods
+  reported.
+- Fixes bug in alertStatus logic.
+
+v0.7.08
+- Adds new device for tide data.
+- Refines plugin device names, trigger labels and control page labels.
+
+v0.7.07
+- Updates hourly forecast device address field with station ID.
+- Catches exceptions where Weather Underground returns an unexpected
+  None Type.
+- Debug logging refinements.
+
+v0.7.06
+- Adds hourly forecast time stamp as a state for hourly forecast
+  devices.
+- Fixes 'Refresh Data Now" menu item and action item to account for new
+  hourly forecast device type.
+
+v0.7.05
+- Adds new device for hourly forecast data (24 hours).
+- Adds new device states for forecast text.
+- Strip leading carriage return from alert messages.
+- Fixes unicode bug in severe weather alerts.
+- Misc. code refinements.
+
+v0.7.03
+- Fixes a problem with plugin package naming structure that can cause
+  problems in some installations.
+
+v0.7.02
+- Further refinement of error tracking.
+
+v0.7.01
+- UI refinements.
+- Enhanced error tracking.
+- Fixes bug in temperature formatting.
+
+v0.7.0
+- Adds menu item to refresh weather information on demand (all devices).
+- Adds action item to refresh weather information (all devices).
+- Adds states for yesterday's high, low and precip level. Still a work
+  in progress...
+- Adds debug logging levels (Low, Medium, High):
+	- Low = minimal logging.
+	- Medium = all debug logging _except_ sensitive and identifying
+      information.
+	- High = includes sensitive and identifying information (API Key,
+      location, email, etc.)
+- Makes plugin preference calls more robust.
+- Declutterfy plugin and device configuration dialogs.
+- Refines control page and trigger labels.
+- Refines WUnderground version numbering to adhere to Indigo version
+  control.
+
+v0.6.32
+- Fixed bug in updater key creation for new installations.
+
+v0.6.31
+- Fixed bug in call counter to account for older installations.
+- Refined control page labels (may not take effect until next reboot.)
+
+v0.6.3
+- Improved call counter logic.
+- Even more robust debug output.
+
+v0.6.2
+- Added more robust debug output.
+
+v0.6.1
+- Moved code that parses weather data to devices into its own method.
+- Fixes bug in temperature display caused by inclusion of Mixed units.
+
+v0.6.01
+- Fixes bug in callCounter for older implementations.
+
+v0.6.0
+- Rewrite of code that reaches out to Weather Underground.
+- Adds 'Mixed Units' as an option for weather devices (temp values
+  Metric, and the rest Imperial.)
+- Adds a metric long string for wind (which WU doesn't provide.) 
+	. "From the North at 2 KPH Gusting to 5 KPH."
+	. Only used when user preference is Metric. Otherwise, an empty
+      string.
+- Alerts user in the log if the number of severe weather alerts exceeds
+ the number tracked by the plugin (more than 4.)
+- Logs attribution for European weather alerts per Weather Underground
+  TOS.
+- Hides email address field if plugin update notification set to "No".
+- Fixes bug in call counter for some implementations.
+- Various code refinements.
+
+v0.5.4
+- More standardized Unicode usage.
+
+v0.5.3
+- Fixes error unicode error in deviceStartComm() and deviceStopComm().
+
+v0.5.2
+- Fixed error when WU history data not available.
+- Fixed "Pending" and "index out of range" issues.
+
+v0.5.1
+- Fixed bug when daily call counter is first established.
+
+v0.5.0
+- Added support for lat,long for location.
+- Added support for automatic IP detection for location.
+- Added device states for:
+	- Alert type code.
+	- UV.
+	- Wind direction (degrees).
+	- Wind gust.
+- Supports Indigo Communication Enable/Disable.
+- Enhanced error handling for config menu preferences.
+- Enhanced error handling for when no devices present or devices not
+  configured.
+- Enhanced device state handling to clean device dictionary as needed.
+- Refined plugin naming.
+- Catch Python bug with unsuccessful json downloads.
+- Fixed bug in writing alerts to states when alert logging is enabled.
+- Devices.xml housekeeping.
+- PluginConfig.xml housekeeping.
+- Plugin.py housekeeping.
+- Various UI refinements.
+
+v0.4.4
+- Fixed bug in plugin variable creation.
+
+v0.4.3
+- Added support for ICAO airport stations.
+- Improved logic for call counter method.
+- Fixed bug in plugin variable creation (or so I thought.)
+- Code refinements.
+
+v0.4.2
+- Added feature to track the number of daily calls to Weather 
+  Underground.
+- Language support!
+- Fixed minor bug to update plugin prefs debug toggle when user selects
+  'Toggle Debugging' menu item.
+- Fixed bug in metric heatIndex uiValue.
+- Code refinements.
+
+v0.4.1
+- Added location to log entries for alert counts (to distinguish
+  between multiple locations.)
+- Added alert text to device state.
+- Added user setting (plugin) to enable/disable severe weather alert
+  logging.
+- Added user setting (plugin) for Item List temperature display
+  precision.
+- Added user setting (device) for ui.Value display precision.
+- Added more robust logic for precipitation values.
+- Greater consistency for tooltip language.
+- Improved logic to ensure that expired alerts are deleted.
+- Fixed minor bug in default setting for UI temperature display.
+- Fixed minor bug in parsing of US severe weather alerts.
+- Code refinements.
+
+v0.4.0
+- Added option to control Item List display of temperature(s).
+- Added more granular control over state value units (for control
+  pages, etc.)
+- Added update of Item List of "No comm." when WU can't be reached.
+- Added log entry for the number of severe weather alerts.
+- Added stationID value to Indigo address field.
+- Added support for relative humidity without percent sign in device
+  state (adds it back in for UI value.)
+- Added support for automatic plugin update notification.
+- Added 10 minute refresh option.
+- Fixed bug where potential fourth severe weather alert may not be
+  reported.
+- Fixed bug where barometric pressure trend improperly reported.
+- Fixed bug where station returns non-numeric precipitation values.
+- Fixed alert status trigger and control page labels.
+- Fixed traceback on simplejson when no comms present.
+- Still more code refinements.
+
+v0.3.8
+- Fixed bug where fractional rainfall amounts were rounded to zero.
+
+V0.3.7
+- Fixed alert status trigger and control page labels.
+- Removed some elements of the code that changed information that WU
+  provides (i.e., °) 
+- Minor UI refinements.
+- Minor code refinements.
+
+v0.3.61
+- Fixed nasty bug in severe weather alert handling.
+
+v0.3.6
+- Added more stable severe weather alert handling.
+- Corrected 1 hour precipitation trigger and control page labels.
+
+v0.3.5
+- Fixed bug that caused metric forecasts to be overwritten by
+  Fahrenheit values.
+- Fixed bug that caused some installations to fail on ascii encoding.
+
+v0.3.4
+- Added support for 1 hour precipitation reporting.
+- Added 30 minute refresh option.
+- Laid some groundwork for more robust severe weather alert handling.
+- Fixed bug that sometimes forced full sleep refresh when iterating
+  locations when multiple weather devices are present.
+- Updated help URL.
+
+v0.3.3
+- Improved method logic.
+- Refined Trigger and Control Page labels.
+- Fixed nasty tight loop bug.
+- Fixed mislabeled device menu.
+- Fixed mislabeled UI temperature units.
+
+v0.3.2
+- Fixed bug with icon names.
+- Fixed float conversion exception (convStr).
+- Provision for day/night and all-day icon names.
+- Expanded debug message logging.
+
+2014 03 19 v0.3.1
+- Initial include of device prop for standard or metric.
+- Bug fixes.
+
+2014 03 18 v0.3.0
+- Initial plugin version worthy of public alpha.

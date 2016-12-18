@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Actions>
+  <SupportURL>http://forums.indigodomo.com/viewtopic.php?t=11726&amp;f=134</SupportURL>
+  <Action id="refreshWeatherData">
+    <Name>Refresh Weather Data</Name>
+    <CallbackMethod>refreshWeatherAction</CallbackMethod>
+  </Action>
+</Actions>
