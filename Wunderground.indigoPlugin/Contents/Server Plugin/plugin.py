@@ -122,7 +122,7 @@ class Plugin(indigo.PluginBase):
         self.wuOnline          = True
 
         # Initialize plugin updater variables.
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://dl.dropboxusercontent.com/u/2796881/wunderground_version.html")
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
 
         # Lays the groundwork for moving dynamic plugin settings from Indigo preferences file to a plugin config.json file.
         # Load the default settings when the plugin is initialized.
