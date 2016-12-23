@@ -1,62 +1,35 @@
 <?xml version="1.0"?>
 <PluginConfig>
-  <Field
-    id = "infoLabel00"
-    type = "label"
-    fontSize = "large">
+  <Field id = "infoLabel00" type = "label" fontSize = "large">
     <Label>WUnderground Plugin</Label>
   </Field>
 
-  <Field
-    id = "space00"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space00" type = "label" fontSize = "small">
     <Label>Developed by DaveL17</Label>
   </Field>
 
-  <Field
-    id = "termsOfService"
-    type = "label"
-    fontSize = "mini">
+  <Field id = "termsOfService" type = "label" fontSize = "mini">
     <Label>Data provided by Weather Underground, LLC. This plugin and its author are in no way affiliated with Weather Underground.</Label>
   </Field>
 
-  <Field
-    id = "separator00"
-    type = "separator"/>
+  <Field id = "separator00" type = "separator"/>
 
-  <Field
-    id = "showPluginSettings"
-    type = "checkbox"
-    tooltip = "Check to show plugin settings.">
+  <Field id = "showPluginSettings" type = "checkbox" tooltip = "Check to show plugin settings.">
     <Label>Plugin Settings:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "space01"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space01" type = "label" fontSize = "small">
     <Label>The plugin requires an API key to retrieve data from Weather Underground.</Label>
   </Field>
 
-  <Field
-    id = "apiKey"
-    type = "textfield"
-    defaultValue = "apiKey"
-    visibleBindingId = "showPluginSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please enter the Weather Underground API Key (required).">
+  <Field id = "apiKey" type = "textfield" defaultValue = "apiKey" visibleBindingId = "showPluginSettings" visibleBindingValue = "true"
+         tooltip = "Please enter the Weather Underground API Key (required).">
     <Label>API key:</Label>
   </Field>
 
-  <Field
-    id = "language"
-    type = "menu"
-    defaultValue = "EN"
-    visibleBindingId = "showPluginSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please select the desired language. Controls data returned from Weather Underground.">
+  <Field id = "language" type = "menu" defaultValue = "EN" visibleBindingId = "showPluginSettings" visibleBindingValue = "true"
+         tooltip = "Please select the desired language. Controls data returned from Weather Underground.">
     <Label>Language:</Label>
     <List>
       <Option value = "F">Afrikaans</Option>
@@ -144,32 +117,19 @@
     </List>
   </Field>
 
-  <Field
-    id = "separator01"
-    type = "separator"/>
+  <Field id = "separator01" type = "separator"/>
 
-  <Field
-    id = "showDownloadSettings"
-    type = "checkbox"
-    tooltip = "Check to show download settings.">
+  <Field id = "showDownloadSettings" type = "checkbox" tooltip = "Check to show download settings.">
     <Label>Download Settings:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "space02"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space02" type = "label" fontSize = "small">
     <Label>Controls how often the plugin will reach out to Weather Underground, and the daily limit for the number of downloads.</Label>
   </Field>
 
-  <Field
-    id = "downloadInterval"
-    type = "menu"
-    defaultValue = "900"
-    visibleBindingId = "showDownloadSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please enter the desired frequency for data downloads.">
+  <Field id = "downloadInterval" type = "menu" defaultValue = "900" visibleBindingId = "showDownloadSettings" visibleBindingValue = "true"
+         tooltip = "Please enter the desired frequency for data downloads.">
     <Label>Interval:</Label>
     <List>
       <Option value = "300">5 Minutes</Option>
@@ -183,53 +143,30 @@
     </List>
   </Field>
 
-  <Field
-    id = "callCounter"
-    type = "textfield"
-    defaultValue = "500"
-    visibleBindingId = "showDownloadSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please enter the maximum number of WU calls for your plan. The base developer plan is 500 downloads per day.">
+  <Field id = "callCounter" type = "textfield" defaultValue = "500" visibleBindingId = "showDownloadSettings" visibleBindingValue = "true"
+         tooltip = "Please enter the maximum number of WU calls for your plan. The base developer plan is 500 downloads per day.">
     <Label>Limit:</Label>
   </Field>
 
-  <Field
-    id = "ignoreEstimated"
-    type = "checkbox"
-    defaultValue = "false"
-    visibleBindingId = "showDownloadSettings"
-    visibleBindingValue = "true"
-    tooltip = "If checked, the plugin will not update weather data if Weather Underground reports that the data are estimated.">
+  <Field id = "ignoreEstimated" type = "checkbox" defaultValue = "false" visibleBindingId = "showDownloadSettings" visibleBindingValue = "true"
+         tooltip = "If checked, the plugin will not update weather data if Weather Underground reports that the data are estimated.">
     <Label> </Label>
     <Description>Skip Update if Estimated</Description>
   </Field>
 
-  <Field
-    id = "separator02"
-    type = "separator"/>
+  <Field id = "separator02" type = "separator"/>
 
-  <Field
-    id = "showTemperatureSettings"
-    type = "checkbox"
-    tooltip = "Check to show value precision settings.">
+  <Field id = "showTemperatureSettings" type = "checkbox" tooltip = "Check to show value precision settings.">
     <Label>Value Precision:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "space03"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space03" type = "label" fontSize = "small">
     <Label>Controls the precision of certain values displayed by Indigo.</Label>
   </Field>
 
-  <Field
-    id = "itemListTempDecimal"
-    type = "menu"
-    defaultValue = "1"
-    visibleBindingId = "showTemperatureSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please select the desired number of decimal places to display for temperature values in the item list (main list of Indigo devices.)">
+  <Field id = "itemListTempDecimal" type = "menu" defaultValue = "1" visibleBindingId = "showTemperatureSettings" visibleBindingValue = "true"
+         tooltip = "Please select the desired number of decimal places to display for temperature values in the item list (main list of Indigo devices.)">
     <Label>Item List (temperature):</Label>
     <List>
       <Option value = "0">0 decimal places</Option>
@@ -237,13 +174,8 @@
     </List>
   </Field>
 
-  <Field
-    id = "uiTempDecimal"
-    type = "menu"
-    defaultValue = "1"
-    visibleBindingId = "showTemperatureSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please select the desired number of decimal places to display for temperature values in control pages.">
+  <Field id = "uiTempDecimal" type = "menu" defaultValue = "1" visibleBindingId = "showTemperatureSettings" visibleBindingValue = "true"
+         tooltip = "Please select the desired number of decimal places to display for temperature values in control pages.">
     <Label>UI Value (temperature):</Label>
     <List>
       <Option value = "0">0 decimal places</Option>
@@ -251,13 +183,8 @@
     </List>
   </Field>
 
-  <Field
-    id = "uiHumidityDecimal"
-    type = "menu"
-    defaultValue = "1"
-    visibleBindingId = "showTemperatureSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please select the desired number of decimal places to display for humidity values in control pages.">
+  <Field id = "uiHumidityDecimal" type = "menu" defaultValue = "1" visibleBindingId = "showTemperatureSettings" visibleBindingValue = "true"
+         tooltip = "Please select the desired number of decimal places to display for humidity values in control pages.">
     <Label>UI Value (humidity):</Label>
     <List>
       <Option value = "0">0 decimal places</Option>
@@ -265,13 +192,8 @@
     </List>
   </Field>
 
-  <Field
-    id = "uiWindDecimal"
-    type = "menu"
-    defaultValue = "1"
-    visibleBindingId = "showTemperatureSettings"
-    visibleBindingValue = "true"
-    tooltip = "Please select the desired number of decimal places to display for wind values in control pages.">
+  <Field id = "uiWindDecimal" type = "menu" defaultValue = "1" visibleBindingId = "showTemperatureSettings" visibleBindingValue = "true"
+         tooltip = "Please select the desired number of decimal places to display for wind values in control pages.">
     <Label>UI Value (wind):</Label>
     <List>
       <Option value = "0">0 decimal places</Option>
@@ -279,115 +201,65 @@
     </List>
   </Field>
 
-  <Field
-    id = "separator03"
-    type = "separator"/>
+  <Field id = "separator03" type = "separator"/>
 
-  <Field
-    id = "showAlertSettings"
-    type = "checkbox"
-    tooltip = "Check to show alert logging settings.">
+  <Field id = "showAlertSettings" type = "checkbox" tooltip = "Check to show alert logging settings.">
     <Label>Alert Logging:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "space04"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space04" type = "label" fontSize = "small">
     <Label>Controls whether the plugin will write severe weather alert information to the log.</Label>
   </Field>
 
-  <Field
-    id = "alertLogging"
-    type = "checkbox"
-    defaultValue = "false"
-    visibleBindingId = "showAlertSettings"
-    visibleBindingValue = "true"
-    tooltip  =  "Enables (disables) logging of severe weather alerts. Checking this box means that you do want to see severe weather alerts in the log. This setting applies to all weather devices.">
+  <Field id = "alertLogging" type = "checkbox" defaultValue = "false" visibleBindingId = "showAlertSettings" visibleBindingValue = "true"
+         tooltip  =  "Enables (disables) logging of severe weather alerts. Checking this box means that you do want to see severe weather alerts in the log. This setting applies to all weather devices.">
     <Label>Log active alert messages:</Label>
     <Description>Check to enable.</Description>
   </Field>
 
-  <Field
-    id = "noAlertLogging"
-    type = "checkbox"
-    defaultValue = "false"
-    visibleBindingId = "showAlertSettings"
-    visibleBindingValue = "true"
-    tooltip  =  "Hides (shows) log message when there are no severe weather alerts. Checking this box means that you do not want to see these messages in the log. This setting applies to all weather devices.">
+  <Field id = "noAlertLogging" type = "checkbox" defaultValue = "false" visibleBindingId = "showAlertSettings" visibleBindingValue = "true"
+         tooltip  =  "Hides (shows) log message when there are no severe weather alerts. Checking this box means that you do not want to see these messages in the log. This setting applies to all weather devices.">
     <Label>Hide "No Alert" messages:</Label>
     <Description>Check to enable.</Description>
   </Field>
 
-  <Field
-    id = "separator04"
-    type = "separator"/>
+  <Field id = "separator04" type = "separator"/>
 
-  <Field
-    id = "showNotificationSettings"
-    type = "checkbox"
-    tooltip = "Check to show update notification settings.">
+  <Field id = "showNotificationSettings" type = "checkbox" tooltip = "Check to show update notification settings.">
     <Label>Update Notification:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "space05"
-    type = "label"
-    fontSize = "small">
+  <Field id = "space05" type = "label" fontSize = "small">
     <Label>Receive an email alerting you to plugin updates. This sends email through Indigo, so this option must be configured as well. You can also elect to receive a daily weather summary via email (enable in weather device settings.) </Label>
   </Field>
 
-  <Field
-    id = "updaterEmailsEnabled"
-    type = "checkbox"
-    defaultValue = "false"
-    visibleBindingId = "showNotificationSettings"
-    visibleBindingValue = "true"
-    tooltip  =  "Enables (disables) email notifications.">
+  <Field id = "updaterEmailsEnabled" type = "checkbox" defaultValue = "false" visibleBindingId = "showNotificationSettings" visibleBindingValue = "true"
+         tooltip  =  "Enables (disables) email notifications.">
     <Label> </Label>
     <Description>Enable/Disable</Description>
   </Field>
 
-  <Field
-    id = "updaterEmail"
-    type = "textfield"
-    visibleBindingId = "updaterEmailsEnabled"
-    visibleBindingValue = "true"
-    tooltip = "Please enter the email address to receive notifications of updates to the plugin.">
+  <Field id = "updaterEmail" type = "textfield" visibleBindingId = "updaterEmailsEnabled" visibleBindingValue = "true"
+         tooltip = "Please enter the email address to receive notifications of updates to the plugin.">
     <Label>Email address:</Label>
   </Field>
 
-  <Field
-    id = "separator05"
-    type = "separator"/>
+  <Field id = "separator05" type = "separator"/>
 
-  <Field
-    id = "showDebugSettings"
-    type = "checkbox"
-    tooltip = "Check to show debug settings.">
+  <Field id = "showDebugSettings" type = "checkbox" tooltip = "Check to show debug settings.">
     <Label>Debugging:</Label>
     <Description>Show/Hide</Description>
   </Field>
 
-  <Field
-    id = "showDebugInfo"
-    type = "checkbox"
-    visibleBindingId = "showDebugSettings"
-    visibleBindingValue = "true"
-    tooltip = "Enabling will result in verbose logging.">
+  <Field id = "showDebugInfo" type = "checkbox" visibleBindingId = "showDebugSettings" visibleBindingValue = "true" tooltip = "Enabling will result in verbose logging.">
     <Label> </Label>
     <Description>Enable/Disable</Description>
   </Field>
 
-  <Field
-    id = "showDebugLevel"
-    type = "menu"
-    defaultValue = "1"
-    visibleBindingId = "showDebugSettings"
-    visibleBindingValue = "true"
-    tooltip = "Controls the amount of debug information written to the log.">
+  <Field id = "showDebugLevel" type = "menu" defaultValue = "1" visibleBindingId = "showDebugSettings" visibleBindingValue = "true"
+         tooltip = "Controls the amount of debug information written to the log.">
     <Label>Debug level:</Label>
     <List>
       <Option value = "1">Low</Option>
@@ -396,12 +268,7 @@
     </List>
   </Field>
 
-  <Field
-    id = "space06"
-    type = "label"
-    visibleBindingId = "showDebugSettings"
-    visibleBindingValue = "true"
-    fontSize = "small">
+  <Field id = "space06" type = "label" visibleBindingId = "showDebugSettings" visibleBindingValue = "true" fontSize = "small">
 	<Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.
 
   Low = Minimal debugging.

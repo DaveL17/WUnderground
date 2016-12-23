@@ -84,7 +84,7 @@ except ImportError:
 __author__ = "DaveL17"
 __build__ = ""
 __copyright__ = "Copyright 2016 DaveL17"
-__license__ = ""
+__license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
 __version__ = "1.0.05"
 

@@ -1,7 +1,7 @@
 WUnderground Plugin - Developed by: DaveL17
 
 v1.0.05
--
+- Moves project to GitHub and increments version number.
 
 v1.0.04
 - Fixes bug in the Write Weather Data to File routine where the plugin would
