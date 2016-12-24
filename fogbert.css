@@ -1,5 +1,10 @@
+div {
+    background-color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+}
 body {
-    background-color: #000000;
+    background-color: black;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 32px;
 }
@@ -11,8 +16,11 @@ code {
     font-weight: normal;
     padding: 2px;
 }
+footer {
+    display: block;
+}
 h1 {
-    background-color: #330099;
+    background: #330099;
     border: 1px solid #777777;
     color: white;
     font-family: Arial, Helvetica, sans-serif;
@@ -51,5 +59,8 @@ ul {
 .TextWrap {
     float: right;
     margin: 10px;
-    border-color: #777777;
+}
+.TextWrapLeft {
+    float: left;
+    margin: 10px;
 }
