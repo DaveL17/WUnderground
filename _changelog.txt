@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.06
+- Moves support URL to Github.
+- Code refinements.
+
 v1.0.05
 - Moves project to GitHub and increments version number.
 

@@ -1,38 +1,38 @@
 <?xml version="1.0"?>
 <MenuItems>
 
-  <MenuItem id="killAllComms">
-  	<Name>Disable All WU Devices</Name>
-  	<CallbackMethod>killAllComms</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="killAllComms">
+        <Name>Disable All WU Devices</Name>
+        <CallbackMethod>killAllComms</CallbackMethod>
+    </MenuItem>
 
-  <MenuItem id="unkillAllComms">
-  	<Name>Enable All WU Devices</Name>
-  	<CallbackMethod>unkillAllComms</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="unkillAllComms">
+        <Name>Enable All WU Devices</Name>
+        <CallbackMethod>unkillAllComms</CallbackMethod>
+    </MenuItem>
 
-  <MenuItem id="titleSeparator" type="separator" />
+    <MenuItem id="titleSeparator" type="separator"/>
 
-  <MenuItem id="refreshWeatherData">
-  	<Name>Refresh Data Now...</Name>
-  	<CallbackMethod>refreshWeatherData</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="refreshWeatherData">
+        <Name>Refresh Data Now...</Name>
+        <CallbackMethod>refreshWeatherData</CallbackMethod>
+    </MenuItem>
 
-  <MenuItem id="dumpTheXML">
-  	<Name>Write Weather Data to File...</Name>
-  	<CallbackMethod>dumpTheJSON</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="dumpTheXML">
+        <Name>Write Weather Data to File...</Name>
+        <CallbackMethod>dumpTheJSON</CallbackMethod>
+    </MenuItem>
 
-  <MenuItem id="titleSeparator1" type="separator" />
+    <MenuItem id="titleSeparator1" type="separator"/>
 
-  <MenuItem id="checkForUpdates">
-  	<Name>Check for Plugin Updates...</Name>
-  	<CallbackMethod>checkVersionNow</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="checkForUpdates">
+        <Name>Check for Plugin Updates...</Name>
+        <CallbackMethod>checkVersionNow</CallbackMethod>
+    </MenuItem>
 
-  <MenuItem id="toggleDebug">
-  	<Name>Toggle Debugging</Name>
-  	<CallbackMethod>toggleDebugEnabled</CallbackMethod>
-  </MenuItem>
+    <MenuItem id="toggleDebug">
+        <Name>Toggle Debugging</Name>
+        <CallbackMethod>toggleDebugEnabled</CallbackMethod>
+    </MenuItem>
 
 </MenuItems>

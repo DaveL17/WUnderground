@@ -66,6 +66,7 @@ http://www.wunderground.com/weather/api/d/terms.html.
 # TODO: Minimize the number of 'get' statements -- i.e., self.pluginPrefs.get()
 # TODO: Snappy menus.)
 # TODO: Move weather summary sent to config.json
+# TODO: Look at localization.  Haavarda talked about "5 period 4" degrees (dot vs. comma)
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -83,10 +84,10 @@ except ImportError:
 
 __author__ = "DaveL17"
 __build__ = ""
-__copyright__ = "Copyright 2016 DaveL17"
+__copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.05"
+__version__ = "1.0.06"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -95,20 +96,21 @@ kDefaultPluginSettings = {
 }
 kDefaultPluginPrefs = {
     u'alertLogging': False,         # Write severe weather alerts to the log?
-    u'noAlertLogging': False,       # Suppresses "no active alerts" logging.
     u'apiKey': "",                  # WU requires the api key.
     u'callCounter': 500,            # WU call limit based on UW plan.
     u'downloadInterval': 900,       # Frequency of weather updates.
     u'itemListTempDecimal': 1,      # Precision for Indigo Item List.
     u'language': "EN",              # Language for WU text.
-    u'updaterEmail': "",            # Email to notify of plugin updates.
+    u'noAlertLogging': False,       # Suppresses "no active alerts" logging.
     u'showDebugInfo': False,        # Verbose debug logging?
     u'showDebugLevel': 1,           # Low, Medium or High debug output.
     u'uiHumidityDecimal': 1,        # Precision for Indigo UI display (humidity).
     u'uiTempDecimal': 1,            # Precision for Indigo UI display (temperature).
     u'uiWindDecimal': 1,            # Precision for Indigo UI display (wind).
+    u'updaterEmail': "",            # Email to notify of plugin updates.
     u'updaterEmailsEnabled': False  # Notification of plugin updates wanted.
 }
+
 log_line = (u"=" * 98)
 pad_log  = u"{0}{1}".format('\n', " " * 34)  # 34 spaces to align with log margin.
 
