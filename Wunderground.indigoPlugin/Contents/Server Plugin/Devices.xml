@@ -63,6 +63,12 @@
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
             </State>
 
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
+            </State>
+
             <State id="currentObservationEpoch">
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
@@ -212,6 +218,12 @@
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+            </State>
+
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
             </State>
 
             <State id="currentObservationEpoch">
@@ -422,6 +434,12 @@
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+            </State>
+
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
             </State>
 
             <State id="currentObservationEpoch">
@@ -2394,6 +2412,12 @@
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
             </State>
 
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
+            </State>
+
             <State id="currentObservationEpoch">
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time (Epoch)</TriggerLabel>
@@ -3231,6 +3255,12 @@
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+            </State>
+
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
             </State>
 
             <State id="currentObservationEpoch">
@@ -4169,6 +4199,12 @@
                 <ValueType>String</ValueType>
                 <TriggerLabel>Current Conditions - Observation Time</TriggerLabel>
                 <ControlPageLabel>Current Conditions - Observation Time</ControlPageLabel>
+            </State>
+
+            <State id="currentObservation24hr">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Observation Time (24 Hour)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Observation Time (24 Hour)</ControlPageLabel>
             </State>
 
             <State id="currentObservationEpoch">

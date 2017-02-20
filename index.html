@@ -159,7 +159,7 @@
 </ul>
 
 <h3>Actions</h3>
-<p>There is one action defined within the plugin.
+<p>The WUnderground Plugin supports the following actions.
 <ul>
     <li><span>&nbsp;Refresh Weather Data&nbsp;</span> - Invoking the refresh weather data action will force all WUnderground devices to update immediately, and this will result in one
         complete API call for each location specified.
@@ -167,12 +167,35 @@
     <br>
 </ul>
 <h3>Triggers</h3>
-<p>There are currently no triggers defined within the plugin.
+<img class="TextWrap" src="img/img_weather_location_offline.png">
+<p>The WUnderground Plugin supports the following triggers.
 <ul>
-    <li><span>&nbsp;Refresh Weather Data&nbsp;</span> - Invoking the refresh weather data action will force all WUnderground devices to update immediately, and this will result in one
-        complete API call for each location specified.
+    <li><span>&nbsp;Severe Weather Alerts&nbsp;</span> - <strong>BETA!</strong> You can create a trigger that will fire whenever a weather location reports at least one severe weather
+        alert (if your weather location and source support severe weather alerts). Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you have
+        weather stations updating every 5 minutes, the trigger will fire every 5 minutes. There are ways to limit the number of times that the trigger will fire, however. Perhaps, an
+        example...<br><br>
+
+        First, create a variable called "WU_Site_Alert" and set the initial value of the variable as false. Next, create a new Severe Weather Alert trigger and select the location to
+        monitor. Set a condition to only fire the trigger when the variable WU_Site_Alert is false. Then, under actions, make the first action a Modify Variable action that sets the
+        WU_Site_Alert variable to true. This way, your trigger will fire the first time your weather site goes offline and then will not fire again until you reset the value of the
+        WU_Site_Alert variable to false. Then, enter any other actions that you want the trigger to take when a weather location reports an alert. For example, you could send a
+        notification by text or email, turn off certain systems, or whatever. You could then create another trigger that sets the variable back to false if the alert status is also
+        false. If you use this approach, you will need a separate variable for each location trigger.<br><br>
     </li>
-    <br>
+    <li><span>&nbsp;Weather Location Offline&nbsp;</span> - <strong>BETA!</strong> Occasionally, a weather site will go offline or otherwise stop updating. You can use the Weather
+        Location Offline trigger to notify you of an offline condition or cause other things to happen within Indigo. The plugin uses the custom state "currentObservationEpoch" to
+        determine whether a site should be considered offline. It converts the time to the local timezone and compares that to the current local time. If the difference is equal to or
+        greater than the value entered into the trigger settings, the trigger will fire. Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you
+        have weather stations updating every 5 minutes, the trigger will fire every 5 minutes. There are ways to limit the number of times that the trigger will fire, however. Perhaps,
+        an example...<br><br>
+
+        First, create a variable called "WU_Site_Offline" and set the initial value of the variable as false. Next, create a new Weather Location Offline trigger and enter (1) the number
+        of minutes to wait before considering a site to be offline (the default is an hour), and (2) the location to monitor. Set a condition to only fire the trigger when the variable
+        WU_Site_Offline is false. Then, under actions, make the first action a Modify Variable action that sets the WU_Site_Offline variable to true. This way, your trigger will fire the
+        first time your weather site goes offline and then will not fire again until you reset the value of the WU_Site_Offline variable to false. Then, enter any other actions that you
+        want the trigger to take when a weather location goes offline. For example, you could send a notification by text or email, turn off sprinkler systems, or whatever. If you use
+        this approach, you will need a separate variable for each location trigger.<br>
+    </li>
 </ul>
 <h3>Menu Items</h3>
 <img class="TextWrap" src="img/img_pluginMenuItems.png">

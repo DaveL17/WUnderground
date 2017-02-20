@@ -1,6 +1,18 @@
 WUnderground Plugin - Developed by: DaveL17
 
 v1.0.06
+- New trigger to report when weather locations appear to be offline (trigger
+  on current observation or current temperature.
+- New trigger to report when a weather location has at least one active severe
+  weather alert.
+- New device state with date and time of most current observation (24hr clock).
+- Repair UV values when negative (force zero) and decimal (force integer)
+- Modifies behavior for instances where nonsense value provided. (WU will send
+  -99, -999, -9999 or "None" in instances where there is a missing value.) The
+  plugin now attempts to convert these types of values consistently to -99.0 for
+  numeric values and "--" for UI and string values.
+- Better error trapping when WU does not provide expected forecast data in the
+  API return.
 - Moves support URL to Github.
 - Code refinements.
 
