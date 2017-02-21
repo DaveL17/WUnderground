@@ -173,7 +173,7 @@
     <li><span>&nbsp;Severe Weather Alerts&nbsp;</span> - <strong>BETA!</strong> You can create a trigger that will fire whenever a weather location reports at least one severe weather
         alert (if your weather location and source support severe weather alerts). Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you have
         weather stations updating every 5 minutes, the trigger will fire every 5 minutes. There are ways to limit the number of times that the trigger will fire, however. Perhaps, an
-        example...<br><br>
+        example or two...<br><br>
 
         First, create a variable called "WU_Site_Alert" and set the initial value of the variable as false. Next, create a new Severe Weather Alert trigger and select the location to
         monitor. Set a condition to only fire the trigger when the variable WU_Site_Alert is false. Then, under actions, make the first action a Modify Variable action that sets the
@@ -181,20 +181,28 @@
         WU_Site_Alert variable to false. Then, enter any other actions that you want the trigger to take when a weather location reports an alert. For example, you could send a
         notification by text or email, turn off certain systems, or whatever. You could then create another trigger that sets the variable back to false if the alert status is also
         false. If you use this approach, you will need a separate variable for each location trigger.<br><br>
+
+        Another option is to have Indigo fire the trigger and then disable the trigger automatically. As a part of the trigger actions, select Sever Actions and then Enable/Disable
+        actions. Select the trigger you want to disable (in this example, the trigger itself) and then you can choose to have the trigger remain disabled until you re-enable it, or have
+        Indigo re-enable the trigger after a specified elapsed time (for example, 12 hours).<br><br>
     </li>
     <li><span>&nbsp;Weather Location Offline&nbsp;</span> - <strong>BETA!</strong> Occasionally, a weather site will go offline or otherwise stop updating. You can use the Weather
         Location Offline trigger to notify you of an offline condition or cause other things to happen within Indigo. The plugin uses the custom state "currentObservationEpoch" to
         determine whether a site should be considered offline. It converts the time to the local timezone and compares that to the current local time. If the difference is equal to or
         greater than the value entered into the trigger settings, the trigger will fire. Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you
         have weather stations updating every 5 minutes, the trigger will fire every 5 minutes. There are ways to limit the number of times that the trigger will fire, however. Perhaps,
-        an example...<br><br>
+        an example or two...<br><br>
 
         First, create a variable called "WU_Site_Offline" and set the initial value of the variable as false. Next, create a new Weather Location Offline trigger and enter (1) the number
         of minutes to wait before considering a site to be offline (the default is an hour), and (2) the location to monitor. Set a condition to only fire the trigger when the variable
         WU_Site_Offline is false. Then, under actions, make the first action a Modify Variable action that sets the WU_Site_Offline variable to true. This way, your trigger will fire the
         first time your weather site goes offline and then will not fire again until you reset the value of the WU_Site_Offline variable to false. Then, enter any other actions that you
         want the trigger to take when a weather location goes offline. For example, you could send a notification by text or email, turn off sprinkler systems, or whatever. If you use
-        this approach, you will need a separate variable for each location trigger.<br>
+        this approach, you will need a separate variable for each location trigger.<br><br>
+
+        Another option is to have Indigo fire the trigger and then disable the trigger automatically. As a part of the trigger actions, select Sever Actions and then Enable/Disable
+        actions. Select the trigger you want to disable (in this example, the trigger itself) and then you can choose to have the trigger remain disabled until you re-enable it, or have
+        Indigo re-enable the trigger after a specified elapsed time (for example, 12 hours).<br>
     </li>
 </ul>
 <h3>Menu Items</h3>
