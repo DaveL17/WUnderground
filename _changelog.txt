@@ -1,5 +1,8 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.07
+- Fixes bug in UV data correction (for when WU sends bad data).
+
 v1.0.06
 - New trigger to report when weather locations appear to be offline (trigger
   on current observation or current temperature.

@@ -76,7 +76,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.06"
+__version__ = "1.0.07"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -1488,13 +1488,15 @@ class Plugin(indigo.PluginBase):
             # Ultraviolet light (string: "0" or greater, not always provided as a value that can float. Sometimes provided as negative, sometimes non-numeric.)
             uv = self.masterWeatherDict[self.location]['current_observation']['UV']
             try:
-                if int(uv) < 0:
+                if float(uv) < 0:
                     uv = '0'
                 else:
+                    uv = float(uv)
                     uv = round(uv)
                     uv = int(uv)
-            except:
-                pass
+            except Exception as error:
+                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+                uv = '--'
             dev.updateStateOnServer('uv', value=unicode(uv), uiValue=unicode(uv))
 
             # Wind direction in alpha (string: N, NNE, NE, ENE...)
