@@ -1,7 +1,19 @@
 WUnderground Plugin - Developed by: DaveL17
 
 v1.0.07
-- Fixes bug in UV data correction (for when WU sends bad data).
+- Adds new device states to 10 day and Hourly Forecast devices:
+  - windDegrees (for charting and control page heuristics)
+  - windSpeedIcon (for control page heuristics)
+- Standardizes device configuration menus for display units. (Note: each device
+  may not support all possible units. For example, the Ten Day Forecast device
+  supports data for snow, but the Weather device does not.)
+- Improves control labels for detailed forecast titles (weather devices).
+- Deprecates functionalHourlyIconName method which is no longer needed with
+  version 11 of the WUnderground API.
+- Fixes bug in UV data correction (used only when WU sends bad data).
+- Fixes bug in refresh weather cycle to handle legacy satellite image
+  downloader device names.
+- Code refinements.
 
 v1.0.06
 - New trigger to report when weather locations appear to be offline (trigger

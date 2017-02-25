@@ -43,6 +43,15 @@ ways:
    of "--" since the actual value could be positive or negative.
  - Replaces N,E,S,W wind values with "North", "East"...
 
+ Not all values are available in all API calls.  The plugin makes these units available:
+ distance       w    -    -    -
+ percentage     w    t    h    -
+ pressure       w    -    -    -
+ rainfall       w    t    h    -
+ snow           -    t    h    -
+ temperature    w    t    h    a
+ wind           w    t    h    -
+
 Weather data copyright Weather Underground and Weather Channel, LLC., (and its
 subsidiaries), or respective data providers. This plugin and its author are in
 no way affiliated with Weather Underground, LLC. For more information about data
@@ -50,11 +59,9 @@ provided see Weather Underground Terms of Service located at:
 http://www.wunderground.com/weather/api/d/terms.html.
 """
 # TODO: add a new weather radar device that leverages the new radar layer API.
-# TODO: Reduce the number of times that the pluginProps are updated on the server.  It updates two things: last updated time, and stationID.
-# TODO: Minimize the number of 'get' statements -- i.e., self.pluginPrefs.get()
-# TODO: Snappy menus.
-# TODO: Move weather summary sent to config.json
+# TODO: Move weather summary sent to config.json - has to be on a device-specific basis.  'summary_sent' = {dev_id: false, dev_id: true}?
 # TODO: Look at localization.  Haavarda talked about "5 period 4" degrees (dot vs. comma)
+# TODO: Deprecate proper_icon_name?
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -658,64 +665,11 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
             self.debugLog(u"{0}: floatEverything() method called.".format(stateName))
 
-        # We know these values won't float. Send them back unmolested.
-        if val in [u"", u"N/A", u"NA", "None", "--"]:
-            return -99.0
-
         try:
-            real = float(val)
-            return real
-        except Exception as error:
-            self.debugLog(u"Exception in floatEverything method. Returning value unchanged. Error: {0} (Line {1} (val = {2})".format(error, sys.exc_traceback.tb_lineno, val))
-            val = unicode(val)
+            return float(val)
+        except ValueError as error:
+            self.debugLog(u"Error: {0} (Line {1} (val = {2})".format(error, sys.exc_traceback.tb_lineno, val))
             return -99.0
-
-    # def functionalIconName(self, val):
-    #     """ The functionalIconName() method determines whether it is daytime or
-    #     nighttime dependent on the read-only Indigo variable "isDaylight" and
-    #     prepends icon names to allow for separate daytime and nighttime icons.
-    #     If it is daytime, the icon name is left unchanged. If nighttime, it
-    #     prepends "nt_" to the icon name.
-    #     :param val: """
-    #     if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
-    #         self.debugLog(u"functionalIconName() method called.")
-    #
-    #     try:
-    #         if indigo.variables['isDaylight'].value == "false":
-    #             icon_time = u"nt_"
-    #         else:
-    #             icon_time = u""
-    #     except Exception as error:
-    #         self.debugLog(u"Exception in functionalIconName. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
-    #         icon_time = u""
-    #
-    #     val = u"{0}{1}".format(icon_time, val)
-    #     return val
-
-    def functionalHourlyIconName(self, val, url):
-        """ The functionalHourlyIconName() method determines whether an hourly
-        forecast item is during the daytime or nighttime dependent on whether
-        the WUnderground icon URL contains '/nt_'. If it does, we then prepend
-        icon names to allow for separate daytime and nighttime icons. If
-        daytime, the icon name is left unchanged. If nighttime, prepend "nt_" to
-        the icon name. This method is different than the daily icon converter
-        because it must use the WU provided URL to determine day or night.
-        :param url:
-        :param val: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
-            self.debugLog(u"functionalHourlyIconName() method called.")
-
-        try:
-            if '/nt_' in url:
-                icon_time = u"nt_"
-            else:
-                icon_time = ""
-        except Exception as error:
-            self.debugLog(u"Exception in functionalHourlyIconName. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
-            icon_time = ""
-
-        val = u"{0}{1}".format(icon_time, val)
-        return val
 
     def getSatelliteImage(self, dev):
         """ The getSatelliteImage() will download a file from a user- specified
@@ -1019,11 +973,6 @@ class Plugin(indigo.PluginBase):
                 temp_high_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['F']
                 temp_high_normal_f, temp_high_normal_f_ui = self.fixCorruptedData('temp_high_normal_f', temp_high_normal_f)
                 dev.updateStateOnServer('tempHighNormalF', value=int(temp_high_normal_f), uiValue=unicode(self.uiTemperatureFormat("temp_high_normal_f", temp_high_normal_f_ui)))
-            # except KeyError:  # If that didn't work, use the string value instead.
-            #     dev.updateStateOnServer('tempHighNormalF', value=u"--", uiValue=u"--")
-            # except ValueError:  # If that didn't work, use the string value instead.
-            #     temp_high_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['F']
-            #     dev.updateStateOnServer('tempHighNormalF', value=temp_high_normal_f, uiValue=unicode(self.uiTemperatureFormat("temp_high_normal_f", temp_high_normal_f)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighNormalF', value=-99.0, uiValue=u"--")
@@ -1032,11 +981,6 @@ class Plugin(indigo.PluginBase):
                 temp_high_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['C']
                 temp_high_normal_c, temp_high_normal_c_ui = self.fixCorruptedData('temp_high_normal_c', temp_high_normal_c)
                 dev.updateStateOnServer('tempHighNormalC', value=int(temp_high_normal_c), uiValue=unicode(self.uiTemperatureFormat("temp_high_normal_c", temp_high_normal_c_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempHighNormalC', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_high_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['C']
-            #     dev.updateStateOnServer('tempHighNormalC', value=temp_high_normal_c, uiValue=unicode(self.uiTemperatureFormat("temp_high_normal_c", temp_high_normal_c)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighNormalC', value=-99.0, uiValue=u"--")
@@ -1045,11 +989,6 @@ class Plugin(indigo.PluginBase):
                 temp_high_record_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']
                 temp_high_record_f, temp_high_record_f_ui = self.fixCorruptedData('temp_high_record_f', temp_high_record_f)
                 dev.updateStateOnServer('tempHighRecordF', value=int(temp_high_record_f), uiValue=unicode(self.uiTemperatureFormat("temp_high_record_f", temp_high_record_f_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempHighRecordF', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_high_record_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']
-            #     dev.updateStateOnServer('tempHighRecordF', value=temp_high_record_f, uiValue=unicode(self.uiTemperatureFormat("temp_high_record_f", temp_high_record_f)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighRecordF', value=-99.0, uiValue=u"--")
@@ -1058,11 +997,6 @@ class Plugin(indigo.PluginBase):
                 temp_high_record_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']
                 temp_high_record_c, temp_high_record_c_ui = self.fixCorruptedData('temp_high_record_c', temp_high_record_c)
                 dev.updateStateOnServer('tempHighRecordC', value=int(temp_high_record_c), uiValue=unicode(self.uiTemperatureFormat("temp_high_record_c", temp_high_record_c_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempHighRecordC', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_high_record_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']
-            #     dev.updateStateOnServer('tempHighRecordC', value=temp_high_record_c, uiValue=unicode(self.uiTemperatureFormat("temp_high_record_c", temp_high_record_c)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighRecordC', value=-99.0, uiValue=u"--")
@@ -1071,11 +1005,6 @@ class Plugin(indigo.PluginBase):
                 temp_high_record_year = self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear']
                 temp_high_record_year, temp_high_record_year_ui = self.fixCorruptedData('temp_high_record_year', temp_high_record_year)
                 dev.updateStateOnServer('tempHighRecordYear', value=temp_high_record_year, uiValue=unicode(temp_high_record_year_ui))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempHighRecordYear', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_high_record_year = self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear']
-            #     dev.updateStateOnServer('tempHighRecordYear', value=temp_high_record_year, uiValue=unicode(temp_high_record_year))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighRecordYear', value=-99.0, uiValue=u"--")
@@ -1084,11 +1013,6 @@ class Plugin(indigo.PluginBase):
                 temp_low_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['F']
                 temp_low_normal_f, temp_low_normal_f_ui = self.fixCorruptedData('temp_low_normal_f', temp_low_normal_f)
                 dev.updateStateOnServer('tempLowNormalF', value=int(temp_low_normal_f), uiValue=unicode(self.uiTemperatureFormat("temp_low_normal_f", temp_low_normal_f_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempLowNormalF', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_low_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['F']
-            #     dev.updateStateOnServer('tempLowNormalF', value=temp_low_normal_f, uiValue=unicode(self.uiTemperatureFormat("temp_low_normal_f", temp_low_normal_f)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowNormalF', value=-99.0, uiValue=u"--")
@@ -1097,11 +1021,6 @@ class Plugin(indigo.PluginBase):
                 temp_low_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['C']
                 temp_low_normal_c, temp_low_normal_c_ui = self.fixCorruptedData('temp_low_normal_c', temp_low_normal_c)
                 dev.updateStateOnServer('tempLowNormalC', value=int(temp_low_normal_c), uiValue=unicode(self.uiTemperatureFormat("temp_low_normal_c", temp_low_normal_c_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempLowNormalC', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_low_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['C']
-            #     dev.updateStateOnServer('tempLowNormalC', value=temp_low_normal_c, uiValue=unicode(self.uiTemperatureFormat("temp_low_normal_c", temp_low_normal_c)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowNormalC', value=-99.0, uiValue=u"--")
@@ -1110,11 +1029,6 @@ class Plugin(indigo.PluginBase):
                 temp_low_record_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']
                 temp_low_record_f, temp_low_record_f_ui = self.fixCorruptedData('temp_low_record_f', temp_low_record_f)
                 dev.updateStateOnServer('tempLowRecordF', value=int(temp_low_record_f), uiValue=unicode(self.uiTemperatureFormat("temp_low_record_f", temp_low_record_f_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempLowRecordF', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_low_record_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']
-            #     dev.updateStateOnServer('tempLowRecordF', value=temp_low_record_f, uiValue=unicode(self.uiTemperatureFormat("temp_low_record_f", temp_low_record_f)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowRecordF', value=-99.0, uiValue=u"--")
@@ -1123,11 +1037,6 @@ class Plugin(indigo.PluginBase):
                 temp_low_record_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']
                 temp_low_record_c, temp_low_record_c_ui = self.fixCorruptedData('temp_low_record_c', temp_low_record_c)
                 dev.updateStateOnServer('tempLowRecordC', value=int(temp_low_record_c), uiValue=unicode(self.uiTemperatureFormat("temp_low_record_c", temp_low_record_c_ui)))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempLowRecordC', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_low_record_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']
-            #     dev.updateStateOnServer('tempLowRecordC', value=temp_low_record_c, uiValue=unicode(self.uiTemperatureFormat("temp_low_record_c", temp_low_record_c)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowRecordC', value=-99.0, uiValue=u"--")
@@ -1136,11 +1045,6 @@ class Plugin(indigo.PluginBase):
                 temp_low_record_year = self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear']
                 temp_low_record_year, temp_low_record_year_ui = self.fixCorruptedData('temp_low_record_year', temp_low_record_year)
                 dev.updateStateOnServer('tempLowRecordYear', value=temp_low_record_year, uiValue=unicode(temp_low_record_year_ui))
-            # except KeyError:
-            #     dev.updateStateOnServer('tempLowRecordYear', value=u"--", uiValue=u"--")
-            # except ValueError:
-            #     temp_low_record_year = self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear']
-            #     dev.updateStateOnServer('tempLowRecordYear', value=temp_low_record_year, uiValue=unicode(temp_low_record_year))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowRecordYear', value=-99.0, uiValue=u"--")
@@ -1441,17 +1345,13 @@ class Plugin(indigo.PluginBase):
 
             # Icon Name (string: "clear", "cloudy"...)
             icon_name = unicode(self.masterWeatherDict[self.location]['current_observation']['icon'])
-            # proper_icon_name = unicode(self.functionalIconName(icon_name))
             dev.updateStateOnServer('properIconNameAllDay', value=icon_name, uiValue=unicode(icon_name))
-            # dev.updateStateOnServer('properIconName', value=proper_icon_name, uiValue=unicode(proper_icon_name))
             dev.updateStateOnServer('properIconName', value=icon_name, uiValue=unicode(icon_name))
 
             # Moving to the v11 version of the plugin may make the icon name adjustments unnecessary.
-            # dev.updateStateOnServer('properIconName', value=icon_name, uiValue=unicode(proper_icon_name))
             dev.updateStateOnServer('properIconName', value=icon_name, uiValue=unicode(icon_name))
 
             if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
-                # self.debugLog(u"Day/Night Icon: {0}".format(proper_icon_name))
                 self.debugLog(u"Day/Night Icon: {0}".format(icon_name))
                 self.debugLog(u"All Day Icon: {0}".format(icon_name))
 
@@ -1478,14 +1378,14 @@ class Plugin(indigo.PluginBase):
             pressure_trend = self.fixPressureSymbol(pressure_trend)
             dev.updateStateOnServer('pressureTrend', value=pressure_trend, uiValue=unicode(pressure_trend))
 
-            # Solar Radiation (string: "0" or greater, not always provided as a value that can float (sometimes = "").  Some sites don't report it.)
+            # Solar Radiation (string: "0" or greater, not always provided as a value that can float (sometimes = ""). Some sites don't report it.)
             s_rad = self.masterWeatherDict[self.location]['current_observation']['solarradiation']
             s_rad = self.floatEverything("Solar Radiation", s_rad)
-            if s_rad == "":
-                s_rad = 0
+            if s_rad < 0:
+                s_rad = -99
             dev.updateStateOnServer('solarradiation', value=s_rad, uiValue=unicode(s_rad))
 
-            # Ultraviolet light (string: "0" or greater, not always provided as a value that can float. Sometimes provided as negative, sometimes non-numeric.)
+            # Ultraviolet light (string: equal to or greater than 0. Not always provided as a value that can float, sometimes negative, sometimes non-numeric.)
             uv = self.masterWeatherDict[self.location]['current_observation']['UV']
             try:
                 if float(uv) < 0:
@@ -1537,31 +1437,16 @@ class Plugin(indigo.PluginBase):
                 if self.configMenuUnits == 'M':
 
                     history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    # try:
-                    #     history_high = float(history_high)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_high = u"--"
                     history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (M)", history_high)
                     history_high = self.floatEverything(u"historyHigh (M)", history_high)
                     dev.updateStateOnServer('historyHigh', value=history_high, uiValue=unicode(self.uiTemperatureFormat("historyHigh (M)", history_high_ui)))
 
                     history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    # try:
-                    #     history_low = float(history_low)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_low = u"--"
                     history_low, history_low_ui = self.fixCorruptedData(u"historyLow (M)", history_low)
                     history_low = self.floatEverything(u"historyLow (M)", history_low)
                     dev.updateStateOnServer('historyLow', value=history_low, uiValue=unicode(self.uiTemperatureFormat("historyLow (M)", history_low_ui)))
 
                     history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']
-                    # try:
-                    #     history_pop = float(history_pop)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_pop = u"--"
                     history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (M)", history_pop)
                     history_pop = self.floatEverything(u"historyPop (M)", history_pop)
                     dev.updateStateOnServer('historyPop', value=history_pop, uiValue=unicode(self.uiRainFormat("historyPop (M)", history_pop_ui)))
@@ -1570,94 +1455,49 @@ class Plugin(indigo.PluginBase):
                 # winds are added.
                 if self.configMenuUnits == 'MS':
                     history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    # try:
-                    #     history_high = float(history_high)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_high = u"--"
                     history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (MS)", history_high)
                     history_high = self.floatEverything(u"historyHigh (MS)", history_high)
                     dev.updateStateOnServer('historyHigh', value=history_high,
                                             uiValue=unicode(self.uiTemperatureFormat("historyHigh (MS)", history_high_ui)))
 
                     history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    # try:
-                    #     history_low = float(history_low)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_low = u"--"
                     history_low, history_low = self.fixCorruptedData(u"historyLow (MS)", history_low)
                     history_low = self.floatEverything(u"historyLow (MS)", history_low)
                     dev.updateStateOnServer('historyLow', value=history_low, uiValue=unicode(self.uiTemperatureFormat("historyLow (MS)", history_low_ui)))
 
                     history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']
-                    # try:
-                    #     history_pop = float(history_pop)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_pop = u"--"
                     history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (MS)", history_pop)
                     history_pop = self.floatEverything(u"historyPop (MS)", history_pop)
                     dev.updateStateOnServer('historyPop', value=history_pop, uiValue=unicode(self.uiRainFormat("historyPop (MS)", history_pop_ui)))
 
                 elif self.configMenuUnits == 'I':
                     history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    # try:
-                    #     history_high = float(history_high)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_high = u"--"
                     history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (I)", history_high)
                     history_high = self.floatEverything(u"historyHigh (I)", history_high)
                     dev.updateStateOnServer('historyHigh', value=history_high, uiValue=unicode(self.uiTemperatureFormat("historyHigh (I)", history_high_ui)))
 
                     history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    # try:
-                    #     history_low = float(history_low)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_low = u"--"
                     history_low, history_low_ui = self.fixCorruptedData(u"historyLow (I)", history_low)
                     history_low = self.floatEverything(u"historyLow (I)", history_low)
                     dev.updateStateOnServer('historyLow', value=history_low, uiValue=unicode(self.uiTemperatureFormat("historyLow (I)", history_low_ui)))
 
                     history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']
-                    # try:
-                    #     history_pop = float(history_pop)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_pop = u"--"
                     history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (I)", history_pop)
                     history_pop = self.floatEverything(u"historyPop (I)", history_pop)
                     dev.updateStateOnServer('historyPop', value=history_pop, uiValue=unicode(self.uiRainFormat("historyPop (I)", history_pop_ui)))
 
                 elif self.configMenuUnits == 'S':
                     history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi']
-                    # try:
-                    #     history_high = float(history_high)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_high = u"--"
                     history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (S)", history_high)
                     history_high = self.floatEverything(u"historyHigh (S)", history_high)
                     dev.updateStateOnServer('historyHigh', value=history_high, uiValue=unicode(self.uiTemperatureFormat("historyHigh (S)", history_high_ui)))
 
                     history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi']
-                    # try:
-                    #     history_low = float(history_low)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_low = u"--"
                     history_low, history_low_ui = self.fixCorruptedData(u"historyLow (S)", history_low)
                     history_low = self.floatEverything(u"historyLow (S)", history_low)
                     dev.updateStateOnServer('historyLow', value=history_low, uiValue=unicode(self.uiTemperatureFormat("historyLow (S)", history_low_ui)))
 
                     history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']
-                    # try:
-                    #     history_pop = float(history_pop)
-                    # except ValueError as error:
-                    #     self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
-                    #     history_pop = u"--"
                     history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (S)", history_pop)
                     history_pop = self.floatEverything(u"historyPop (S)", history_pop)
                     dev.updateStateOnServer('historyPop', value=history_pop, uiValue=unicode(self.uiRainFormat("historyPop (S)", history_pop_ui)))
@@ -2362,84 +2202,76 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer(u"h{0}_timeLong".format(fore_counter_text), value=time_long, uiValue=unicode(time_long))
 
                     fore_pop = item['pop']
-                    dev.updateStateOnServer(u"h{0}_precip".format(fore_counter_text),
-                                            value=self.floatEverything(u"forePopHourly", fore_pop),
-                                            uiValue=unicode(self.uiPercentageFormat(u"forePopHourly", fore_pop)))
+                    dev.updateStateOnServer(u"h{0}_precip".format(fore_counter_text), value=self.floatEverything(u"forePopHourly", fore_pop), uiValue=unicode(self.uiPercentageFormat(u"forePopHourly", fore_pop)))
 
                     humidity = item['humidity']
-                    dev.updateStateOnServer(u"h{0}_humidity".format(fore_counter_text),
-                                            value=self.floatEverything(u"foreHumidityHourly", humidity),
-                                            uiValue=unicode(self.uiPercentageFormat(u"foreHumidityHourly", humidity)))
+                    dev.updateStateOnServer(u"h{0}_humidity".format(fore_counter_text), value=self.floatEverything(u"foreHumidityHourly", humidity), uiValue=unicode(self.uiPercentageFormat(u"foreHumidityHourly", humidity)))
 
                     # Mixed units (°C and MPH):
                     if self.configMenuUnits == "I":
                         temp_metric = item['temp']['metric']
-                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreTempHourly (I)", temp_metric),
-                                                uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (I)", temp_metric)))
+                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text), value=self.floatEverything(u"foreTempHourly (I)", temp_metric), uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (I)", temp_metric)))
 
                         wind_speed = self.uiWindFormat(u"Hourly Wind (I)", item['wspd']['english'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=unicode(wind_speed))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=unicode(wind_speed) + unicode(self.windUnits))
+                        wind_speed_icon = wind_speed.replace('.', '')
+                        dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
 
                         fore_qpf = item['qpf']['english']
-                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreQPFHourly (I)", fore_qpf),
-                                                uiValue=unicode(unicode(fore_qpf)))
+                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (I)", fore_qpf), uiValue=unicode(fore_qpf) + unicode(self.rainUnits))
 
                         fore_snow = item['snow']['english']
-                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreSnowHourly (I)", fore_snow),
-                                                uiValue=unicode(unicode(fore_snow)))
+                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (I)", fore_snow), uiValue=unicode(fore_snow) + unicode(self.snowAmountUnits))
 
                     # Metric units (°C and KPH):
                     elif self.configMenuUnits == "M":
                         temp_metric = item['temp']['metric']
-                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreTempHourly (M)", temp_metric),
-                                                uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (M)", temp_metric)))
+                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text), value=self.floatEverything(u"foreTempHourly (M)", temp_metric), uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (M)", temp_metric)))
 
                         wind_speed = self.uiWindFormat('Hourly Wind (M)', item['wspd']['metric'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=unicode(wind_speed))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=unicode(wind_speed) + unicode(self.windUnits))
+                        wind_speed_icon = wind_speed.replace('.', '')
+                        dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
 
                         fore_qpf = item['qpf']['metric']
-                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (M)", fore_qpf), uiValue=unicode(fore_qpf))
+                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (M)", fore_qpf), uiValue=unicode(fore_qpf) + unicode(self.rainUnits))
 
                         fore_snow = item['snow']['metric']
-                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (M)", fore_snow), uiValue=unicode(fore_snow))
+                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (M)", fore_snow), uiValue=unicode(fore_snow) + unicode(self.snowAmountUnits))
 
                     # Metric units, SI Winds (°C and MPS):
                     elif self.configMenuUnits == "MS":
                         temp_metric = item['temp']['metric']
-                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreTempHourly (MS)", temp_metric),
-                                                uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (MS)", temp_metric)))
+                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text), value=self.floatEverything(u"foreTempHourly (MS)", temp_metric), uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (MS)", temp_metric)))
 
                         wind_speed = float(item['wspd']['metric'])
                         wind_speed *= 0.277778
                         wind_speed = self.uiWindFormat('Hourly Wind (MS)', wind_speed)
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=unicode(wind_speed), uiValue=unicode(wind_speed))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=unicode(wind_speed), uiValue=unicode(wind_speed + unicode(self.windUnits)))
+                        wind_speed_icon = wind_speed.replace('.', '')
+                        dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
 
                         fore_qpf = item['qpf']['metric']
-                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (MS)", fore_qpf), uiValue=unicode(fore_qpf))
+                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (MS)", fore_qpf), uiValue=unicode(fore_qpf) + unicode(self.rainUnits))
 
                         fore_snow = item['snow']['metric']
-                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (MS)", fore_snow), uiValue=unicode(fore_snow))
+                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (MS)", fore_snow), uiValue=unicode(fore_snow) + unicode(self.snowAmountUnits))
 
                     # Standard units (°F and MPH) and catch all:
                     else:
                         temp_english = item['temp']['english']
-                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
-                                                value=self.floatEverything(u"foreTempHourly (S)", temp_english),
-                                                uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (S)", temp_english)))
+                        dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text), value=self.floatEverything(u"foreTempHourly (S)", temp_english), uiValue=unicode(self.uiTemperatureFormat(u"foreTempHourly (S)", temp_english)))
 
                         wind_speed = self.uiWindFormat('Hourly Wind (S)', item['wspd']['english'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=unicode(wind_speed), uiValue=unicode(wind_speed))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=unicode(wind_speed), uiValue=unicode(wind_speed + unicode(self.windUnits)))
+                        wind_speed_icon = wind_speed.replace('.', '')
+                        dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
 
                         fore_qpf = item['qpf']['english']
-                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (S)", fore_qpf), uiValue=unicode(fore_qpf))
+                        dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text), value=self.floatEverything(u"foreQPFHourly (S)", fore_qpf), uiValue=unicode(fore_qpf) + unicode(self.rainUnits))
 
                         fore_snow = item['snow']['english']
-                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (S)", fore_snow), uiValue=unicode(fore_snow))
+                        dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text), value=self.floatEverything(u"foreSnowHourly (S)", fore_snow), uiValue=unicode(fore_snow) + unicode(self.snowAmountUnits))
 
                     if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
                         wind_dir = unicode(item['wdir']['dir'])
@@ -2447,16 +2279,13 @@ class Plugin(indigo.PluginBase):
                     else:
                         wind_dir = unicode(item['wdir']['degrees'])
                         dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=wind_dir, uiValue=unicode(wind_dir))
+                    dev.updateStateOnServer(u"h{0}_windDegrees".format(fore_counter_text), value=item['wdir']['degrees'], uiValue=unicode(item['wdir']['degrees']))
 
                     # Hourly forecast icon (all day).
                     icon = unicode(item['icon'])
-                    # final_icon_url = item['icon_url']
-                    # final_icon_name = self.functionalHourlyIconName(icon, final_icon_url)
-
                     dev.updateStateOnServer(u"h{0}_icon".format(fore_counter_text), value=icon, uiValue=unicode(icon))
 
                     # Hourly forecast icon (day/night).
-                    # dev.updateStateOnServer(u"h{0}_proper_icon".format(fore_counter_text), value=unicode(final_icon_name), uiValue=unicode(final_icon_name))
                     dev.updateStateOnServer(u"h{0}_proper_icon".format(fore_counter_text), value=icon, uiValue=icon)
                     dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
 
@@ -2627,11 +2456,16 @@ class Plugin(indigo.PluginBase):
                             wind_speed = self.floatEverything(u"foreAvgWindTenDayMPH (S)", item['avewind']['mph'])
                             wind_speed = self.uiWindFormat(wind_speed_state, wind_speed)
                             dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=unicode(wind_speed) + unicode(self.windUnits))
+
                         else:
                             wind_speed_state = u"d{0}_windSpeed".format(fore_counter_text)
                             wind_speed = self.floatEverything(u"foreMaxWindTenDayMPH (S)", item['maxwind']['mph'])
                             wind_speed = self.uiWindFormat(wind_speed_state, wind_speed)
                             dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=unicode(wind_speed) + unicode(self.windUnits))
+                        wind_speed_state = u"d{0}_windSpeedIcon".format(fore_counter_text)
+                        wind_speed_icon = wind_speed.replace('.', '')
+                        dev.updateStateOnServer(wind_speed_state, value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
+
 
                     # Wind direction (text or degrees.)
                     if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
@@ -2642,6 +2476,8 @@ class Plugin(indigo.PluginBase):
                         avg_wind_dir_state = u"d{0}_windDir".format(fore_counter_text)
                         avg_wind_dir = unicode(item['avewind']['degrees'])
                         dev.updateStateOnServer(avg_wind_dir_state, value=avg_wind_dir, uiValue=unicode(avg_wind_dir))
+                    avg_wind_dir = item['avewind']['degrees']
+                    dev.updateStateOnServer(u"d{0}_windDegrees".format(fore_counter_text), value=avg_wind_dir, uiValue=unicode(avg_wind_dir))
 
                     # Forecast icon (all day).
                     icon_state = u"d{0}_icon".format(fore_counter_text)
@@ -2824,7 +2660,7 @@ class Plugin(indigo.PluginBase):
 
                         # Get weather data from Weather Underground
                         dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
-                        if not dev.model == 'Satellite Image Downloader':
+                        if dev.model not in ['Satellite Image Downloader', 'WUnderground Satellite Image Downloader']:
                             self.getWeatherData(dev)
 
                             # If we've successfully downloaded data from Weather Underground, let's unpack it and assign it to the relevant device.
@@ -2957,7 +2793,6 @@ class Plugin(indigo.PluginBase):
     def triggerStartProcessing(self, trigger):
         """ triggerStartProcessing is called when the plugin is started. The
         method builds a global dict: {dev.id: (delay, trigger.id) """
-        # indigo.server.log(u"{0}".format(trigger))
 
         dev_id = str(trigger.pluginProps['listOfDevices'])
         try:
@@ -2985,7 +2820,7 @@ class Plugin(indigo.PluginBase):
         Note that the trigger will only fire during routine weather update
         cycles and will not be triggered when a data refresh is called from
         the Indigo Plugins menu."""
-        # indigo.server.log(u"{0}".format(self.masterTriggerDict))
+
         try:
             for dev in indigo.devices.itervalues(filter='self'):
                 if str(dev.id) in self.masterTriggerDict.keys():

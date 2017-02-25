@@ -46,9 +46,35 @@
                 <Label>Controls how values will be displayed on control pages, etc.</Label>
             </Field>
 
+            <!--<Field id="distanceUnits" type="textfield" defaultValue=" mi." visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all distance values. (5 mi.)">-->
+                <!--<Label>Distance:</Label>-->
+            <!--</Field>-->
+
+            <!--<Field id="percentageUnits" type="textfield" defaultValue="%" visibleBindingId="space06" visibleBindingValue="true"-->
+                   <!--tooltip="Appended to all probability and percentage values. (80%)">-->
+                <!--<Label>Percentage:</Label>-->
+            <!--</Field>-->
+
+            <!--<Field id="pressureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue=" in." tooltip="Appended to all pressure values. (30.05 in.)">-->
+                <!--<Label>Pressure:</Label>-->
+            <!--</Field>-->
+
+            <!--<Field id="rainUnits" type="textfield" defaultValue=" in." visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all rain values. (0.5 in.)">-->
+                <!--<Label>Rainfall:</Label>-->
+            <!--</Field>-->
+
+            <!--<Field id="snowAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="in."-->
+                   <!--tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">-->
+                <!--<Label>Snow:</Label>-->
+            <!--</Field>-->
+
             <Field id="temperatureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="°" tooltip="Appended to all temperature values. (75°)">
                 <Label>Temperature:</Label>
             </Field>
+
+            <!--<Field id="windUnits" type="textfield" defaultValue=" mph" visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all wind values. (5 mph)">-->
+                <!--<Label>Wind:</Label>-->
+            <!--</Field>-->
 
             <Field id="deviceVersion" type="textfield" defaultValue="1" hidden="True">
             </Field>
@@ -414,13 +440,34 @@
                 <Label>These settings are independent of the Weather Units settings above. They do not affect the underlying value of the data point.</Label>
             </Field>
 
+            <!--<Field id="distanceUnits" type="textfield" defaultValue=" mi." visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all distance values. (5 mi.)">-->
+                <!--<Label>Distance:</Label>-->
+            <!--</Field>-->
+
             <Field id="percentageUnits" type="textfield" defaultValue="%" visibleBindingId="space06" visibleBindingValue="true"
                    tooltip="Appended to all probability and percentage values. (80%)">
                 <Label>Percentage:</Label>
             </Field>
 
+            <!--<Field id="pressureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue=" in." tooltip="Appended to all pressure values. (30.05 in.)">-->
+                <!--<Label>Pressure:</Label>-->
+            <!--</Field>-->
+
+            <Field id="rainUnits" type="textfield" defaultValue=" in." visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all rain values. (0.5 in.)">
+                <Label>Rainfall:</Label>
+            </Field>
+
+            <Field id="snowAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="in."
+                   tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">
+                <Label>Snow:</Label>
+            </Field>
+
             <Field id="temperatureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="°" tooltip="Appended to all temperature values. (75°)">
                 <Label>Temperature:</Label>
+            </Field>
+
+            <Field id="windUnits" type="textfield" defaultValue=" mph" visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all wind values. (5 mph)">
+                <Label>Wind:</Label>
             </Field>
 
             <Field id="deviceVersion" type="textfield" defaultValue="1" hidden="True">
@@ -2064,6 +2111,150 @@
                 <ControlPageLabel>Wind Direction - Hour 24</ControlPageLabel>
             </State>
 
+            <State id="h01_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 1</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 1</ControlPageLabel>
+            </State>
+
+            <State id="h02_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 2</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 2</ControlPageLabel>
+            </State>
+
+            <State id="h03_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 3</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 3</ControlPageLabel>
+            </State>
+
+            <State id="h04_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 4</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 4</ControlPageLabel>
+            </State>
+
+            <State id="h05_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 5</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 5</ControlPageLabel>
+            </State>
+
+            <State id="h06_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 6</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 6</ControlPageLabel>
+            </State>
+
+            <State id="h07_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 7</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 7</ControlPageLabel>
+            </State>
+
+            <State id="h08_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 8</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 8</ControlPageLabel>
+            </State>
+
+            <State id="h09_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 9</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 9</ControlPageLabel>
+            </State>
+
+            <State id="h10_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 10</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 10</ControlPageLabel>
+            </State>
+
+            <State id="h11_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 11</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 11</ControlPageLabel>
+            </State>
+
+            <State id="h12_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 12</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 12</ControlPageLabel>
+            </State>
+
+            <State id="h13_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 13</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 13</ControlPageLabel>
+            </State>
+
+            <State id="h14_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 14</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 14</ControlPageLabel>
+            </State>
+
+            <State id="h15_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 15</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 15</ControlPageLabel>
+            </State>
+
+            <State id="h16_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 16</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 16</ControlPageLabel>
+            </State>
+
+            <State id="h17_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 17</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 17</ControlPageLabel>
+            </State>
+
+            <State id="h18_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 18</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 18</ControlPageLabel>
+            </State>
+
+            <State id="h19_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 19</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 19</ControlPageLabel>
+            </State>
+
+            <State id="h20_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 20</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 20</ControlPageLabel>
+            </State>
+
+            <State id="h21_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 21</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 21</ControlPageLabel>
+            </State>
+
+            <State id="h22_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 22</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 22</ControlPageLabel>
+            </State>
+
+            <State id="h23_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 23</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 23</ControlPageLabel>
+            </State>
+
+            <State id="h24_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Hour 24</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Hour 24</ControlPageLabel>
+            </State>
+
             <State id="separator">
                 <ValueType>Separator</ValueType>
             </State>
@@ -2212,6 +2403,150 @@
                 <ControlPageLabel>Wind Speed - Hour 24</ControlPageLabel>
             </State>
 
+            <State id="h01_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 1</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 1</ControlPageLabel>
+            </State>
+
+            <State id="h02_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 2</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 2</ControlPageLabel>
+            </State>
+
+            <State id="h03_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 3</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 3</ControlPageLabel>
+            </State>
+
+            <State id="h04_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 4</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 4</ControlPageLabel>
+            </State>
+
+            <State id="h05_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 5</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 5</ControlPageLabel>
+            </State>
+
+            <State id="h06_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 6</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 6</ControlPageLabel>
+            </State>
+
+            <State id="h07_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 7</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 7</ControlPageLabel>
+            </State>
+
+            <State id="h08_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 8</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 8</ControlPageLabel>
+            </State>
+
+            <State id="h09_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 9</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 9</ControlPageLabel>
+            </State>
+
+            <State id="h10_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 10</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 10</ControlPageLabel>
+            </State>
+
+            <State id="h11_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 11</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 11</ControlPageLabel>
+            </State>
+
+            <State id="h12_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 12</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 12</ControlPageLabel>
+            </State>
+
+            <State id="h13_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 13</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 13</ControlPageLabel>
+            </State>
+
+            <State id="h14_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 14</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 14</ControlPageLabel>
+            </State>
+
+            <State id="h15_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 15</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 15</ControlPageLabel>
+            </State>
+
+            <State id="h16_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 16</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 16</ControlPageLabel>
+            </State>
+
+            <State id="h17_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 17</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 17</ControlPageLabel>
+            </State>
+
+            <State id="h18_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 18</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 18</ControlPageLabel>
+            </State>
+
+            <State id="h19_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 19</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 19</ControlPageLabel>
+            </State>
+
+            <State id="h20_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 20</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 20</ControlPageLabel>
+            </State>
+
+            <State id="h21_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 21</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 21</ControlPageLabel>
+            </State>
+
+            <State id="h22_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 22</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 22</ControlPageLabel>
+            </State>
+
+            <State id="h23_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 23</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 23</ControlPageLabel>
+            </State>
+
+            <State id="h24_windSpeedIcon">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Speed Icon - Hour 24</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Hour 24</ControlPageLabel>
+            </State>
+
             <State id="separator">
                 <ValueType>Separator</ValueType>
             </State>
@@ -2242,7 +2577,10 @@
         <ConfigUI>
 
             <Field id="space00" type="label" fontSize="small">
-                <Label>The image downloader only supports gif, jpg, jpeg, and png extensions. There is no limit to the number of downloader devices you can have.</Label>
+                <Label>The image downloader only supports gif, jpg, jpeg, and png extensions. There is no limit to the number of downloader devices you can have.
+
+                    Source: a valid url that returns an image file.
+                    Destination: /any/valid/pathname/image.png</Label>
             </Field>
 
             <Field id="space01" type="label">
@@ -2380,6 +2718,14 @@
                 <Label>These settings are independent of the Weather Units settings above. They do not affect the underlying value of the data point.</Label>
             </Field>
 
+            <!--<Field id="distanceUnits" type="textfield" defaultValue=" mi." visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all distance values. (5 mi.)">-->
+                <!--<Label>Distance:</Label>-->
+            <!--</Field>-->
+
+            <!--<Field id="pressureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue=" in." tooltip="Appended to all pressure values. (30.05 in.)">-->
+                <!--<Label>Pressure:</Label>-->
+            <!--</Field>-->
+
             <Field id="percentageUnits" type="textfield" defaultValue="%" visibleBindingId="space06" visibleBindingValue="true"
                    tooltip="Appended to all probability and percentage values. (80%)">
                 <Label>Percentage:</Label>
@@ -2387,16 +2733,20 @@
 
             <Field id="rainAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true"
                    tooltip="Appended to all rain volume units.(Values reported in either in. or mm.)">
-                <Label>Rain (Amount):</Label>
+                <Label>Rain:</Label>
             </Field>
 
             <Field id="snowAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true"
                    tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">
-                <Label>Snow (Amount):</Label>
+                <Label>Snow:</Label>
             </Field>
 
             <Field id="temperatureUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="°" tooltip="Appended to all temperature values. (75°)">
                 <Label>Temperature:</Label>
+            </Field>
+
+            <Field id="windUnits" type="textfield" defaultValue=" mph" visibleBindingId="space06" visibleBindingValue="true" tooltip="Appended to all wind values. (5 mph)">
+                <Label>Wind:</Label>
             </Field>
 
             <Field id="deviceVersion" type="textfield" defaultValue="1" hidden="True">
@@ -3119,9 +3469,69 @@
             </State>
 
             <State id="d10_windDir">
-                <ValueType>String</ValueType>
+                <ValueType>Integer</ValueType>
                 <TriggerLabel>Wind Direction - Day 10</TriggerLabel>
                 <ControlPageLabel>Wind Direction - Day 10</ControlPageLabel>
+            </State>
+
+            <State id="d01_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 1</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 1</ControlPageLabel>
+            </State>
+
+            <State id="d02_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 2</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 2</ControlPageLabel>
+            </State>
+
+            <State id="d03_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 3</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 3</ControlPageLabel>
+            </State>
+
+            <State id="d04_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 4</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 4</ControlPageLabel>
+            </State>
+
+            <State id="d05_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 5</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 5</ControlPageLabel>
+            </State>
+
+            <State id="d06_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 6</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 6</ControlPageLabel>
+            </State>
+
+            <State id="d07_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 7</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 7</ControlPageLabel>
+            </State>
+
+            <State id="d08_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 8</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 8</ControlPageLabel>
+            </State>
+
+            <State id="d09_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 9</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 9</ControlPageLabel>
+            </State>
+
+            <State id="d10_windDegrees">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction (degrees) - Day 10</TriggerLabel>
+                <ControlPageLabel>Wind Direction (degrees) - Day 10</ControlPageLabel>
             </State>
 
             <State id="separator">
@@ -3186,6 +3596,66 @@
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Wind Speed - Day 10</TriggerLabel>
                 <ControlPageLabel>Wind Speed - Day 10</ControlPageLabel>
+            </State>
+
+            <State id="d01_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 1</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 1</ControlPageLabel>
+            </State>
+
+            <State id="d02_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 2</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 2</ControlPageLabel>
+            </State>
+
+            <State id="d03_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 3</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 3</ControlPageLabel>
+            </State>
+
+            <State id="d04_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 4</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 4</ControlPageLabel>
+            </State>
+
+            <State id="d05_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 5</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 5</ControlPageLabel>
+            </State>
+
+            <State id="d06_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 6</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 6</ControlPageLabel>
+            </State>
+
+            <State id="d07_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 7</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 7</ControlPageLabel>
+            </State>
+
+            <State id="d08_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 8</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 8</ControlPageLabel>
+            </State>
+
+            <State id="d09_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 9</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 9</ControlPageLabel>
+            </State>
+
+            <State id="d10_windSpeedIcon">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Wind Speed Icon - Day 10</TriggerLabel>
+                <ControlPageLabel>Wind Speed Icon - Day 10</ControlPageLabel>
             </State>
 
             <State id="separator">
@@ -3875,8 +4345,7 @@
     </Device>
 
     <!-- Weather Device -->
-    <Device
-            id="wunderground" type="custom">
+    <Device id="wunderground" type="custom">
         <Name>WUnderground Weather</Name>
 
         <ConfigUI>
@@ -3971,6 +4440,11 @@
             <Field id="rainUnits" type="textfield" defaultValue=" in." visibleBindingId="space05" visibleBindingValue="true" tooltip="Appended to all rain values. (0.5 in.)">
                 <Label>Rainfall:</Label>
             </Field>
+
+            <!--<Field id="snowAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="in."-->
+                   <!--tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">-->
+                <!--<Label>Snow:</Label>-->
+            <!--</Field>-->
 
             <Field id="temperatureUnits" type="textfield" visibleBindingId="space05" visibleBindingValue="true" defaultValue="°" tooltip="Appended to all temperature values. (75°)">
                 <Label>Temperature:</Label>
@@ -4315,50 +4789,50 @@
 
             <State id="foreTitle1">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 1</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 1</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 1</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 1</ControlPageLabel>
             </State>
 
             <State id="foreTitle2">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 2</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 2</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 2</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 2</ControlPageLabel>
             </State>
 
             <State id="foreTitle3">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 3</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 3</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 3</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 3</ControlPageLabel>
             </State>
 
             <State id="foreTitle4">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 4</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 4</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 4</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 4</ControlPageLabel>
             </State>
 
             <State id="foreTitle5">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 5</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 5</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 5</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 5</ControlPageLabel>
             </State>
 
             <State id="foreTitle6">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 6</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 6</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 6</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 6</ControlPageLabel>
             </State>
 
             <State id="foreTitle7">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 7</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 7</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 7</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 7</ControlPageLabel>
             </State>
 
             <State id="foreTitle8">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Detailed Forecast - 8</TriggerLabel>
-                <ControlPageLabel>Detailed Forecast - 8</ControlPageLabel>
+                <TriggerLabel>Detailed Forecast - Title 8</TriggerLabel>
+                <ControlPageLabel>Detailed Forecast - Title 8</ControlPageLabel>
             </State>
 
             <State id="icon1">
