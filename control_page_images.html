@@ -21,9 +21,9 @@
     icons:
 
 <ul>
-    <li><span>&nbsp;Current Conditions&nbsp;</span> - Icon (Day/Night): These icons will vary based on the current weather condition, and whether the Indigo variable value "isDaylight"
-        is true or false. In other
-        words,
+    <li><span>&nbsp;Current Conditions&nbsp; - Icon (Day/Night)</span><br><br>
+        These icons will vary based on the current weather condition, and whether the Indigo variable value "isDaylight"
+        is true or false. In other words,
 
         <ul>
             <li>isDaylight = true - daytime icons will be used</li>
@@ -32,81 +32,93 @@
 
         <br>(more on that later.)<br><br>
 
-    <li><span>&nbsp;Current Conditions&nbsp;</span> - Icon (All Day): These icons will vary based on the current weather condition, but will not vary based on whether it's daytime or
+    <li><span>&nbsp;Current Conditions&nbsp; - Icon (All Day)</span><br><br>
+        These icons will vary based on the current weather condition, but will not vary based on whether it's daytime or
         nighttime.<br><br>
 
-    <li><span>&nbsp;Icon&nbsp;</span> - (Today, Day 2, Day 3, Day 4): These icons are linked to the current forecast for today and for the next 3 days. These icons will vary based on the
-        forecast, but will not
-        vary based on daytime or nighttime.<br><br>
+    <li><span>&nbsp;Icon&nbsp; - (Today, Day 2, Day 3, Day 4)</span><br><br>
+        These icons are linked to the current forecast for today and for the next 3 days. These icons will vary based on the
+        forecast, but will not vary based on daytime or nighttime.<br><br>
     </li>
 
-    <li><span>&nbsp;Forecast Device Icons&nbsp;</span> - (Hour 1, Hour 2, Hour 3...): These icons are linked to the 24 individual 1-hour forecast states within the WUnderground Hourly
-        Forecast Device. These icons
-        do not presently vary based on whether it's daytime or nighttime.<br><br>
-
-        You must provide the icons (the picture files) that will be displayed.
+    <li><span>&nbsp;Forecast Device Icons&nbsp; - (Hour 1, Hour 2, Hour 3...)</span><br><br>
+        These icons are linked to the 24 individual 1-hour forecast states within the WUnderground Hourly
+        Forecast Device. These icons do not presently vary based on whether it's daytime or nighttime.
     </li>
 </ul>
+<p>You must provide the icons (the picture files) that will be displayed. Indigo does not ship with images structured for the WUnderground plugin.</p>
 
 <h1>Custom Icon Naming</h1>
 <p>It is important that you follow a very specific naming convention for the icons that will be displayed. If you don't follow the proper format, the images won't display as you expect.
     To begin, find an image that you want to use--a sun for example--and give it a name followed by "+.png". Obviously, it needs to be a PNG graphic file. Name it thusly:</p>
 
 <ul>
-    <li>weather+.png<br><br>
-        <img src="img/img_weather_plus_clear.png"><br>
-        You don't have to use "weather", but you should use something appropriate that you will recognize. "WUnderground+.png" is an excellent choice. ("Bob+.png" will work, but seems
-        odd...) This will be the default image that is displayed when no other image file matches the weather.<br><br>
-    </li>
+    <li>weather+.png</li>
 </ul>
 
-<p>All other daytime (and All Day) icon names use the following format:</p>
+<p>You don't have to use "weather", but you should use something appropriate that you will recognize. "WUnderground+.png" is an excellent choice. ("Bob+.png" will work, but seems
+    odd...) This will be the default image that is displayed when no other image file matches the weather. All other daytime (and All Day) icon names use the following format:
 
-<ul>
-    <li>weather+clear.png</li>
-    <img src="img/img_weather_plus_clear.png"><br>
-    <li>weather+cloudy.png</li>
-    <img src="img/img_weather_plus_cloudy.png"><br>
-    <li>weather+rain.png</li>
-    <img src="img/img_weather_plus_rain.png"><br>
-    <li>...</li>
-</ul>
+<table align="center" width="50%">
+    <caption>Weather Conditions Icons</caption>
+    <tr>
+        <th width="33%">weather+clear.png</th>
+        <th width="33%">weather+cloudy.png</th>
+        <th width="33%">weather+rain.png</th>
+    </tr>
+    <tr>
+        <td><img src="img/img_weather_plus_clear.png"></td>
+        <td><img src="img/img_weather_plus_cloudy.png"></td>
+        <td><img src="img/img_weather_plus_rain.png"></td>
+    </tr>
+</table>
 
-<p>Nighttime icon names have the following format:</p>
-
-<ul>
-    <li>weather+nt_clear.png</li>
-    <img src="img/img_weather_plus_nt_clear.png"><br>
-    <li>weather+nt_cloudy.png</li>
-    <img src="img/img_weather_plus_nt_cloudy.png"><br>
-    <li>weather+nt_rain.png</li>
-    <img src="img/img_weather_plus_nt_rain.png"><br>
-    <li>...</li>
-</ul>
+<p>Nighttime icon names have the following format:
+<table align="center" width="50%">
+    <caption>Nighttime Weather Conditions Icons</caption>
+    <tr>
+        <th width="33%">weather+nt_clear.png</th>
+        <th width="33%">weather+nt_cloudy.png</th>
+        <th width="33%">weather+nt_rain.png</th>
+    </tr>
+    <tr>
+        <td><img src="img/img_weather_plus_nt_clear.png"></td>
+        <td><img src="img/img_weather_plus_nt_cloudy.png"></td>
+        <td><img src="img/img_weather_plus_nt_rain.png"></td>
+    </tr>
+</table>
 
 <p>The forecast condition values are slightly different, but the convention is the same. There are no nighttime forecast icons. The filenames are intentionally different so that
     one set of icons can be used for current conditions and another for forecasts (you might want smaller forecast icons, for example.)</p>
 
-<ul>
-    <li>forecast+clear.png</li>
-    <img src="img/img_weatherForecast_plus_clear.png"><br>
-    <li>forecast+cloudy.png</li>
-    <img src="img/img_weatherForecast_plus_cloudy.png"><br>
-    <li>forecast+chancestorms.png</li>
-    <img src="img/img_weatherForecast_plus_rain.png"><br>
-</ul>
+<table align="center" width="50%">
+    <caption>Weather Forecast Icons</caption>
+    <tr>
+        <th width="33%">forecast+clear.png</th>
+        <th width="33%">forecast+cloudy.png</th>
+        <th width="33%">forecast+chancestorms.png</th>
+    </tr>
+    <tr>
+        <td><img src="img/img_weatherForecast_plus_clear.png"></td>
+        <td><img src="img/img_weatherForecast_plus_cloudy.png"></td>
+        <td><img src="img/img_weatherForecast_plus_rain.png"></td>
+    </tr>
+</table>
 
 <p>Images should be stored in the following directory (note that X represents the Indigo Version Number:<br>
     /Library/Application Support/Perceptive Automation/Indigo X/indigoWebServer/images/controls/devices</p></li>
 </ul>
 
+<p>There is a full icon set available via the Indigo File Library, located here:<br>
+    <a href="http://forums.indigodomo.com/viewtopic.php?f=149&t=13865">http://forums.indigodomo.com/viewtopic.php?f=149&t=13865</a>
+
 <p>Weather Underground provides several sets of icons that you can use if you wish, located here:<br>
-    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets">http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets</a><br><br>
+    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets">http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets</a>
 
-    and the complete list of condition and forecast phrases that Weather Underground could provide is located here:<br>
-    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary">http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary</a> [1]<br><br>
+<p>The complete list of condition and forecast phrases that Weather Underground could provide is located here:<br>
+    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary">http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary</a> [1]</p>
 
-    You can find lots of icons online that are free to use (I use icons from the <a href="http://www.iconarchive.com">Icon Archive</a>)</p>
+<p>You can find lots of icons online that are free to use (I use icons from the <a href="http://www.iconarchive.com">Icon Archive</a>)</p>
 
 <h1>Control Page Use</h1>
 <p>To use the icons in a control page, insert a new control with the following settings:</p>
