@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="fogbert.css">
+    <meta charset="UTF-8">
+    <title>WUnderground Plugin for Indigo Home Control Server</title>
+</head>
+<body>
+
+<div style="text-align: center"><img src="img/img_WUndergroundLogo.png"></div>
+
+<nav>
+    <a href="https://github.com/DaveL17/WUnderground/releases/"><img src="img/img_download.png"></a>
+    <a href="http://forums.indigodomo.com/viewforum.php?f=149"><img src="img/img_forum.png"></a>
+    <a href="https://github.com/DaveL17/WUnderground/wiki"><img src="img/img_wiki.png"></a>
+    <a href="https://github.com/DaveL17/WUnderground/control_page_images.html"><img src="img/img_control_pages.png"></a>
+</nav>
+
+<h1>Using Control Page Images with the WUnderground Plugin</h1>
+<p>The WUnderground plugin provides a facility to use weather-based icons on control pages. It provides several device states that are designed to help with displaying weather-based
+    icons:
+
+<ul>
+    <li><span>&nbsp;Current Conditions&nbsp;</span> - Icon (Day/Night): These icons will vary based on the current weather condition, and whether the Indigo variable value "isDaylight"
+        is true or false. In other
+        words,
+
+        <ul>
+            <li>isDaylight = true - daytime icons will be used</li>
+            <li>isDaylight = false - nighttime icons will be used</li>
+        </ul>
+
+        <br>(more on that later.)<br><br>
+
+    <li><span>&nbsp;Current Conditions&nbsp;</span> - Icon (All Day): These icons will vary based on the current weather condition, but will not vary based on whether it's daytime or
+        nighttime.<br><br>
+
+    <li><span>&nbsp;Icon&nbsp;</span> - (Today, Day 2, Day 3, Day 4): These icons are linked to the current forecast for today and for the next 3 days. These icons will vary based on the
+        forecast, but will not
+        vary based on daytime or nighttime.<br><br>
+    </li>
+
+    <li><span>&nbsp;Forecast Device Icons&nbsp;</span> - (Hour 1, Hour 2, Hour 3...): These icons are linked to the 24 individual 1-hour forecast states within the WUnderground Hourly
+        Forecast Device. These icons
+        do not presently vary based on whether it's daytime or nighttime.<br><br>
+
+        You must provide the icons (the picture files) that will be displayed.
+    </li>
+</ul>
+
+<h1>Icon Naming</h1>
+<p>It is important that you follow a very specific naming convention for the icons that will be displayed. If you don't follow the proper format, the images won't display as you expect.
+    To begin, find an image that you want to use--a sun for example--and give it a name followed by "+.png". Obviously, it needs to be a PNG graphic file. Name it thusly:</p>
+
+<ul>
+    <li>weather+.png<br><br>
+        You don't have to use "weather", but you should use something appropriate that you will recognize. "WUnderground+.png" is an excellent choice. ("Bob+.png" will work, but seems
+        odd...) This will be the default image that is displayed when no other image file matches the weather.
+    </li>
+</ul>
+
+<p>All other daytime (and All Day) icon names use the following format:</p>
+
+<ul>
+    <li>weather+clear.png</li>
+    <li>weather+cloudy.png</li>
+    <li>weather+rain.png</li>
+    <li>...</li>
+</ul>
+
+<p>Nighttime icon names have the following format:</p>
+
+<ul>
+    <li>weather+nt_clear.png</li>
+    <li>weather+nt_cloudy.png</li>
+    <li>weather+nt_rain.png</li>
+    <li>...</li>
+</ul>
+
+<p>The forecast condition values are slightly different, but the convention is the same. There are no nighttime forecast icons. The filenames are intentionally different so that
+    one set of icons can be used for current conditions and another for forecasts (you might want smaller forecast icons, for example.)</p>
+
+<ul>
+    <li>forecast+.png</li>
+    <li>forecast+clear.png</li>
+    <li>forecast+chancestorms.png</li>
+</ul>
+
+<p>Images should be stored in the following directory (note that X represents the Indigo Version Number:<br>
+    /Library/Application Support/Perceptive Automation/Indigo X/indigoWebServer/images/controls/devices</p></li>
+</ul>
+
+<p>Weather Underground provides several sets of icons that you can use if you wish, located here:<br>
+    http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets<br><br>
+
+    and the complete list of condition and forecast phrases that Weather Underground could provide is located here:<br>
+    http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary. [1]<br><br>
+
+    You can find lots of icons online that are free to use (I use icons from http://www.iconarchive.com)</p>
+
+<h1>Control Page Use</h1>
+<p>To use the icons in a control page, insert a new control with the following settings:</p>
+
+<ul>
+    <li>Display: [Device State]</li>
+    <li>For: [Your Weather Device] [Current Conditions - Icon (Day/Night)]</li>
+    <li>As Image: [weather+.png]</li>
+</ul>
+
+<p>and set the remainder of the settings as you wish. Here's another example (for today's forecast icon):</p>
+
+<ul>
+    <li>Display: [Device State]</li>
+    <li>For: [Your Weather Device] / [Icon - Today]</li>
+    <li>As Image: [forecast+.png]</li>
+</ul>
+
+<p>and Indigo will take care of the rest. Once you get the hang of it, it's actually very straightforward and you can extend the functionality even further. You might use icons for the
+    chance of precipitation (precip+.png, precip+10.png, precip+20.png, ...) or for wind direction (wind+.png, wind+North.png, wind+NNE.png, ...) Go nuts!<br><br>
+
+    For more information on Indigo Image naming conventions, see the <a href="http://wiki.indigodomo.com/doku.php?id=cp_custom_images">Indigo Image Heuristics Wiki Page:</a>
+</p>
+
+</body>
+</html>
