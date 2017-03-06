@@ -28,6 +28,7 @@
     need to configure the plugin to work with your desired implementation. During installation, Indigo should present you with the Plugin Configuration dialog. If for some
     reason that doesn’t happen, or if you want to make additional changes later, you can always get to the Plugin Configuration dialog by going to the Indigo main menu and
     selecting Plugins —> WUnderground —> Configure</p>
+
 <p>All settings that affect the plugin’s overall operations are found in the Plugin Configuration dialog. The settings are divided into six sections: Plugin Settings, Download
     Settings, Value Precision Settings, Alert Logging Settings, Update Notification Settings, and Debug Settings. Let’s look at each of these in turn.</p>
 <ul>
@@ -37,7 +38,7 @@
         per-minute limit as well as a daily limit apply. More on that later.) I strongly encourage users of the plugin to subscribe to WU’s general weather service. This
         subscription is only US$10 per year and provides some support to WU for their great service and hopefully helps to keep the service alive. Users should also select their
         preferred language setting. Language is an API setting; the WUnderground Plugin does not implement languages on its own—all plugin menus, settings and device states are in
-        English—the setting only affects the WU data returned.<br>
+        English—the setting only affects the WU data returned.<br><br>
     </li>
 
     <li><span>&nbsp;Download Settings&nbsp;</span> - WUnderground Plugin Download Settings control how often the plugin reaches out for new data and the total number of data downloads
@@ -47,20 +48,20 @@
         download frequency to 5 minutes results in 288 calls per day. Two weather locations at 5 minutes would result in 576 calls, which would be an overage. The plugin tries to
         minimize the number of calls as much as possible. It tries to make the fewest possible number of calls based on the users’ preferred settings, but the settings will always
         prevail. For example, two devices with the exact same location specifier will result in only one data download. However, ‘IL/Chicago’, ‘KORD’, ‘60601’, and
-        ‘pws:somePwsInChicago’ are all considered to be different and will result in individual API calls.<br>
+        ‘pws:somePwsInChicago’ are all considered to be different and will result in individual API calls.<br><br>
     </li>
 
     <li><span>&nbsp;Value Precision&nbsp;</span> - The value precision settings affect how select information is displayed throughout the Indigo user interface. There are presently value
         precision settings for temperatures and humidities. These setting control the number of decimal places that will be displayed within the Indigo Item List and on Control Pages.
         There are two settings for temperature values—one for the Indigo Item List and one for the User Interface (UI). There is one UI setting for humidity. Changing these values does
-        not affect the underlying value of the data; it only affects how the data are displayed.<br>
+        not affect the underlying value of the data; it only affects how the data are displayed.<br><br>
     </li>
 
     <li><span>&nbsp;Alert Logging&nbsp;</span> - The alert logging settings control whether the WUnderground plugin will print out severe weather alerts to the Indigo Log. There are two
         alert logging settings. The Log Active Alert Messages setting controls whether severe weather alerts are written to the log. Checking the box will display alerts in the log. The
         Hide “No Alert” messages setting will suppress log messages when there are no active alerts. Checking the box will suppress the No Alert messages. For example, to log severe
         weather alerts but hide messages when there are no active alerts, check both boxes. Regardless of the option selected, data on severe weather alerts will be retained
-        within the custom device states for each appropriate device.<br>
+        within the custom device states for each appropriate device.<br><br>
     </li>
 
     <li><span>&nbsp;Update Notifications&nbsp;</span> - The plugin update notification settings tell the plugin to alert you when a new version of the plugin is available. To enable
@@ -82,7 +83,7 @@
         supported by the other plugin device types. For example, the Weather Device type contains forecast data for the current day plus 3 future days. If the user wants
         more forecast periods, then the Ten Day Forecast device should be used. The Weather Device type includes many variables related to current conditions, future
         conditions and so on. The location setting controls how the associated data will be sourced, whether it is through automatic detection or explicitly specified
-        using any number of formats. See “Location Formats” for more information. There are additional settings for Weather Units, Display Units and Severe Weather<br>
+        using any number of formats. See “Location Formats” for more information. There are additional settings for Weather Units, Display Units and Severe Weather<br><br>
         Alerts.
     </li>
 
@@ -91,7 +92,7 @@
         no longer interested in the forecast for today, in which case Day 1 becomes tomorrow. Nonetheless, each is managed internally by WU, so we needn’t worry about
         that. Like the Hourly Forecast Device, the Ten Day Forecast devices maintains data about temperature, humidity, wind, precipitation, etc. The location setting
         controls how the associated data will be sourced, whether it is through automatic detection or explicitly specified using any number of formats. See “Location
-        Formats” for more information. There are additional settings for weather units, wind speed, wind direction and display units.<br>
+        Formats” for more information. There are additional settings for weather units, wind speed, wind direction and display units.<br><br>
     </li>
 
     <li><span>&nbsp;24-Hour Weather Forecast&nbsp;</span> - The WUnderground Hourly Forecast Device provides weather forecast information for the next 24 hours. The 24 hour cycle begins
@@ -100,12 +101,12 @@
         chance of precipitation, temperatures, and wind (among others.) There are settings for weather units—for example, standard or metric—and wind direction. The
         Hourly Forecast Device also includes data to support custom control page display units text and images (see Using Custom Control Page Images below for more
         information.) The location setting controls how the associated data will be sourced, whether it is through automatic detection or explicitly specified using
-        any number of formats. See “Location Formats” for more information.<br>
+        any number of formats. See “Location Formats” for more information.<br><br>
     </li>
 
     <li><span>&nbsp;Astronomy Information&nbsp;</span> - The WUnderground Astronomy Device provides information on the phase of the moon, sunrise, sunset, and associated values. There is
         only one setting for the Astronomy device—location. The location setting controls how the associated data will be sourced, whether it is through automatic
-        detection or explicitly specified using any number of formats. See “Location Formats” for more information.<br>
+        detection or explicitly specified using any number of formats. See “Location Formats” for more information.<br><br>
     </li>
 
     <li><span>&nbsp;Weather Almanac&nbsp;</span> - The WUnderground Almanac Device is a simple device that provides historical weather information for the specified location. The device
@@ -114,12 +115,12 @@
         whether it is through automatic detection or explicitly specified using any number of formats. See “Location Formats” for more information. The display units
         field is for placing custom labels and symbols with the data when it is displayed on control pages. For example, adding the degree symbol will change 12.3 to
         “12.3°” and adding a units specifier “12.3 °C” for display on control pages. Any value may be placed in this field as long as it is a valid Unicode string
-        character.<br>
+        character.<br><br>
     </li>
 
     <li><span>&nbsp;Tide Forecast&nbsp;</span> - The WUnderground Tides Device provides information on high and low tide, lunar information and other data as appropriate. Presently, data
         are available for U.S. locations only (this is a limitation of WU data and not the plugin or Indigo.) The location setting controls how the associated data
-        will be sourced, whether it is through automatic detection or explicitly specified using any number of formats. See “Location Formats” for more information.<br>
+        will be sourced, whether it is through automatic detection or explicitly specified using any number of formats. See “Location Formats” for more information.<br><br>
     </li>
 
     <li><span>&nbsp;Image Downloader (for satellite imagery)&nbsp;</span> - The WUnderground Satellite Image Downloader Device is a little bit different from the other WUnderground
@@ -135,25 +136,25 @@
 <ul>
     <li><span>&nbsp;autoip&nbsp;</span> - The auto IP location parameter will attempt to provide the data that is most appropriate for the location associated with the user’s current IP
         address. This address is your external IP address, and not the address of your Indigo Server. This is not always the best approach and relies extensively on how
-        accurate your ISP reports locations. For example, sometimes my auto IP location is several hundred miles away.<br>
+        accurate your ISP reports locations. For example, sometimes my auto IP location is several hundred miles away.<br><br>
     </li>
 
     <li><span>&nbsp;City&nbsp;</span> - The format of the city location parameter will be dictated by whether your location is a U.S. city. Cities within the U.S. should format the
         location as STATE/CITY_NAME and non-U.S. cities should format the location as COUNTRY_NAME/CITY_NAME. The following formats are all examples of valid formats:
-        CA/San_Francisco, IL/Chicago, Canada/Toronto, Canada/Quebec_City, United_Kingdom/London<br>
+        CA/San_Francisco, IL/Chicago, Canada/Toronto, Canada/Quebec_City, United_Kingdom/London<br><br>
     </li>
 
     <li><span>&nbsp;Latitude/Longitude&nbsp;</span> - the latitude/longitude location parameter should be entered latitude followed by longitude, with the values separated by a comma (no
-        spaces.) For example, the following formats are both valid: 48.86,2.29 or -33.86,151.22<br>
+        spaces.) For example, the following formats are both valid: 48.86,2.29 or -33.86,151.22<br><br>
     </li>
 
     <li><span>&nbsp;ICAO Airport Station&nbsp;</span> - the ICAO airport location parameter will supply data sourced to any one of a number of ICAO reporting stations—for example, KORD
         (O’Hare) or CYYZ (Toronto). To find an ICAO airport locator ID for your local airport (if appropriate) go to an ICAO locator site such as
-        <a href="http://www.avcodes.co.uk/aptcodesearch.asp">Avcodes</a><br>
+        <a href="http://www.avcodes.co.uk/aptcodesearch.asp">Avcodes</a><br><br>
     </li>
 
     <li><span>&nbsp;Personal Weather Station&nbsp;</span> - Personal Weather Station location parameters are keyed to individual weather stations within the Weather Underground Personal
-        Weather Station network. Each weather station has a unique identifier which should be preceded by the code pws: (for example, ‘pws:KMNCHASK10)<br>
+        Weather Station network. Each weather station has a unique identifier which should be preceded by the code pws: (for example, ‘pws:KMNCHASK10)<br><br>
     </li>
 
     <li><span>&nbsp;US ZIP Code&nbsp;</span> - Lastly, the US ZIP Code location parameter can be used, of the format ‘12345’. This is a Weather Underground feature and unfortunately,
@@ -212,22 +213,22 @@
 <p>In addition to the standard plugin menu items, the WUnderground plugin also provides:
 <ul>
     <li><span>&nbsp;Enable/Disable All WU Devices&nbsp;</span> - Selecting either of these two menu items will turn communication on or off for all WUnderground devices at once. This is
-        useful when trying to isolate problems. For example, making it easier to disable all devices and then re-enable them one-by-one.<br>
+        useful when trying to isolate problems. For example, making it easier to disable all devices and then re-enable them one-by-one.<br><br>
     </li>
 
     <li><span>&nbsp;Refresh Data Now&nbsp;</span> - Use this function to initiate a weather data refresh cycle immediately. This is essentially equivalent to allowing the plugin to
-        update on its own. Selecting this function will not affect the timing of the next scheduled data refresh cycle, but it will count as a call to the API for each weather<br>
+        update on its own. Selecting this function will not affect the timing of the next scheduled data refresh cycle, but it will count as a call to the API for each weather<br><br>
         location.
     </li>
 
     <li><span>&nbsp;Write Weather Data to File&nbsp;</span> - Use this function to write a full copy of the WU API weather data to a file. Selecting this option will reach out to WU’s
         servers, and the resulting JSON data will be written to the following location: '/Library/Application Support/Perceptive Automation/Indigo 6/Logs/YYYY-MM-DD Wunderground.txt’.
         This facility will likely not be needed very often, but can help in tracking down bugs. Selecting this function will not affect the timing of the next scheduled
-        data refresh cycle, but it will count as a call to the API for each weather location.<br>
+        data refresh cycle, but it will count as a call to the API for each weather location.<br><br>
     </li>
 
     <li><span>&nbsp;Check for Plugin Updates&nbsp;</span> - Use this function to check for plugin updates manually. This option does not require you to enable email notification on the
-        Plugin Configuration menu or have email features turned on within Indigo. The results of this check will be printed to the Indigo log.<br>
+        Plugin Configuration menu or have email features turned on within Indigo. The results of this check will be printed to the Indigo log.<br><br>
     </li>
 
     <li><span>&nbsp;Toggle Debugging&nbsp;</span> - Use this function to turn debugging on or off. If turning debug logging on, the debug level will be set to the current debug level
