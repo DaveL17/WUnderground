@@ -1,5 +1,8 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.08
+- Updates support URL for triggers.
+
 v1.0.07
 - Adds new device states to 10 day and Hourly Forecast devices:
   - windDegrees (for charting and control page heuristics)

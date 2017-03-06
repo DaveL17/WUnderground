@@ -83,7 +83,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.07"
+__version__ = "1.0.08"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,

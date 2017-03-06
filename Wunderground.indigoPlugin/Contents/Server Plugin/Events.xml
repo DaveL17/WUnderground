@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Events>
-    <SupportURL>http://www.yourdomain.com/plugin/pluginEvents.html</SupportURL>
+    <SupportURL>https://davel17.github.io/WUnderground/</SupportURL>
     <Event id="weatherAlert">
         <Name>Severe Weather Alert</Name>
             <ConfigUI>
