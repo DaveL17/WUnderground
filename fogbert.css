@@ -3,17 +3,11 @@ div {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 32px;
 }
-
 body {
     background-color: black;
     font-family: Verdana, Geneva, sans-serif;
     font-size: 32px;
 }
-
-caption {
-    caption-side: top;
-}
-
 code {
     background-color: #777777;
     color: black;
@@ -22,11 +16,9 @@ code {
     font-weight: normal;
     padding: 2px;
 }
-
 footer {
     display: block;
 }
-
 h1 {
     background: #330099;
     border: 1px solid #777777;
@@ -36,7 +28,6 @@ h1 {
     padding: 5px;
     text-align: left;
 }
-
 h3 {
     background-color: #330099;
     border: 1px solid #777777;
@@ -46,19 +37,16 @@ h3 {
     padding: 5px;
     text-align: left;
 }
-
-li span {
+li span{
     color: white;
     background-color: #330099;
 }
-
 ol {
     color: white;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: normal;
 }
-
 p {
     color: white;
     font-family: Verdana, Geneva, sans-serif;
@@ -66,45 +54,17 @@ p {
     font-weight: normal;
     padding: 5px
 }
-
-table, th, td {
-    border: 1px solid black;
-}
-
-table {
-    background-color: #222222;
-    border-collapse: collapse;
-}
-
-th {
-    background-color: #330099;
-    color: white;
-}
-td {
-    color: black;
-}
-th, td {
-    padding: 5px;
-    text-align: center;
-    font-size: 40%;
-}
-caption{
-    font-size: 50%;
-    color: white;
-}
 ul {
     color: white;
     font-family: Verdana, Geneva, sans-serif;
     font-size: 14px;
     font-weight: normal;
 }
-
+.TextWrap {
+    float: right;
+    margin: 10px;
+}
 .TextWrapLeft {
     float: left;
-    margin: 0px;
-}
-
-.TextWrapRight {
-    float: right;
-    margin: 0px;
+    margin: 10px;
 }
