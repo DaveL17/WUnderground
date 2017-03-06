@@ -16,7 +16,7 @@
     <a href="https://davel17.github.io/WUnderground/control_page_images.html"><img src="img/img_control_pages.png"></a>
 </nav>
 
-<h1>Using Control Page Images with the WUnderground Plugin</h1>
+<h1>Using Custom Control Page Images with the WUnderground Plugin</h1>
 <p>The WUnderground plugin provides a facility to use weather-based icons on control pages. It provides several device states that are designed to help with displaying weather-based
     icons:
 
@@ -48,14 +48,15 @@
     </li>
 </ul>
 
-<h1>Icon Naming</h1>
+<h1>Custom Icon Naming</h1>
 <p>It is important that you follow a very specific naming convention for the icons that will be displayed. If you don't follow the proper format, the images won't display as you expect.
     To begin, find an image that you want to use--a sun for example--and give it a name followed by "+.png". Obviously, it needs to be a PNG graphic file. Name it thusly:</p>
 
 <ul>
     <li>weather+.png<br><br>
+        <img src="img/img_weather_plus_clear.png"><br>
         You don't have to use "weather", but you should use something appropriate that you will recognize. "WUnderground+.png" is an excellent choice. ("Bob+.png" will work, but seems
-        odd...) This will be the default image that is displayed when no other image file matches the weather.
+        odd...) This will be the default image that is displayed when no other image file matches the weather.<br><br>
     </li>
 </ul>
 
@@ -63,8 +64,11 @@
 
 <ul>
     <li>weather+clear.png</li>
+    <img src="img/img_weather_plus_clear.png"><br>
     <li>weather+cloudy.png</li>
+    <img src="img/img_weather_plus_cloudy.png"><br>
     <li>weather+rain.png</li>
+    <img src="img/img_weather_plus_rain.png"><br>
     <li>...</li>
 </ul>
 
@@ -72,8 +76,11 @@
 
 <ul>
     <li>weather+nt_clear.png</li>
+    <img src="img/img_weather_plus_nt_clear.png"><br>
     <li>weather+nt_cloudy.png</li>
+    <img src="img/img_weather_plus_nt_cloudy.png"><br>
     <li>weather+nt_rain.png</li>
+    <img src="img/img_weather_plus_nt_rain.png"><br>
     <li>...</li>
 </ul>
 
@@ -81,9 +88,12 @@
     one set of icons can be used for current conditions and another for forecasts (you might want smaller forecast icons, for example.)</p>
 
 <ul>
-    <li>forecast+.png</li>
     <li>forecast+clear.png</li>
+    <img src="img/img_weatherForecast_plus_clear.png"><br>
+    <li>forecast+cloudy.png</li>
+    <img src="img/img_weatherForecast_plus_cloudy.png"><br>
     <li>forecast+chancestorms.png</li>
+    <img src="img/img_weatherForecast_plus_rain.png"><br>
 </ul>
 
 <p>Images should be stored in the following directory (note that X represents the Indigo Version Number:<br>
@@ -91,12 +101,12 @@
 </ul>
 
 <p>Weather Underground provides several sets of icons that you can use if you wish, located here:<br>
-    http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets<br><br>
+    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets">http://www.wunderground.com/weather/api/d/docs?d=resources/icon-sets</a><br><br>
 
     and the complete list of condition and forecast phrases that Weather Underground could provide is located here:<br>
-    http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary. [1]<br><br>
+    <a href="http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary">http://www.wunderground.com/weather/api/d/docs?d=resources/phrase-glossary</a> [1]<br><br>
 
-    You can find lots of icons online that are free to use (I use icons from http://www.iconarchive.com)</p>
+    You can find lots of icons online that are free to use (I use icons from the <a href="http://www.iconarchive.com">Icon Archive</a>)</p>
 
 <h1>Control Page Use</h1>
 <p>To use the icons in a control page, insert a new control with the following settings:</p>
