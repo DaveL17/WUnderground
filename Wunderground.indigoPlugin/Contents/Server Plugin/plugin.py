@@ -63,6 +63,9 @@ http://www.wunderground.com/weather/api/d/terms.html.
 # TODO: Look at localization.  Haavarda talked about "5 period 4" degrees (dot vs. comma)
 # TODO: Deprecate proper_icon_name?
 
+# TODO: When forecast fails, don't try again until tomorrow.
+# TODO: Refactor forecast code to ignore missing fields.
+
 import datetime as dt
 import indigoPluginUpdateChecker
 import pluginConfig
@@ -256,13 +259,16 @@ class Plugin(indigo.PluginBase):
         try:
             location_config = valuesDict['location']
             if not location_config:
-                error_msg_dict['location'] = u"You must specify a location."
+                error_msg_dict['location'] = u"Please specify a weather location."
+                error_msg_dict['showAlertText'] = u"Location Error.\n\nPlease specify a weather location."
                 return False, valuesDict, error_msg_dict
             elif " " in location_config:
                 error_msg_dict['location'] = u"The location value can't contain spaces."
+                error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain spaces."
                 return False, valuesDict, error_msg_dict
             elif "\\" in location_config:
                 error_msg_dict['location'] = u"The location value can't contain a \\ character. Replace it with a / character."
+                error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain a \\ character."
                 return False, valuesDict, error_msg_dict
 
             # Debug output can contain sensitive data.
@@ -582,7 +588,8 @@ class Plugin(indigo.PluginBase):
                 pass
 
         except (KeyError, IndexError) as error:
-            indigo.server.log(u"{0}: Unable to compile forecast email message due to missing data. Will keep trying.".format(dev.name), type="WUnderground Status", isError=False)
+            indigo.server.log(u"{0}: Unable to compile forecast email due to missing forecast data. Will try again tomorrow.".format(dev.name), type="WUnderground Status", isError=False)
+            dev.updateStateOnServer('weatherSummaryEmailSent', value=True, uiValue=u"Err")
             self.debugLog(u"Error: {0} Line {1}".format(error, sys.exc_traceback.tb_lineno))
 
         except Exception as error:
