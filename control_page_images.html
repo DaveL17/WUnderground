@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" type="text/css" href="https://davel17.github.io/common/fogbert.css">
+    <link rel="stylesheet" type="text/css" href="https://davel17.github.io/fogbert.css">
     <meta charset="UTF-8">
     <title>WUnderground Plugin for Indigo Home Control Server</title>
 </head>
@@ -10,9 +10,9 @@
 <div style="text-align: center"><img src="img/img_WUndergroundLogo.png"></div>
 
 <nav>
-    <a href="https://github.com/DaveL17/WUnderground/releases/"><img src="https://davel17.github.io/common/img/img_download.png"></a>
-    <a href="http://forums.indigodomo.com/viewforum.php?f=149"><img src="https://davel17.github.io/common/img/img_forum.png"></a>
-    <a href="https://github.com/DaveL17/WUnderground/wiki"><img src="https://davel17.github.io/common/img/img_wiki.png"></a>
+    <a href="https://github.com/DaveL17/WUnderground/releases/"><img src="https://davel17.github.io/img/img_download.png"></a>
+    <a href="http://forums.indigodomo.com/viewforum.php?f=149"><img src="https://davel17.github.io/img/img_forum.png"></a>
+    <a href="https://github.com/DaveL17/WUnderground/wiki"><img src="https://davel17.github.io/img/img_wiki.png"></a>
     <a href="https://davel17.github.io/WUnderground/control_page_images.html"><img src="img/img_control_pages.png"></a>
 </nav>
 
@@ -20,39 +20,40 @@
 <p>
     The WUnderground plugin provides a facility to use weather-based icons on control pages. It provides several device states that are designed to help with displaying weather-based
     icons:
-
+</p>
 <ul>
     <li>
         <span>&nbsp;Current Conditions&nbsp; - Icon (Day/Night)</span>
-        <br><br>
-        These icons will vary based on the current weather condition, and whether the Indigo variable value "isDaylight" is true or false. In other words,
-
+        <p>
+            These icons will vary based on the current weather condition, and whether the Indigo variable value "isDaylight" is true or false. In other words,
+        </p>
         <ul>
             <li>isDaylight = true - daytime icons will be used</li>
             <li>isDaylight = false - nighttime icons will be used</li>
         </ul>
-
-        <br>
-        (more on that later.)
-        <br><br>
-
+        <p>
+            (more on that later.)
+        </p>
     <li>
         <span>&nbsp;Current Conditions&nbsp; - Icon (All Day)</span>
-        <br><br>
-        These icons will vary based on the current weather condition, but will not vary based on whether it's daytime or nighttime.
-        <br><br>
+        <p>
+            These icons will vary based on the current weather condition, but will not vary based on whether it's daytime or nighttime.
+        </p>
+    </li>
+    <li>
+        <span>&nbsp;Icon&nbsp; - (Today, Day 2, Day 3, Day 4)</span>
+        <p>
+            These icons are linked to the current forecast for today and for the next 3 days. These icons will vary based on the forecast, but will not vary based on daytime or
+            nighttime.
+        </p>
     </li>
 
     <li>
-        <span>&nbsp;Icon&nbsp; - (Today, Day 2, Day 3, Day 4)</span><br><br>
-        These icons are linked to the current forecast for today and for the next 3 days. These icons will vary based on the forecast, but will not vary based on daytime or
-        nighttime.<br><br>
-    </li>
-
-    <li>
-        <span>&nbsp;Forecast Device Icons&nbsp; - (Hour 1, Hour 2, Hour 3...)</span><br><br>
-        These icons are linked to the 24 individual 1-hour forecast states within the WUnderground Hourly Forecast Device. These icons do not presently vary based on whether it's daytime
-        or nighttime.
+        <span>&nbsp;Forecast Device Icons&nbsp; - (Hour 1, Hour 2, Hour 3...)</span>
+        <p>
+            These icons are linked to the 24 individual 1-hour forecast states within the WUnderground Hourly Forecast Device. These icons do not presently vary based on whether it's
+            daytime or nighttime.
+        </p>
     </li>
 </ul>
 <p>
@@ -145,6 +146,9 @@ Nighttime icon names have the following format:
 <p>
     You can find lots of icons online that are free to use (I use icons from the <a href="http://www.iconarchive.com">Icon Archive</a>)
 </p>
+<p>
+    [1] Note that the WUnderground plugin does not use all of these values. Presently, it uses Wind Direction, Current Condition and Forecast values
+</p>
 
 <h1>Control Page Use</h1>
 <p>
@@ -169,12 +173,14 @@ Nighttime icon names have the following format:
 
 <p>
     and Indigo will take care of the rest. Once you get the hang of it, it's actually very straightforward and you can extend the functionality even further. You might use icons for the
-    chance of precipitation (precip+.png, precip+10.png, precip+20.png, ...) or for wind direction (wind+.png, wind+North.png, wind+NNE.png, ...) Go nuts!<br><br>
-
-    For more information on Indigo Image naming conventions, see the <a href="http://wiki.indigodomo.com/doku.php?id=cp_custom_images">Indigo Image Heuristics Wiki Page:</a>
+    chance of precipitation (precip+.png, precip+10.png, precip+20.png, ...) or for wind direction (wind+.png, wind+North.png, wind+NNE.png, ...) Go nuts!
 </p>
 <p>
-    [1] Note that the WUnderground plugin does not use all of these values. Presently, it uses Wind Direction, Current Condition and Forecast values
+    For more information on Indigo Image naming conventions, see the <a href="http://wiki.indigodomo.com/doku.php?id=cp_custom_images">Indigo Image Heuristics Wiki Page:</a>
 </p>
+
+<object name="features_and_bugs" type="text/html" data="https://davel17.github.io/features_and_bugs.html" style="width: 100%; height: 300px;"></object>
+<object name="license" type="text/html" data="https://davel17.github.io/license.html" style="width: 100%; height: 300px;"></object>
+
 </body>
 </html>
