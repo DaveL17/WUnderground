@@ -4,6 +4,14 @@
     <link rel="stylesheet" type="text/css" href="https://davel17.github.io/fogbert.css">
     <meta charset="UTF-8">
     <title>WUnderground Plugin for Indigo Home Control Server</title>
+
+    <!-- The following script auto-sizes the height of the iframe to the height of the content being displayed -->
+    <script type="text/javascript">
+        function resize_iframe(obj) {
+            obj.style.height = 0;
+            obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+        }
+    </script>
 </head>
 <body>
 
@@ -178,8 +186,8 @@ Nighttime icon names have the following format:
     For more information on Indigo Image naming conventions, see the <a href="http://wiki.indigodomo.com/doku.php?id=cp_custom_images">Indigo Image Heuristics Wiki Page:</a>
 </p>
 
-<object name="features_and_bugs" type="text/html" data="https://davel17.github.io/features_and_bugs.html" style="width: 100%; height: 300px;"></object>
-<object name="license" type="text/html" data="https://davel17.github.io/license.html" style="width: 100%; height: 300px;"></object>
+<iframe src="features_and_bugs.html" frameborder="0" scrolling="no" width="100%" onload="resize_iframe(this);"></iframe>
+<iframe src="license.html" frameborder="0" scrolling="no" width="100%" onload="resize_iframe(this);"></iframe>
 
 </body>
 </html>
