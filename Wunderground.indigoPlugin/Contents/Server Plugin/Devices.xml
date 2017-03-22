@@ -5119,34 +5119,6 @@
                 <ValueType>Separator</ValueType>
             </State>
 
-            <State id="historyDate">
-                <ValueType>String</ValueType>
-                <TriggerLabel>History - Date</TriggerLabel>
-                <ControlPageLabel>History - Date</ControlPageLabel>
-            </State>
-
-            <State id="historyHigh">
-                <ValueType>Float</ValueType>
-                <TriggerLabel>History - High</TriggerLabel>
-                <ControlPageLabel>History - High</ControlPageLabel>
-            </State>
-
-            <State id="historyLow">
-                <ValueType>Float</ValueType>
-                <TriggerLabel>History - Low</TriggerLabel>
-                <ControlPageLabel>History - Low</ControlPageLabel>
-            </State>
-
-            <State id="historyPop">
-                <ValueType>Float</ValueType>
-                <TriggerLabel>History - Precipitation</TriggerLabel>
-                <ControlPageLabel>History - Precipitation</ControlPageLabel>
-            </State>
-
-            <State id="separator">
-                <ValueType>Separator</ValueType>
-            </State>
-
             <State id="precip_today">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Precipitation - Today Actual</TriggerLabel>
@@ -5157,6 +5129,34 @@
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Precipitation - Today Actual (1 hr.)</TriggerLabel>
                 <ControlPageLabel>Precipitation - Today Actual (1 hr.)</ControlPageLabel>
+            </State>
+
+            <State id="separator">
+                <ValueType>Separator</ValueType>
+            </State>
+
+            <State id="historyDate">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Yesterday - Date</TriggerLabel>
+                <ControlPageLabel>Yesterday - Date</ControlPageLabel>
+            </State>
+
+            <State id="historyHigh">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Yesterday - High</TriggerLabel>
+                <ControlPageLabel>Yesterday - High</ControlPageLabel>
+            </State>
+
+            <State id="historyLow">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Yesterday - Low</TriggerLabel>
+                <ControlPageLabel>Yesterday - Low</ControlPageLabel>
+            </State>
+
+            <State id="historyPop">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Yesterday - Precipitation</TriggerLabel>
+                <ControlPageLabel>Yesterday - Precipitation</ControlPageLabel>
             </State>
 
             <State id="separator">

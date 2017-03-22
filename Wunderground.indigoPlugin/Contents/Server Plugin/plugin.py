@@ -63,8 +63,7 @@ http://www.wunderground.com/weather/api/d/terms.html.
 # TODO: Look at localization.  Haavarda talked about "5 period 4" degrees (dot vs. comma)
 # TODO: Deprecate proper_icon_name?
 
-# TODO: When forecast fails, don't try again until tomorrow.
-# TODO: Refactor forecast code to ignore missing fields.
+# TODO: See if it makes a difference to send the forecast email at 1:00 or 2:00 and whether that would help settle things down.
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -86,7 +85,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.08"
+__version__ = "1.0.09"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -178,7 +177,7 @@ class Plugin(indigo.PluginBase):
             else:
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
         except Exception as error:
-            self.debugLog(u"Error setting deviceUI temperature field. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Error setting deviceUI temperature field. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             self.debugLog(u"No existing data to use. itemList temp will be updated momentarily.")
 
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
@@ -191,7 +190,7 @@ class Plugin(indigo.PluginBase):
         try:
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
         except Exception as error:
-            self.debugLog(u"deviceStopComm error. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"deviceStopComm error. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -280,7 +279,7 @@ class Plugin(indigo.PluginBase):
                 self.debugLog(u"Device preferences suppressed. Set debug level to [High] to write them to the log.")
 
         except Exception as error:
-            self.debugLog(u"Error in validateDeviceConfigUI(). Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Error in validateDeviceConfigUI(). Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             pass
 
         return True
@@ -340,7 +339,7 @@ class Plugin(indigo.PluginBase):
                 return False, valuesDict, error_msg_dict
 
         except Exception as error:
-            self.debugLog(u"Exception in validatePrefsConfigUi API key test. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Exception in validatePrefsConfigUi API key test. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             pass
 
         return True, valuesDict
@@ -370,7 +369,9 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"  {0} callsLeft = ({1} - {2})".format(calls_left, calls_max, self.wu_settings['dailyCallCounter']))
 
     def callDay(self):
-        """ Manages the day for the purposes of maintaining the call counter.
+        """
+        Manages the day for the purposes of maintaining the call counter and
+        the flag for the daily forecast email message.
         """
         if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
             self.debugLog(u"callDay() method called.")
@@ -409,7 +410,7 @@ class Plugin(indigo.PluginBase):
                     if 'weatherSummaryEmailSent' in dev.states:
                         dev.updateStateOnServer('weatherSummaryEmailSent', value=False)
                 except Exception as error:
-                    self.debugLog(u"Exception updating weather summary email sent value. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Exception updating weather summary email sent value. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     pass
 
             self.updater.checkVersionPoll()
@@ -444,7 +445,7 @@ class Plugin(indigo.PluginBase):
         try:
             self.updater.checkVersionNow()
         except Exception as error:
-            self.errorLog(u"Error checking plugin update status. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Error checking plugin update status. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             return False
 
     def dumpTheJSON(self):
@@ -457,19 +458,19 @@ class Plugin(indigo.PluginBase):
 
         try:
             file_name = '/Library/Application Support/Perceptive Automation/Indigo 7/Logs/{0} Wunderground.txt'.format(dt.datetime.today().date())
-            logfile = open(file_name, "w")
+            logfile   = open(file_name, "w")
         except IOError:
             file_name = '/Library/Application Support/Perceptive Automation/Indigo 6/Logs/{0} Wunderground.txt'.format(dt.datetime.today().date())
-            logfile = open(file_name, "w")
+            logfile   = open(file_name, "w")
 
-        # TODO: the following code block balks when the text is sent as Unicode.
-        logfile.write("Weather Underground JSON Data Log\n")
-        logfile.write("Written at: {0}\n".format(dt.datetime.today()))
-        logfile.write("{0}{1}".format("=" * 72, '\n'))
+        # This works, but PyCharm doesn't like it as Unicode.  Bad inspection?
+        logfile.write(u"Weather Underground JSON Data Log\n")
+        logfile.write(u"Written at: {0}\n".format(dt.datetime.today()))
+        logfile.write(u"{0}{1}".format("=" * 72, '\n'))
 
         for key in self.masterWeatherDict.keys():
-            logfile.write("Location Specified: {0}\n".format(key))
-            logfile.write("{0}\n\n".format(self.masterWeatherDict[key]))
+            logfile.write(u"Location Specified: {0}\n".format(key))
+            logfile.write(u"{0}\n\n".format(self.masterWeatherDict[key]))
 
         logfile.close()
         indigo.server.log(u"Weather data written to: {0}".format(file_name))
@@ -481,9 +482,9 @@ class Plugin(indigo.PluginBase):
         :param dev: """
         self.debugLog(u'emailForecast() method called.')
 
-        try:
+        summary_wanted = dev.pluginProps.get('weatherSummaryEmail', False)
 
-            summary_wanted = dev.pluginProps.get('weatherSummaryEmail', False)
+        try:
 
             # Legacy device types had this setting improperly established as a string rather than a bool.
             if isinstance(summary_wanted, basestring):
@@ -502,61 +503,229 @@ class Plugin(indigo.PluginBase):
 
             if summary_wanted and not summary_sent:
                 if self.configMenuUnits in ['M', 'MS']:
-                    email_list = (unicode(dev.name),
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'],
-                                  self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']), "C",
-                                  self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']), "C",
-                                  self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']),
-                                  self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['mm']), "mm.",
-                                  self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']), "C",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'],
-                                  self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']), "C",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'],
-                                  self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']), "C",
-                                  self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']), "C",
-                                  self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']), "mm."
-                                  )
+                    email_list = []
+                    try:
+                        email_list.append(unicode(dev.name))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['mm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("mm.")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("mm.")
 
                 elif self.configMenuUnits in 'I':
-                    email_list = (unicode(dev.name),
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'],
-                                  self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']), "C",
-                                  self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']), "C",
-                                  self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']),
-                                  self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']), "in.",
-                                  self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']), "C",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'],
-                                  self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']), "C",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'],
-                                  self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']), "C",
-                                  self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']), "C",
-                                  self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']), "in."
-                                  )
+                    email_list = []
+                    try:
+                        email_list.append(unicode(dev.name))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("in.")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("in.")
 
                 else:
-                    email_list = (unicode(dev.name),
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'],
-                                  self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext'],
-                                  self.floatEverything("sendMailHighF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']), "F",
-                                  self.floatEverything("sendMailLowF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']), "F",
-                                  self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']),
-                                  self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']), "in.",
-                                  self.floatEverything("sendMailRecordHighF", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']), "F",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'],
-                                  self.floatEverything("sendMailRecordLowF", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']), "F",
-                                  self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'],
-                                  self.floatEverything("sendMailMaxTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi']), "F",
-                                  self.floatEverything("sendMailMinTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi']), "F",
-                                  self.floatEverything("sendMailPrecipI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']), "in."
-                                  )
+                    email_list = []
+                    try:
+                        email_list.append(unicode(dev.name))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailHighF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.floatEverything("sendMailLowF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxHumidity", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("in.")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordHighF", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailRecordLowF", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMinTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("in.")
 
                 email_list = tuple([u"--" if x == "" else x for x in email_list])  # Set value to u"--" if an empty string.
 
@@ -593,9 +762,9 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"Error: {0} Line {1}".format(error, sys.exc_traceback.tb_lineno))
 
         except Exception as error:
-            self.errorLog(u"Unable to send forecast email message. Error: {0} (Line {1}). Will keep trying.".format(error, sys.exc_traceback.tb_lineno))
+            self.errorLog(u"Unable to send forecast email message. Error: (Line {0}  {1}). Will keep trying.".format(error, sys.exc_traceback.tb_lineno))
 
-    def fixCorruptedData(self, stateName, val):
+    def fixCorruptedData(self, state_name, val):
         """ Sometimes WU receives corrupted data from personal weather stations.
         Could be zero, positive value or "--" or "-999.0" or "-9999.0". This
         method tries to "fix" these values for proper display. Since there's no
@@ -604,9 +773,9 @@ class Plugin(indigo.PluginBase):
         same. Thanks to "jheddings" for the better implementation of this
         method.
         :param val:
-        :param stateName: """
+        :param state_name: """
         if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
-            self.debugLog(u"{0}: fixCorruptedData() method called.".format(stateName))
+            self.debugLog(u"{0}: fixCorruptedData() method called.".format(state_name))
 
         try:
             real = float(val)
@@ -632,11 +801,12 @@ class Plugin(indigo.PluginBase):
             elif val == "-":
                 return u"v"  # TODO: consider a return like: u'\u2B07'.encode('utf-8')
             elif val == "0":
-                return u"-"
+                return u"-"  # TODO: consider a return like u'\u2014\u2014'.encode('utf-8')
+
             else:
                 return u"?"
         except Exception as error:
-            self.debugLog(u"Exception in fixPressureSymbol. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Exception in fixPressureSymbol. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             return val
 
     def fixWind(self, stateName, val):
@@ -674,7 +844,7 @@ class Plugin(indigo.PluginBase):
 
         try:
             return float(val)
-        except ValueError as error:
+        except (ValueError, TypeError) as error:
             self.debugLog(u"Error: {0} (Line {1} (val = {2})".format(error, sys.exc_traceback.tb_lineno, val))
             return -99.0
 
@@ -713,7 +883,7 @@ class Plugin(indigo.PluginBase):
             dev.replacePluginPropsOnServer(new_props)
 
         except Exception as error:
-            self.errorLog(u"Error downloading satellite image. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Error downloading satellite image. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             dev.updateStateOnServer('onOffState', value=False, uiValue=u"No comm")
             return False
 
@@ -735,7 +905,7 @@ class Plugin(indigo.PluginBase):
                 try:
                     self.location = dev.pluginProps.get('location', 'autoip')
                 except Exception as error:
-                    self.debugLog(u"Exception retrieving location from device. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Exception retrieving location from device. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     indigo.server.log(u"Missing location information for device: {0}. Attempting to automatically determine location using your IP address.".format(dev.name), type="WUnderground Info", isError=False)
                     self.location = "autoip"
 
@@ -750,8 +920,9 @@ class Plugin(indigo.PluginBase):
                     # [http://stackoverflow.com/questions/10158701/how-to-capture-output-of-curl-from-python-script]
                     language = self.pluginPrefs.get('language', "EN")
                     api_key = self.pluginPrefs.get('apiKey', '')
-                    # url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts/almanac/astronomy/conditions/forecast/forecast10day/hourly/lang:{1}/history_{2}/tide/q/{3}.json".format(api_key, language, yesterday_str, self.location))
-                    url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/history_v11_{2}/tide_v11/q/{3}.json".format(api_key, language, yesterday_str, self.location))
+                    # url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts/almanac/astronomy/conditions/forecast/forecast10day/hourly/lang:{1}/history_{2}/tide/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # original URL scheme
+                    # url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/history_v11_{2}/tide_v11/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # applies URL v11 to address some api bugs
+                    url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/yesterday_v11/tide_v11/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # switches to yesterday api instead of history_DATE api.
 
                     # Debug output can contain sensitive data.
                     if debug_level >= 3:
@@ -801,7 +972,7 @@ class Plugin(indigo.PluginBase):
                     try:
                         parsed_simplejson = simplejson.loads(simplejson_string, encoding="utf-8")
                     except Exception as error:
-                        self.debugLog(u"Exception in coercing JSON to UTF-8. Loading as 'ISO-8859-1'. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                        self.debugLog(u"Exception in coercing JSON to UTF-8. Loading as 'ISO-8859-1'. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                         indigo.server.log(str(parsed_simplejson))
 
                     # Add location JSON to maser weather dictionary.
@@ -812,7 +983,7 @@ class Plugin(indigo.PluginBase):
                     self.callCount()
 
             except Exception as error:
-                self.errorLog(u"Unable to reach Weather Underground. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.errorLog(u"Unable to reach Weather Underground. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                 self.errorLog(u"Sleeping until next scheduled poll.")
 
                 # Unable to fetch the JSON. Mark all devices as 'false'.
@@ -855,7 +1026,7 @@ class Plugin(indigo.PluginBase):
             try:
                 indigo.device.enable(dev, value=False)
             except Exception as error:
-                self.debugLog(u"Exception when trying to kill all comms. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
     def unkillAllComms(self):
         """ unkillAllComms() sets the enabled status of all plugin devices to
@@ -865,7 +1036,7 @@ class Plugin(indigo.PluginBase):
             try:
                 indigo.device.enable(dev, value=True)
             except Exception as error:
-                self.debugLog(u"Exception when trying to unkill all comms. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
     def listOfDevices(self, typeId, valuesDict, targetId, devId):
         """ listOfDevices returns a list of plugin devices. """
@@ -888,7 +1059,7 @@ class Plugin(indigo.PluginBase):
                 val = u"{0}{1}".format(val, self.percentageUnits)
                 return val
             except Exception as error:
-                self.debugLog(u"Could not convert humidity precision of value: {0}. Returning unchanged. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Could not convert humidity precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                 val = unicode(val)
                 return val
         else:
@@ -909,7 +1080,7 @@ class Plugin(indigo.PluginBase):
             val = float(val)
             return u"{0}{1}".format(val, self.rainUnits)
         except Exception as error:
-            self.debugLog(u"Could not format rain precision value: {0}. Returning unchanged> Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Could not format rain precision value: {0}. Returning unchanged> Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             return unicode(val)
 
     def uiTemperatureFormat(self, stateName, val):
@@ -941,11 +1112,11 @@ class Plugin(indigo.PluginBase):
 
         try:
             if self.pluginPrefs.get('uiWindDecimal', 1) == 0:
-                return u"%0.0f" % float(val)
+                return u"{:0.0f}".format(float(val))
             else:
-                return u"%0.1f" % float(val)
+                return u"{:0.1f}".format(float(val))
         except Exception as error:
-            self.debugLog(u"Could not convert wind precision of value: {0}. Returning unchanged. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Could not convert wind precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             return unicode(val)
 
     def parseAlmanacData(self, dev):
@@ -1063,12 +1234,12 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
         except KeyError as error:
-            self.errorLog(u"Problem parsing almanac data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Problem parsing almanac data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
         except Exception as error:
-            self.errorLog(u"Problem parsing almanac data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Problem parsing almanac data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -1157,7 +1328,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
         except Exception as error:
-            self.errorLog(u"Problem parsing astronomy data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Problem parsing astronomy data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -1264,13 +1435,13 @@ class Plugin(indigo.PluginBase):
                         # Per Weather Underground TOS, attribution must be provided for European weather alert source. If appropriate, write it to the log.
                         indigo.server.log(u"European weather alert {0}".format(item['attribution']))
                     except KeyError as error:
-                        self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                        self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     except Exception as error:
-                        self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                        self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                         pass
 
         except Exception as error:
-            self.debugLog(u"Problem parsing weather alert data: Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Problem parsing weather alert data: Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
     def parseWeatherData(self, dev):
@@ -1402,7 +1573,7 @@ class Plugin(indigo.PluginBase):
                     uv = round(uv)
                     uv = int(uv)
             except Exception as error:
-                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+                self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
                 uv = '--'
             dev.updateStateOnServer('uv', value=unicode(uv), uiValue=unicode(uv))
 
@@ -1417,10 +1588,10 @@ class Plugin(indigo.PluginBase):
             try:
                 dev.updateStateOnServer('windDegrees', value=int(wind_degrees), uiValue=unicode(wind_degrees_ui))
             except (KeyError, ValueError) as error:
-                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                 dev.updateStateOnServer('windDegrees', value=wind_degrees, uiValue=unicode(wind_degrees_ui))
             except Exception as error:
-                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
             # Relative Humidity (string: "80%")
             relative_humidity = self.masterWeatherDict[self.location]['current_observation']['relative_humidity']
@@ -1433,10 +1604,10 @@ class Plugin(indigo.PluginBase):
             try:
                 pretty_date = unicode(self.masterWeatherDict[self.location]['history']['dailysummary'][0]['date']['pretty'])
             except IndexError as error:
-                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                 pretty_date = u"Not available."
             except KeyError as error:
-                self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                 pretty_date = u"Not available."
             dev.updateStateOnServer('historyDate', value=pretty_date, uiValue=pretty_date)
 
@@ -1567,7 +1738,7 @@ class Plugin(indigo.PluginBase):
                 try:
                     dev.updateStateOnServer('pressureIcon', value=int(pressure_str), uiValue=pressure_str)
                 except ValueError as error:
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     dev.updateStateOnServer('pressureIcon', value=pressure_str, uiValue=pressure_str)
 
                 # Visibility (string: "16.1" -- units: km)
@@ -1606,7 +1777,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('windGustIcon', value=int(wind_gust), uiValue=wind_gust)
                 except TypeError as error:
                     dev.updateStateOnServer('windGustIcon', value=wind_gust, uiValue=wind_gust)
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                 # Wind Speed (float: 1.6 -- units: kph)
                 wind_speed = unicode(self.masterWeatherDict[self.location]['current_observation']['wind_kph'])
@@ -1630,7 +1801,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('windSpeedIcon', value=wind_speed, uiValue=wind_speed)
                 except TypeError as error:
                     dev.updateStateOnServer('windSpeedIcon', value=wind_speed, uiValue=wind_speed)
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
 
                 # Wind String (string: "From the WSW at 1.0 KPH Gusting to 12.0 KPH" -- units: mph)
                 if self.configMenuUnits == 'MS':
@@ -1708,7 +1879,7 @@ class Plugin(indigo.PluginBase):
                 try:
                     dev.updateStateOnServer('pressureIcon', value=int(pressure_str), uiValue=pressure_str)
                 except ValueError as error:
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     dev.updateStateOnServer('pressureIcon', value=pressure_str, uiValue=pressure_str)
 
                 # Visibility (string: "16.1" -- units: km)
@@ -1742,7 +1913,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('windGustIcon', value=int(wind_gust), uiValue=wind_gust)
                 except TypeError as error:
                     dev.updateStateOnServer('windGustIcon', value=wind_gust, uiValue=wind_gust)
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                 # Wind Speed (float: 1.6 -- units: mph)
                 wind_speed = unicode(self.masterWeatherDict[self.location]['current_observation']['wind_mph'])
@@ -1758,13 +1929,13 @@ class Plugin(indigo.PluginBase):
                     wind_str = wind_str.replace('.', '')
                 except ValueError as error:
                     # If we can't float the value, set it to zero.
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     wind_str = "0"
                 try:
                     dev.updateStateOnServer('windSpeedIcon', value=int(wind_str), uiValue=unicode(wind_str))
                 except TypeError as error:
                     dev.updateStateOnServer('windSpeedIcon', value=unicode(wind_str), uiValue=unicode(wind_str))
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                 # Wind String (string: "From the WSW at 1.0 MPH Gusting to 12.0 MPH" -- units: mph)
                 wind_string = (u"From the {0} at {1} MPH Gusting to {2} MPH".format(wind_dir, wind_speed, wind_gust))
@@ -1824,7 +1995,7 @@ class Plugin(indigo.PluginBase):
                     pressure = round(pressure, 2)
                     dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
                 except TypeError as error:
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     dev.updateStateOnServer('pressure', value=unicode(pressure), uiValue=unicode(pressure))
 
                 # Barometric Pressure Icon (string: "3025" -- units: inches of mercury)
@@ -1869,7 +2040,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('windGustIcon', value=int(wind_gust), uiValue=wind_gust)
                 except TypeError as error:
                     dev.updateStateOnServer('windGustIcon', value=wind_gust, uiValue=wind_gust)
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                 # Wind Speed (float: 1.6 -- units: mph)
                 wind_speed = unicode(self.masterWeatherDict[self.location]['current_observation']['wind_mph'])
@@ -1885,14 +2056,14 @@ class Plugin(indigo.PluginBase):
                     wind_str = wind_str.replace('.', '')
                 except ValueError as error:
                     # If we can't float the value, set it to zero.
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                     wind_str = "0"
                 try:
                     wind_str = unicode(wind_str)
                     dev.updateStateOnServer('windSpeedIcon', value=int(wind_str), uiValue=wind_str)
                 except TypeError as error:
                     dev.updateStateOnServer('windSpeedIcon', value=wind_str, uiValue=wind_str)
-                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                 # Wind String (string: "From the WSW at 1.0 MPH Gusting to 12.0 MPH" -- units: mph)
                 wind_string = (u"From the {0} at {1} MPH Gusting to {2} MPH".format(wind_dir, wind_speed, wind_gust))
@@ -1912,7 +2083,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
         except Exception as error:
-            self.errorLog(u"Problem parsing weather device data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+            self.errorLog(u"Problem parsing weather device data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -2101,7 +2272,7 @@ class Plugin(indigo.PluginBase):
             self.errorLog(u"Problem parsing weather forecast data. Expected forecast data that was not received.".format(error, sys.exc_traceback.tb_lineno))
 
         except Exception as error:
-            self.errorLog(u"Problem parsing weather forecast data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+            self.errorLog(u"Problem parsing weather forecast data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
 
         # Determine whether today is going to be warmer or colder than yesterday.
         try:
@@ -2153,7 +2324,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('foreTextLong', value=u"Today is forecast to be much colder than yesterday.", uiValue=u"Today is forecast to be much colder than yesterday.")
 
         except (KeyError, Exception) as error:
-            self.errorLog(u"Problem comparing forecast and history data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+            self.errorLog(u"Problem comparing forecast and history data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
 
         return
@@ -2304,7 +2475,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
         except Exception as error:
-            self.errorLog(u"Problem parsing hourly forecast data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno))
+            self.errorLog(u"Problem parsing hourly forecast data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno))
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -2385,14 +2556,14 @@ class Plugin(indigo.PluginBase):
                         qpf_state = u"d{0}_qpf".format(fore_counter_text)
                         qpf_value = item['qpf_allday']['mm']
                         qpf_value = self.floatEverything(u"foreQPFTenDay (M, MS)", qpf_value)
-                        qpf_value_ui = u"%.02f" % qpf_value + unicode(self.rainAmountUnits)
+                        qpf_value_ui = u"{:0.02f}".format(qpf_value, self.rainAmountUnits)
                         dev.updateStateOnServer(qpf_state, value=qpf_value, uiValue=unicode(qpf_value_ui))
 
                         # Snow Value
                         snow_state = u"d{0}_snow".format(fore_counter_text)
                         snow_value = item['snow_allday']['cm']
                         snow_value = self.floatEverything(u"foreSnowTenDay (M, MS)", snow_value)
-                        snow_value_ui = u"%.02f" % snow_value + unicode(self.snowAmountUnits)
+                        snow_value_ui = u"{:0.02f}".format(snow_value, self.snowAmountUnits)
                         dev.updateStateOnServer(snow_state, value=snow_value, uiValue=unicode(snow_value_ui))
 
                         # User pref for average wind forecast.
@@ -2430,12 +2601,12 @@ class Plugin(indigo.PluginBase):
                         fore_qpf = item['qpf_allday']['in']
                         dev.updateStateOnServer(u"d{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFTenDay (I)", fore_qpf),
-                                                uiValue=u"%.02f" % fore_qpf + unicode(self.rainAmountUnits))
+                                                uiValue=u"{0:0.2f}{1}".format(fore_qpf, self.rainAmountUnits))
 
                         fore_snow = item['snow_allday']['in']
                         dev.updateStateOnServer(u"d{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything("foreQPFTenDay (I)", fore_snow),
-                                                uiValue=u"%.02f" % fore_snow + unicode(self.snowAmountUnits))
+                                                uiValue=u"{0:0.2f}{1}".format(fore_snow, self.snowAmountUnits))
 
                     elif self.configMenuUnits == "S":
                         fore_high = item['high']['fahrenheit']
@@ -2451,12 +2622,12 @@ class Plugin(indigo.PluginBase):
                         fore_qpf = item['qpf_allday']['in']
                         dev.updateStateOnServer(u"d{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFTenDay (S)", fore_qpf),
-                                                uiValue=u"%.02f" % fore_qpf + unicode(self.rainAmountUnits))
+                                                uiValue=u"{0:0.2f}{1}".format(fore_qpf, self.rainAmountUnits))
 
                         fore_snow = item['snow_allday']['in']
                         dev.updateStateOnServer(u"d{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreSnowTenDay (S)", fore_snow),
-                                                uiValue=u"%.02f" % fore_snow + unicode(self.snowAmountUnits))
+                                                uiValue=u"{0:0.2f}{1}".format(fore_snow, self.snowAmountUnits))
 
                         if dev.pluginProps.get('configWindSpdUnits', 'AVG') == "AVG":
                             wind_speed_state = u"d{0}_windSpeed".format(fore_counter_text)
@@ -2472,7 +2643,6 @@ class Plugin(indigo.PluginBase):
                         wind_speed_state = u"d{0}_windSpeedIcon".format(fore_counter_text)
                         wind_speed_icon = wind_speed.replace('.', '')
                         dev.updateStateOnServer(wind_speed_state, value=wind_speed_icon, uiValue=unicode(wind_speed_icon))
-
 
                     # Wind direction (text or degrees.)
                     if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
@@ -2507,7 +2677,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
         except Exception as error:
-            self.errorLog(u"Problem parsing 10-day forecast data. Error: {0} (Line ({1})".format(sys.exc_traceback.tb_lineno, error))
+            self.errorLog(u"Problem parsing 10-day forecast data. Error: (Line {0} ({1})".format(sys.exc_traceback.tb_lineno, error))
             dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
@@ -2580,7 +2750,7 @@ class Plugin(indigo.PluginBase):
             return
 
         except Exception as error:
-            self.errorLog(u"Problem parsing tide data. Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.errorLog(u"Problem parsing tide data. Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             self.errorLog(u"There was a problem parsing tide data. Please check your{0}settings. "
                           u"Note: Tide information is not available for all{0}locations and may not "
                           u"be available in your area. Check the{0}Weather Underground site directly for more information.".format(pad_log))
@@ -2685,7 +2855,7 @@ class Plugin(indigo.PluginBase):
                                 if error == "'error'":
                                     pass
                                 else:
-                                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                                 # Estimated Weather Data (integer: 1 if estimated weather)
                                 ignore_estimated = False
@@ -2706,10 +2876,10 @@ class Plugin(indigo.PluginBase):
                                         dev.updateStateOnServer('estimated', value="false", uiValue=u"False")
                                         ignore_estimated = False
                                     else:
-                                        self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                                        self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
 
                                 except Exception as error:
-                                    self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+                                    self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
                                     ignore_estimated = False
 
                                 # Compare last data epoch to the one we just downloaded. Proceed if the new data are newer.
@@ -2719,7 +2889,7 @@ class Plugin(indigo.PluginBase):
                                 try:
                                     good_time = dev.states['currentObservationEpoch'] <= self.masterWeatherDict[self.location]['current_observation']['observation_epoch']
                                     if not good_time:
-                                        indigo.server.log(u"Latest data are older than data we already have. Skipping device update.")
+                                        indigo.server.log(u"Latest data are older than data we already have. Skipping {0} update.".format(dev.name))
                                 except KeyError:
                                     indigo.server.log(u"{0} cannot determine age of data. Skipping until next scheduled poll.".format(dev.name))
                                     good_time = False
@@ -2793,7 +2963,7 @@ class Plugin(indigo.PluginBase):
                 self.sleep(sleep_time)
 
         except self.StopThread as error:
-            self.debugLog(u"Error: {0} (Line {1})".format(error, sys.exc_traceback.tb_lineno)) 
+            self.debugLog(u"Error: (Line {0}  {1})".format(error, sys.exc_traceback.tb_lineno)) 
             self.debugLog(u"Stopping WUnderground Plugin thread.")
             pass
 

@@ -1,5 +1,15 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.09
+- Migrates history data collection from the History API element to the Yesterday
+  API element.
+- Weather Device: renames "History - [element]" labels as "Yesterday - "[element]"
+  for triggers, control pages, etc.  (Date, High, Low, Precip)
+- More granular parsing of forecast data to increase resiliency for WU API
+  errors.
+- Reduces instances of potential Unicode errors when writing weather data to
+  file from the plugin menu.
+
 v1.0.08
 - Updates support URL for triggers.
 - Adds additional information to device configuration validation errors.
