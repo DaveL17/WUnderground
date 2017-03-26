@@ -1,7 +1,7 @@
 WUnderground Plugin - Developed by: DaveL17
 
 v1.0.10
--
+- Fixes bug in implementation of yesterday API.
 
 v1.0.09
 - Migrates history data collection from the History API element to the Yesterday
