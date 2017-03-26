@@ -85,7 +85,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.09"
+__version__ = "1.0.10"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -895,9 +895,9 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
             self.debugLog(u"getWeatherData() method called.")
 
-        # Produce yesterday's date for history URL component.
-        yesterday = dt.date.today() - dt.timedelta(days=1)
-        yesterday_str = yesterday.strftime('%Y%m%d')
+        # Produce yesterday's date for history URL component.  # Deprecated in move from history API to yesterday API.
+        # yesterday = dt.date.today() - dt.timedelta(days=1)
+        # yesterday_str = yesterday.strftime('%Y%m%d')
 
         if dev.model not in ['Satellite Image Downloader', 'WUnderground Satellite Image Downloader']:
             try:
@@ -922,7 +922,7 @@ class Plugin(indigo.PluginBase):
                     api_key = self.pluginPrefs.get('apiKey', '')
                     # url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts/almanac/astronomy/conditions/forecast/forecast10day/hourly/lang:{1}/history_{2}/tide/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # original URL scheme
                     # url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/history_v11_{2}/tide_v11/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # applies URL v11 to address some api bugs
-                    url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/yesterday_v11/tide_v11/q/{3}.json".format(api_key, language, yesterday_str, self.location))  # switches to yesterday api instead of history_DATE api.
+                    url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/yesterday_v11/tide_v11/q/{2}.json".format(api_key, language, self.location))  # switches to yesterday api instead of history_DATE api.
 
                     # Debug output can contain sensitive data.
                     if debug_level >= 3:
