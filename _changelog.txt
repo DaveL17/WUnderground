@@ -1,5 +1,15 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.11
+- Stylistic changes to Indigo Plugin Update Checker module.
+- Attempts to increase robustness when WUnderground stations are offline.
+- Improves device icon state handling when communication with device is started
+  or stopped via the Indigo UI or the plugin menu option.
+- Improves code used to dump weather data to the Indigo Logs folder.
+- Fixes minor bug in debug logging where the logging of error message and line
+  number were reversed.
+- Reduces information saved to debug log (unless debugging set to high).
+
 v1.0.10
 - Fixes bug in implementation of yesterday API.
 
