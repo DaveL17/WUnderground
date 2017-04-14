@@ -1,10 +1,15 @@
-Version: 1.0.10
+Version: 1.0.12
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
-WUnderground Plugin v1.0.10 is now available.
+WUnderground Plugin v1.0.12 is now available.
 
-- Fixes bug in implementation of yesterday API.
+- Stylistic changes to Indigo Plugin Update Checker module.
+- Attempts to increase robustness when WUnderground stations are offline.
+- Improves device icon state handling when communication with device is started or stopped via the Indigo UI or the plugin menu option.
+- Improves code used to dump weather data to the Indigo Logs folder.
+- Fixes minor bug in debug logging where the logging of error message and line number were reversed.
+- Reduces information saved to debug log (unless debugging set to high).
 
 The update can be downloaded at the following link:
 https://github.com/DaveL17/WUnderground/releases
