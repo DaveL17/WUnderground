@@ -64,6 +64,7 @@ http://www.wunderground.com/weather/api/d/terms.html.
 # TODO: Deprecate proper_icon_name?
 
 # TODO: See if it makes a difference to send the forecast email at 1:00 or 2:00 and whether that would help settle things down.
+# TODO: Minimize use of self.*.get(); for example with debug level.
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -85,7 +86,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.11"
+__version__ = "1.0.12"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -118,9 +119,13 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
         indigo.server.log(u"")
-        indigo.server.log(u"{:=^80}".format(' Initializing New Plugin Session '))
+        indigo.server.log(u"{:=^80}".format(" Initializing New Plugin Session "))
+        indigo.server.log(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
+        indigo.server.log(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
+        indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
         indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
-        indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version))
+        indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
+        indigo.server.log(u"{:=^80}".format(""))
 
         self.debug             = self.pluginPrefs.get('showDebugInfo', False)
         self.masterWeatherDict = {}
@@ -363,6 +368,9 @@ class Plugin(indigo.PluginBase):
         ensure that the plugin doesn't go over a user-defined limit. The limit
         is set within the plugin config dialog. """
 
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"callCOunt() method called.")
+
         calls_max = int(self.pluginPrefs.get('callCounter', 500))  # Max calls allowed per day
         sleep_time = int(self.pluginPrefs.get('downloadInterval', 900))
 
@@ -387,7 +395,7 @@ class Plugin(indigo.PluginBase):
         Manages the day for the purposes of maintaining the call counter and
         the flag for the daily forecast email message.
         """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"callDay() method called.")
 
         call_day = self.wu_settings['dailyCallDay']
@@ -454,7 +462,8 @@ class Plugin(indigo.PluginBase):
     def checkVersionNow(self):
         """ The checkVersionNow() method will call the Indigo Plugin Update
         Checker based on a user request. """
-        self.debugLog(u"checkVersionNow() method called.")
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"checkVersionNow() method called.")
 
         try:
             self.updater.checkVersionNow()
@@ -468,9 +477,8 @@ class Plugin(indigo.PluginBase):
         the Indigo Logs folder. If a weather data log exists for that day, it
         will be replaced. With a new day, a new log file will be created (file
         name contains the date.) """
-        self.debugLog(u"dumpTheJSON() method called.")
-
-        indigo_version = indigo.server.version.split('.')[0]
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"dumpTheJSON() method called.")
 
         try:
             file_name = '{0}/{1} Wunderground.txt'.format(indigo.server.getLogsFolderPath(), dt.datetime.today().date())
@@ -498,11 +506,12 @@ class Plugin(indigo.PluginBase):
         select weather information to the user based on the email address
         specified for plugin update notifications.
         :param dev: """
-        self.debugLog(u'emailForecast() method called.')
-
-        summary_wanted = dev.pluginProps.get('weatherSummaryEmail', False)
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u'emailForecast() method called.')
 
         try:
+            summary_wanted = dev.pluginProps.get('weatherSummaryEmail', False)
+            summary_sent   = dev.states['weatherSummaryEmailSent']
 
             # Legacy device types had this setting improperly established as a string rather than a bool.
             if isinstance(summary_wanted, basestring):
@@ -511,7 +520,6 @@ class Plugin(indigo.PluginBase):
                 elif summary_wanted.lower() == "true":
                     summary_wanted = True
 
-            summary_sent = dev.states['weatherSummaryEmailSent']
 
             if isinstance(summary_sent, basestring):
                 if summary_sent.lower() == "false":
@@ -871,7 +879,8 @@ class Plugin(indigo.PluginBase):
         location and I save it to a user-specified folder on the local server.
         :param dev:
         """
-        self.debugLog(u"getSatelliteImage() method called.")
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"getSatelliteImage() method called.")
 
         debug_level = self.pluginPrefs.get('showDebugLevel', 1)
         destination = dev.pluginProps.get('imageDestinationLocation', '')
@@ -910,7 +919,7 @@ class Plugin(indigo.PluginBase):
         weather device because the data are location specific.
         :param dev: """
         debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"getWeatherData() method called.")
 
         # Produce yesterday's date for history URL component.  # Deprecated in move from history API to yesterday API.
@@ -962,20 +971,17 @@ class Plugin(indigo.PluginBase):
                     # Communication error handling:
                     # ==============================================================
                     except urllib2.HTTPError as error:
-                        self.errorLog(u"Unable to reach Weather Underground - HTTPError (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                        self.errorLog(u"Sleeping until next scheduled poll.")
+                        self.debugLog(u"Unable to reach Weather Underground - HTTPError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
                         for dev in indigo.devices.itervalues("self"):
                             dev.updateStateOnServer("onOffState", value=False, uiValue=" ")
                         return
                     except urllib2.URLError as error:
-                        self.errorLog(u"Unable to reach Weather Underground. - URLError (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                        self.errorLog(u"Sleeping until next scheduled poll.")
+                        self.debugLog(u"Unable to reach Weather Underground. - URLError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
                         for dev in indigo.devices.itervalues("self"):
                             dev.updateStateOnServer("onOffState", value=False, uiValue=" ")
                         return
                     except Exception as error:
-                        self.errorLog(u"Unable to reach Weather Underground. - Exception (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                        self.errorLog(u"Sleeping until next scheduled poll.")
+                        self.debugLog(u"Unable to reach Weather Underground. - Exception (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
                         for dev in indigo.devices.itervalues("self"):
                             dev.updateStateOnServer("onOffState", value=False, uiValue=" ")
                         return
@@ -1001,8 +1007,7 @@ class Plugin(indigo.PluginBase):
                     self.callCount()
 
             except Exception as error:
-                self.errorLog(u"Unable to reach Weather Underground. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                self.errorLog(u"Sleeping until next scheduled poll.")
+                self.debugLog(u"Unable to reach Weather Underground. Error: (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
 
                 # Unable to fetch the JSON. Mark all devices as 'false'.
                 for dev in indigo.devices.itervalues("self"):
@@ -1021,7 +1026,7 @@ class Plugin(indigo.PluginBase):
         Indigo Item List. Note: this method needs to return a string rather than
         a Unicode string (for now.)
         :param val: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"itemListTemperatureFormat() method called.")
 
         if self.pluginPrefs.get('itemListTempDecimal', 1) == 0:
@@ -1039,6 +1044,8 @@ class Plugin(indigo.PluginBase):
     def killAllComms(self):
         """ killAllComms() sets the enabled status of all plugin devices to
         false. """
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"killAllComms method() called.")
 
         for dev in indigo.devices.itervalues("self"):
             try:
@@ -1049,6 +1056,8 @@ class Plugin(indigo.PluginBase):
     def unkillAllComms(self):
         """ unkillAllComms() sets the enabled status of all plugin devices to
         true. """
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"unkillAllComms method() called.")
 
         for dev in indigo.devices.itervalues("self"):
             try:
@@ -1058,7 +1067,8 @@ class Plugin(indigo.PluginBase):
 
     def listOfDevices(self, typeId, valuesDict, targetId, devId):
         """ listOfDevices returns a list of plugin devices. """
-
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"listOfDevices method() called.")
         return [(dev.id, dev.name) for dev in indigo.devices.itervalues(filter='self')]
 
     def uiPercentageFormat(self, state_name, val):
@@ -1066,7 +1076,7 @@ class Plugin(indigo.PluginBase):
         control pages, etc.
         :param val:
         :param state_name: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"{0}: uiPercentageFormat() method called.".format(state_name))
 
         if self.pluginPrefs.get('uiHumidityDecimal', 1) == 0:
@@ -1088,7 +1098,7 @@ class Plugin(indigo.PluginBase):
         pages, etc.
         :param val:
         :param stateName: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"{0}: uiRainFormat() method called.".format(stateName))
 
         if val in ["NA", "N/A", "--", ""]:
@@ -1106,7 +1116,7 @@ class Plugin(indigo.PluginBase):
         display in control pages, etc.
         :param val:
         :param stateName: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"{0}: uiTemperatureFormat() method called.".format(stateName))
 
         if self.pluginPrefs.get('uiTempDecimal', 1) == 0:
@@ -1125,7 +1135,7 @@ class Plugin(indigo.PluginBase):
         """ Adjusts the decimal precision of certain wind values for display in control pages, etc.
         :param val:
         :param stateName: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"{0}: uiWindFormat() method called.".format(stateName))
 
         try:
@@ -1141,8 +1151,9 @@ class Plugin(indigo.PluginBase):
         """ The parseAlmanacData() method takes almanac data and parses it to
         device states.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseAlmanacData() method called.")
+
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
@@ -1293,7 +1304,7 @@ class Plugin(indigo.PluginBase):
         Sunset Hour (Integer: 0 - 23, units: hours)
         Sunset Minute (Integer: 0 - 59, units: minutes)
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseAstronomyData() method called.")
 
         try:
@@ -1355,7 +1366,7 @@ class Plugin(indigo.PluginBase):
         it to device states.
         :param dev: """
         debug_level = self.pluginPrefs.get('showDebugLevel', False)
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseAlerts() method called.")
 
         try:
@@ -1466,7 +1477,7 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherData() method takes weather data and parses it to
         device states.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseWeatherData() method called.")
 
         try:
@@ -2111,7 +2122,7 @@ class Plugin(indigo.PluginBase):
         device and not for the hourly or 10 day forecast devices which have
         their own methods.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseWeatherForecast() method called.")
 
         try:
@@ -2351,7 +2362,7 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherHourly() method takes hourly weather forecast data
         and parses it to device states.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseWeatherHourly() method called.")
 
         try:
@@ -2503,7 +2514,7 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherTenDay() method takes 10 day forecast data and
         parses it to device states.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseWeatherTenDay() method called.")
 
         try:
@@ -2705,7 +2716,7 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherTides() method takes tide data and parses it to
         device states.
         :param dev: """
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
             self.debugLog(u"parseWeatherTides() method called.")
 
         tidal_dict = {'tide_info': self.masterWeatherDict[self.location]['tide']['tideInfo'][0]['tideSite'],
@@ -2783,6 +2794,9 @@ class Plugin(indigo.PluginBase):
         method to request a complete refresh of all weather data (Actions.XML
         call.)
         :param valuesDict: """
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"refreshWeatherAction called.")
+
         self.wu_settings = self.config.load(kDefaultPluginSettings)
         self.refreshWeatherData()
 
@@ -2790,7 +2804,7 @@ class Plugin(indigo.PluginBase):
         """ This method refreshes weather data for all devices based on a
         WUnderground general cycle, Action Item or Plugin Menu call. """
         try:
-            if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
+            if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
                 self.debugLog(u"refreshWeatherData() method called.")
 
             api_key = self.pluginPrefs.get('apiKey', '')
@@ -2988,6 +3002,8 @@ class Plugin(indigo.PluginBase):
     def triggerStartProcessing(self, trigger):
         """ triggerStartProcessing is called when the plugin is started. The
         method builds a global dict: {dev.id: (delay, trigger.id) """
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"triggerStartProcessing method() called.")
 
         dev_id = str(trigger.pluginProps['listOfDevices'])
         try:
@@ -2997,6 +3013,9 @@ class Plugin(indigo.PluginBase):
 
     def triggerStopProcessing(self, trigger):
         """"""
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"triggerStopProcessing method() called.")
+
         pass
 
     def fireOfflineDeviceTriggers(self):
@@ -3006,15 +3025,17 @@ class Plugin(indigo.PluginBase):
         the trigger will be fired. The plugin examines the value of the
         latest "currentObservationEpoch" and *not* the Indigo Last Update
         value.
-
+    
         An additional event that will cause a trigger to be fired is if the
         weather location temperature is less than -55 (Weather Underground
         will often set a value to a variation of -99 (-55 C) to indicate that
         a data value is invalid.
-
+    
         Note that the trigger will only fire during routine weather update
         cycles and will not be triggered when a data refresh is called from
         the Indigo Plugins menu."""
+        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+            self.debugLog(u"fireOfflineDeviceTriggers method() called.")
 
         try:
             for dev in indigo.devices.itervalues(filter='self'):
