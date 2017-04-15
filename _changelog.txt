@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.13
+- Fixes "ValueError: zero length field name in format" error during plugin
+  initialization.
+
 v1.0.12
 - Stylistic changes to Indigo Plugin Update Checker module.
 - Attempts to increase robustness when WUnderground stations are offline.

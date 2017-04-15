@@ -86,7 +86,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.12"
+__version__ = "1.0.13"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -119,7 +119,7 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
         indigo.server.log(u"")
-        indigo.server.log(u"{:=^80}".format(" Initializing New Plugin Session "))
+        indigo.server.log(u"{0:=^80}".format(" Initializing New Plugin Session "))
         indigo.server.log(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
         indigo.server.log(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
         indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
