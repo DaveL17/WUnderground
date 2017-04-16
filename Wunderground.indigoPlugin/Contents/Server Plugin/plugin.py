@@ -125,7 +125,7 @@ class Plugin(indigo.PluginBase):
         indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
         indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
         indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        indigo.server.log(u"{:=^80}".format(""))
+        indigo.server.log(u"{0:=^80}".format(""))
 
         self.debug             = self.pluginPrefs.get('showDebugInfo', False)
         self.masterWeatherDict = {}
