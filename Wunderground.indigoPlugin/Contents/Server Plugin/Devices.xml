@@ -2591,7 +2591,7 @@
                 <Label>Source Location:</Label>
             </Field>
 
-            <Field id="imageDestinationLocation" type="textfield" defaultValue="file:///User/username/Desktop"
+            <Field id="imageDestinationLocation" type="textfield" defaultValue="/User/username/Desktop"
                    tooltip="Please enter the location where you would like the image to be saved.">
                 <Label>Destination Location:</Label>
             </Field>

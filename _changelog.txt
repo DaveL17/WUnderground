@@ -1,5 +1,11 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.14
+- Better ensures compatability with Python 2.6 and 2.7 with string formatting.
+- Updates download URL.
+- Fixes default destination location path in satellite image downloader
+  devices.
+
 v1.0.13
 - Fixes "ValueError: zero length field name in format" error during plugin
   initialization.

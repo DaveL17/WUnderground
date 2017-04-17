@@ -86,7 +86,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.13"
+__version__ = "1.0.14"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -1140,9 +1140,9 @@ class Plugin(indigo.PluginBase):
 
         try:
             if self.pluginPrefs.get('uiWindDecimal', 1) == 0:
-                return u"{:0.0f}".format(float(val))
+                return u"{0:0.0f}".format(float(val))
             else:
-                return u"{:0.1f}".format(float(val))
+                return u"{0:0.1f}".format(float(val))
         except Exception as error:
             self.debugLog(u"Could not convert wind precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             return unicode(val)
@@ -2585,14 +2585,14 @@ class Plugin(indigo.PluginBase):
                         qpf_state = u"d{0}_qpf".format(fore_counter_text)
                         qpf_value = item['qpf_allday']['mm']
                         qpf_value = self.floatEverything(u"foreQPFTenDay (M, MS)", qpf_value)
-                        qpf_value_ui = u"{:0.02f}".format(qpf_value, self.rainAmountUnits)
+                        qpf_value_ui = u"{0:0.02f}".format(qpf_value, self.rainAmountUnits)
                         dev.updateStateOnServer(qpf_state, value=qpf_value, uiValue=unicode(qpf_value_ui))
 
                         # Snow Value
                         snow_state = u"d{0}_snow".format(fore_counter_text)
                         snow_value = item['snow_allday']['cm']
                         snow_value = self.floatEverything(u"foreSnowTenDay (M, MS)", snow_value)
-                        snow_value_ui = u"{:0.02f}".format(snow_value, self.snowAmountUnits)
+                        snow_value_ui = u"{0:0.02f}".format(snow_value, self.snowAmountUnits)
                         dev.updateStateOnServer(snow_state, value=snow_value, uiValue=unicode(snow_value_ui))
 
                         # User pref for average wind forecast.
