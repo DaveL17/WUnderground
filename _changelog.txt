@@ -1,5 +1,10 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.15
+- Accounts for known errors when WUnderground sends a string for a field value
+  instead of an expected float.
+- Code simplification.
+
 v1.0.14
 - Better ensures compatability with Python 2.6 and 2.7 with string formatting.
 - Updates download URL.
