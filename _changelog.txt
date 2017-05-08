@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.16
+- Moves forecast email message to 01:00 local to allow WUnderground servers to
+  catch up with PWS reporting for daily totals.
+
 v1.0.15
 - Accounts for known errors when WUnderground sends a string for a field value
   instead of an expected float.
