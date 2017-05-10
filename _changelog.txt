@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.0.17
+- Implements new method for obtaining online data using requests module. If the
+  requests module isn't available, will revert to urllib/urllib2.
+
 v1.0.16
 - Moves forecast email message to 01:00 local to allow WUnderground servers to
   catch up with PWS reporting for daily totals.

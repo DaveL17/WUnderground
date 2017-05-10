@@ -7,7 +7,6 @@ plugin.py
 Author: DaveL17
 Credits:
 Update Checker by: berkinet (with additional features by Travis Cook)
-Subprocess Trap by: raneil (invalid literal with base 16 error)
 
 The WUnderground plugin downloads JSON data from Weather Underground and parses
 it into custom device states. Theoretically, the user can create an unlimited
@@ -61,12 +60,8 @@ http://www.wunderground.com/weather/api/d/terms.html.
 """
 # TODO: add a new weather radar device that leverages the new radar layer API.
 # TODO: Move weather summary sent to config.json - has to be on a device-specific basis.  'summary_sent' = {dev_id: false, dev_id: true}?
-# TODO: Look at localization.  Haavarda talked about "5 period 4" degrees (dot vs. comma)
 # TODO: Deprecate proper_icon_name?
-
-# TODO: See if it makes a difference to send the forecast email at 1:00 or 2:00 and whether that would help settle things down.
 # TODO: Minimize use of self.*.get(); for example with debug level.
-# TODO: convert urllib and urllib2 to requests (which is recommended by Matt and Jay) will it still work with Indigo 6?
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -75,8 +70,12 @@ import simplejson
 import socket
 import sys
 import time
-import urllib   # (satellite imagery)
-import urllib2  # (weather data)
+
+try:
+    import requests
+except ImportError:
+    import urllib   # (satellite imagery)
+    import urllib2  # (weather data)
 
 try:
     import indigo
@@ -137,13 +136,13 @@ class Plugin(indigo.PluginBase):
         self.windUnits = " "
 
         indigo.server.log(u"")
-        indigo.server.log(u"{0:=^80}".format(" Initializing New Plugin Session "))
+        indigo.server.log(u"{0:=^130}".format(" Initializing New Plugin Session "))
         indigo.server.log(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
         indigo.server.log(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
         indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
         indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
         indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        indigo.server.log(u"{0:=^80}".format(""))
+        indigo.server.log(u"{0:=^130}".format(""))
 
         self.debug             = self.pluginPrefs.get('showDebugInfo', False)
         self.masterWeatherDict = {}
@@ -547,7 +546,7 @@ class Plugin(indigo.PluginBase):
                     summary_sent = True
 
             # Test to see if waiting an hour will settle down the forecast email gremlins.
-            if summary_wanted and not summary_sent and dt.datetime.now().hour >= 2:
+            if summary_wanted and not summary_sent and dt.datetime.now().hour >= 1:
                 email_list = []
 
                 if self.configMenuUnits in ['M', 'MS']:
@@ -914,7 +913,16 @@ class Plugin(indigo.PluginBase):
         try:
             for image_type in image_types:
                 if image_type in destination:
-                    urllib.urlretrieve(source, destination)
+
+                    # If requests doesn't work for some reason, revert to urllib.
+                    try:
+                        r = requests.get(source, stream=True)
+                        with open(destination, 'wb') as img:
+                            for chunk in r.iter_content(2000):
+                                img.write(chunk)
+                    except NameError:
+                        urllib.urlretrieve(source, destination)
+
                     dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
 
                     if debug_level >= 2:
@@ -981,30 +989,36 @@ class Plugin(indigo.PluginBase):
                     # Start download timer.
                     get_data_time = dt.datetime.now()
 
+                    # If requests doesn't work for some reason, try urllib2 instead.
                     try:
-                        # Connect to Weather Underground and retrieve data.
-                        socket.setdefaulttimeout(30)
-                        f = urllib2.urlopen(url)
-                        simplejson_string = f.read()
+                        f = requests.get(url)
+                        simplejson_string = f.text  # We convert the file to a json object below, so we don't use requests' built-in decoder.
 
-                    # ==============================================================
-                    # Communication error handling:
-                    # ==============================================================
-                    except urllib2.HTTPError as error:
-                        self.debugLog(u"Unable to reach Weather Underground - HTTPError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
-                        for dev in indigo.devices.itervalues("self"):
-                            dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
-                        return
-                    except urllib2.URLError as error:
-                        self.debugLog(u"Unable to reach Weather Underground. - URLError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
-                        for dev in indigo.devices.itervalues("self"):
-                            dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
-                        return
-                    except Exception as error:
-                        self.debugLog(u"Unable to reach Weather Underground. - Exception (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
-                        for dev in indigo.devices.itervalues("self"):
-                            dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
-                        return
+                    except NameError:
+                        try:
+                            # Connect to Weather Underground and retrieve data.
+                            socket.setdefaulttimeout(30)
+                            f = urllib2.urlopen(url)
+                            simplejson_string = f.read()
+
+                        # ==============================================================
+                        # Communication error handling:
+                        # ==============================================================
+                        except urllib2.HTTPError as error:
+                            self.debugLog(u"Unable to reach Weather Underground - HTTPError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
+                            for dev in indigo.devices.itervalues("self"):
+                                dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
+                            return
+                        except urllib2.URLError as error:
+                            self.debugLog(u"Unable to reach Weather Underground. - URLError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
+                            for dev in indigo.devices.itervalues("self"):
+                                dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
+                            return
+                        except Exception as error:
+                            self.debugLog(u"Unable to reach Weather Underground. - Exception (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno, error))
+                            for dev in indigo.devices.itervalues("self"):
+                                dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
+                            return
 
                     # Report results of download timer.
                     data_cycle_time = (dt.datetime.now() - get_data_time)
@@ -1056,7 +1070,7 @@ class Plugin(indigo.PluginBase):
             val = u"{0}".format(val)
             return val
         else:
-            val = u"{0}".format(val)
+            val = u"{0:0.1f}".format(val)
             if self.pluginPrefs.get('showDebugLevel', 1) >= 2:
                 self.debugLog(u"  Returning value unchanged.")
             return val
@@ -1118,7 +1132,7 @@ class Plugin(indigo.PluginBase):
                 val = u"{0}".format(val)
                 return val
         else:
-            return u"{0}{1}".format(val, self.percentageUnits)
+            return u"{0:0.1f}{1}".format(val, self.percentageUnits)
 
     def uiRainFormat(self, state_name, val):
         """ Adjusts the decimal precision of rain values for display in control
@@ -1172,7 +1186,7 @@ class Plugin(indigo.PluginBase):
                 return u"{0:0.1f}".format(float(val))
         except Exception as error:
             self.debugLog(u"Could not convert wind precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-            return u"{0}".format(val)
+            return u"{0:0.1f}".format(val)
 
     def parseAlmanacData(self, dev):
         """ The parseAlmanacData() method takes almanac data and parses it to
