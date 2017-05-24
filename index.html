@@ -187,9 +187,11 @@
     <li>
         <span>WUnderground Radar (for "real-time" satellite imagery)</span>
         <p>
-            <strong class="warningText">BETA!</strong>The WUnderground Radar Device is used for displaying radar imagery using the Weather Undergeround API directly. In other words,
+            <strong class="warningText">BETA! </strong>The WUnderground Radar Device is used for displaying radar imagery using the Weather Undergeround API directly. In other words,
             this device will construct a radar image in near real time based on the user-specified configuration. Indigo will automatically save the image file in the appropriate
-            location so that it's available as a Static Image for display in Indigo Control Pages. The image will be updated at the same frequency as the other weather devices.
+            location so that it's available as a Static Image for display in Indigo Control Pages. The image will be updated at the same frequency as the other weather devices. Note
+            that, unlike the WUnderground Image Downloader device, the WUnderground Radar device will use an API call for each refresh (because it relies directly on the Weather
+            Underground API. So you'll need to account for that usage in your daily totals.
         </p>
     </li>
 </ul>
