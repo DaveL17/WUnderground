@@ -116,7 +116,7 @@
 <ul>
     <li>
         <span>WUnderground Weather</span>
-        <p>The WUnderground Weather Device is probably the most common type of device that you will use within the plugin.  It provides current Weather Conditions with short-term
+        <p>The WUnderground Weather Device is probably the most common type of device that you will use within the plugin. It provides current Weather Conditions with short-term
             (day/night) forecast. The Weather Device contains the most comprehensive information available within a single plugin device, and contains aspects of data supported by the
             other plugin device types. For example, the Weather Device type contains forecast data for the current day plus 3 future days. If the user wants more forecast periods, then
             the Ten Day Forecast device should be used. The Weather Device type includes many variables related to current conditions, future conditions, yesterday's totals and so on.
@@ -182,6 +182,14 @@
             always have a satellite image to display on your weather control page. The location setting controls where the desired image comes from, and the destination location controls
             where the image will be saved. The user should then link to this image file on the local server using the format specified in the example dialog text. The construction of the
             image Destination Location is: <code>/path/to/image/folder/imagename.png</code>
+        </p>
+    </li>
+    <li>
+        <span>WUnderground Radar (for "real-time" satellite imagery)</span>
+        <p>
+            <strong class="warningText">BETA!</strong>The WUnderground Radar Device is used for displaying radar imagery using the Weather Undergeround API directly. In other words,
+            this device will construct a radar image in near real time based on the user-specified configuration. Indigo will automatically save the image file in the appropriate
+            location so that it's available as a Static Image for display in Indigo Control Pages. The image will be updated at the same frequency as the other weather devices.
         </p>
     </li>
 </ul>
@@ -258,7 +266,7 @@
     <li>
         <span>Severe Weather Alerts</span>
         <p>
-            <strong class="warningText">BETA!</strong> You can create a trigger that will fire whenever a weather location reports at least one severe weather alert (if your weather
+            You can create a trigger that will fire whenever a weather location reports at least one severe weather alert (if your weather
             location and source support severe weather alerts). Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you have weather stations
             updating every 5 minutes, the trigger will fire every 5 minutes. There are ways to limit the number of times that the trigger will fire, however. Perhaps, an example or
             two...
@@ -280,7 +288,7 @@
     <li>
         <span>Weather Location Offline</span>
         <p>
-            <strong class="warningText">BETA!</strong> Occasionally, a weather site will go offline or otherwise stop updating. You can use the Weather Location Offline trigger to notify
+            Occasionally, a weather site will go offline or otherwise stop updating. You can use the Weather Location Offline trigger to notify
             you of an offline condition or cause other things to happen within Indigo. The plugin uses the custom state "currentObservationEpoch" to determine whether a site should be
             considered offline. It converts the time to the local timezone and compares that to the current local time. If the difference is equal to or greater than the value entered
             into the trigger settings, the trigger will fire. Note that this trigger will fire <strong>every time the conditions are met</strong>, so if you have weather stations

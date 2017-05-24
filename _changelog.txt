@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.0
+- Implements new device type for creating satellite imagery via the
+  WUnderground API.
+
 v1.0.17
 - Implements new method for obtaining online data using requests module. If the
   requests module isn't available, will revert to urllib/urllib2.

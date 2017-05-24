@@ -2570,8 +2570,7 @@
 
     <!-- Satellite Image Downloader -->
 
-    <Device
-            id="satelliteImageDownloader" type="custom">
+    <Device id="satelliteImageDownloader" type="custom">
         <Name>WUnderground Satellite Image Downloader</Name>
 
         <ConfigUI>
@@ -2623,6 +2622,211 @@
                 <ValueType>boolean</ValueType>
                 <TriggerLabel>Wunderground - Image Downloader State</TriggerLabel>
                 <ControlPageLabel>Wunderground - Image Downloader State</ControlPageLabel>
+            </State>
+        </States>
+        <UiDisplayStateId>onOffState</UiDisplayStateId>
+
+    </Device>
+
+    <!-- WUnderground Radar Device -->
+
+    <Device id="wundergroundRadar" type="custom">
+        <Name>WUnderground Radar</Name>
+
+        <ConfigUI>
+
+            <Field id="space00" type="label" fontSize="small">
+                <Label>The WUnderground Radar device takes advantage of the Weather Underground WUndermaps Layer API to construct custom radar images. The image is built using the settings below and is saved as a static image which can then be placed on an Indigo Control Page.</Label>
+            </Field>
+
+            <Field id="space01" type="label">
+                <Label/>
+            </Field>
+
+            <Field id="titleseparator" type="separator"/>
+
+            <Field id="imagename" type="textfield" defaultValue="WUradar" tooltip="Please enter the name for your image file (do not include an extension).">
+                <Label>Image Name:</Label>
+            </Field>
+
+            <Field id="height" type="textfield" defaultValue="500" tooltip="Please enter the image height in pixels (default: 300).">
+                <Label>Image Height:</Label>
+            </Field>
+
+            <Field id="width" type="textfield" defaultValue="500" tooltip="Please enter the image width in pixels (default: 300).">
+                <Label>Image Width:</Label>
+            </Field>
+
+            <Field id="positionlabel" type="checkbox" defaultValue="true" tooltip="Please tick this box to display the settings for the area to display. Once configured, you can hide the location settings again by unticking the box.">
+                <Label/>
+                <Description>Location settings (show/hide)</Description>
+            </Field>
+
+            <Field id="typelabel" type="label" visibleBindingId="positionlabel" visibleBindingValue="true" fontSize="small" alignWithControl="true">
+                <Label>Location settings control the area covered by the radar image.  A bounding box requires data for the four sides of the image. A radius requires a center point and a radial distance. A location requires a valid WU location (Click the (?) below for additional information). You can hide the location settings once they are configured.</Label>
+            </Field>
+
+            <Field id="imagetype" type="menu" defaultValue="radius" visibleBindingId="positionlabel" visibleBindingValue="true"
+                   tooltip="Please select the desired method for defining the boundaries of the image.">
+                <Label>Type:</Label>
+                    <List>
+                        <Option value="boundingbox">Bounding Box</Option>
+                        <Option value="locationbox">Location</Option>
+                        <Option value="radius">Radius*</Option>
+                    </List>
+            </Field>
+
+            <Field id="boxeparator" type="separator" visibleBindingId="positionlabel" visibleBindingValue="true"/>
+
+            <Field id="locationlabel" type="label" visibleBindingId="imagetype" visibleBindingValue="locationbox">
+                <Label>Location Settings:</Label>
+            </Field>
+
+            <Field id="location" type="textfield" defaultValue="autoip" visibleBindingId="imagetype" visibleBindingValue="locationbox"
+                   tooltip="Please enter the location of the radar image.  If using a personal weather station, be sure to begin the location with PWS:(pws_name).">
+                <Label>Location:</Label>
+            </Field>
+
+            <Field id="boundingboxlabel" type="label" visibleBindingId="imagetype" visibleBindingValue="boundingbox">
+                <Label>Bounding Box Settings:</Label>
+            </Field>
+
+            <Field id="minlat" type="textfield" defaultValue="39.0" visibleBindingId="imagetype" visibleBindingValue="boundingbox"
+                   tooltip="Please enter the minimum latitude for the image. This value controls the bottom edge of the image (-90.0 to 90.0).">
+                <Label>Min Lat:</Label>
+            </Field>
+
+            <Field id="maxlat" type="textfield" defaultValue="43.0" visibleBindingId="imagetype" visibleBindingValue="boundingbox"
+                   tooltip="Please enter the maximum latitude for the image. This value controls the top edge of the image (-90.0 to 90.0).">
+                <Label>Max Lat:</Label>
+            </Field>
+
+            <Field id="minlon" type="textfield" defaultValue="-86.5" visibleBindingId="imagetype" visibleBindingValue="boundingbox"
+                   tooltip="Please enter the minimum longitude for the image. This value controls the left edge of the image (-180.0 to 180.0).">
+                <Label>Min Long:</Label>
+            </Field>
+
+            <Field id="maxlon" type="textfield" defaultValue="-90.5" visibleBindingId="imagetype" visibleBindingValue="boundingbox"
+                   tooltip="Please enter the maximum longitude for the image. This value controls the right edge of the image (-180.0 to 180.0).">
+                <Label>Max Long:</Label>
+            </Field>
+
+            <Field id="radiuslabel" type="label" visibleBindingId="imagetype" visibleBindingValue="radius">
+                <Label>Radius Settings:</Label>
+            </Field>
+
+            <Field id="centerlat" type="textfield" defaultValue="41.25" visibleBindingId="imagetype" visibleBindingValue="radius"
+                   tooltip="Please enter the center latitude for the image (-90.0 - 90.0).">
+                <Label>Center Lat:</Label>
+            </Field>
+
+            <Field id="centerlon" type="textfield" defaultValue="-87.65" visibleBindingId="imagetype" visibleBindingValue="radius"
+                   tooltip="Please enter the center longitude for the image (-180.0 - 180.0).">
+                <Label>Center Long:</Label>
+            </Field>
+
+            <Field id="radius" type="textfield" defaultValue="150" visibleBindingId="imagetype" visibleBindingValue="radius"
+                   tooltip="Please select the radius of the image (100 units is close, 1000 units is country).">
+                <Label>Radius:</Label>
+            </Field>
+
+            <Field id="radunits" type="menu" defaultValue="nm" visibleBindingId="imagetype" visibleBindingValue="radius"
+                   tooltip="Please select the radius units for the image.">
+                <Label>Units:</Label>
+                    <List>
+                        <Option value="km">Kilometers</Option>
+                        <Option value="nm">Nautical Miles*</Option>
+                    </List>
+            </Field>
+
+            <Field id="animationseparator" type="separator"/>
+
+            <Field id="animationlabel" type="label" fontSize="small">
+                <Label>If animated radar images are desired, tick the Animated box below. Settings are available for the number of frames and frame rotation delay.</Label>
+            </Field>
+
+            <Field id="feature" type="checkbox" defaultValue="false" tooltip="Please tick if animated radar is desired.">
+                <Label>Animated?</Label>
+            </Field>
+
+            <Field id="num" type="textfield" defaultValue="8" visibleBindingId="feature" visibleBindingValue="true"
+                   tooltip="Please select the number of frames for animated images (1 - 15).">
+                <Label>Frames:</Label>
+            </Field>
+
+            <Field id="frame" type="textfield" defaultValue="0" visibleBindingId="feature" visibleBindingValue="true"
+                   tooltip="Please enter the starting frame of the animated image (0 - 5, 0 is most current." hidden="true">
+                <Label>Frame:</Label>
+            </Field>
+
+            <Field id="delay" type="menu" defaultValue="50" visibleBindingId="feature" visibleBindingValue="true"
+                   tooltip="Please select the animation delay (25 - 100 in hundredths of a second).">
+                <Label>Delay:</Label>
+                    <List>
+                        <Option value="25">25</Option>
+                        <Option value="25">50*</Option>
+                        <Option value="25">75</Option>
+                        <Option value="25">100</Option>
+                    </List>
+            </Field>
+
+            <Field id="timeseparator" type="separator"/>
+
+            <Field id="timestamplabel" type="label" fontSize="small">
+                <Label>If a time stamp is desired, select the Time Stamp box below. Settings are available for locating the label on the image, given in X and Y pixels. It is possible to set these values such that the label will be added but not be visible.</Label>
+            </Field>
+
+            <Field id="timelabel" type="checkbox" defaultValue="true" tooltip="Please tick if you would like to display a time stamp on the image.">
+                <Label>Time Stamp?</Label>
+            </Field>
+
+            <Field id="timelabelx" type="textfield" defaultValue="10" visibleBindingId="timelabel" visibleBindingValue="true"
+                   tooltip="Please enter the number of pixels to move the time label (from the left edge of the image).">
+                <Label>Time Stamp X:</Label>
+            </Field>
+
+            <Field id="timelabely" type="textfield" defaultValue="20" visibleBindingId="timelabel" visibleBindingValue="true"
+                   tooltip="Please enter the number of pixels to move the time label (from the top edge of the image).">
+                <Label>Time Stamp Y:</Label>
+            </Field>
+
+            <Field id="featureseparator" type="separator"/>
+
+            <Field id="newmaps" type="checkbox" defaultValue="true" tooltip="Please untick to display radar data as a transparent overlay.">
+                <Label>Display Map?</Label>
+                <Description>(Map veiw versus transparent background)</Description>
+            </Field>
+
+            <Field id="Mercator" type="checkbox" defaultValue="false" tooltip="Please tick to render the image using Mercator projection.">
+                <Label>Mercator?</Label>
+                <Description>(Mercator projection map)</Description>
+            </Field>
+
+            <Field id="rainsnow" type="checkbox" defaultValue="true" tooltip="Please tick to display a different color palette for rain/mix/snow.">
+                <Label>Rain/Snow?</Label>
+                <Description>(Use different colors for rain/snow)</Description>
+            </Field>
+
+            <Field id="noclutter" type="checkbox" defaultValue="true" tooltip="Please tick if non-precipitation clutter should be removed from the image.">
+                <Label>Remove clutter?</Label>
+                <Description>(Remove non-precipitation noise)</Description>
+            </Field>
+
+            <Field id="smooth" type="checkbox" defaultValue="true" visibleBindingId="feature" visibleBindingValue="true" tooltip="Please tick if smooth colors are desired.">
+                <Label>Smooth Radar Data?</Label>
+                <Description>(Display smoothed radar returns)</Description>
+            </Field>
+
+            <Field id="deviceVersion" type="textfield" defaultValue="1" hidden="True"/>
+
+        </ConfigUI>
+
+        <States>
+
+            <State id="onOffState">
+                <ValueType>boolean</ValueType>
+                <TriggerLabel>Wunderground - WUnderground Radar State</TriggerLabel>
+                <ControlPageLabel>Wunderground - WUnderground Radar State</ControlPageLabel>
             </State>
         </States>
         <UiDisplayStateId>onOffState</UiDisplayStateId>
@@ -4474,7 +4678,7 @@
 
             <Field id="space12" type="label" fontSize="small">
                 <Label>If checked, the plugin will send one email each day with a summary of select weather information. In order to receive the summary, you must enable notifications of
-                    plugin updates within the WUnderground plugin settings dialog.
+plugin updates within the WUnderground plugin settings dialog.
                 </Label>
             </Field>
 

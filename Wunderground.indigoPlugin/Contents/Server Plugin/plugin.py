@@ -58,9 +58,10 @@ no way affiliated with Weather Underground, LLC. For more information about data
 provided see Weather Underground Terms of Service located at:
 http://www.wunderground.com/weather/api/d/terms.html.
 """
-# TODO: add a new weather radar device that leverages the new radar layer API.
 # TODO: Move weather summary sent to config.json - has to be on a device-specific basis.  'summary_sent' = {dev_id: false, dev_id: true}?
+# TODO: Account for existing settings.json so that plugin updates don't overwrite existing data.  (relocate file?)
 # TODO: Deprecate proper_icon_name?
+
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -71,10 +72,10 @@ import sys
 import time
 
 try:
-    import requests
+    import requests  # (weather data)
 except ImportError:
     import urllib   # (satellite imagery)
-    import urllib2  # (weather data)
+    import urllib2  # (weather data fallback)
 
 try:
     import indigo
@@ -86,7 +87,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.0.17"
+__version__ = "1.1.0"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -200,7 +201,7 @@ class Plugin(indigo.PluginBase):
             if dev.model in ['WUnderground Device', 'WUnderground Weather', 'WUnderground Weather Device', 'Weather Underground', 'Weather']:
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}{1}".format(dev.states['temp'], temperature_units))
             else:
-                dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
+                dev.updateStateOnServer('onOffState', value=True, uiValue=u"Enabled")
         except Exception as error:
             self.debugLog(u"Error setting deviceUI temperature field. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             self.debugLog(u"No existing data to use. itemList temp will be updated momentarily.")
@@ -218,7 +219,7 @@ class Plugin(indigo.PluginBase):
         """
         self.debugLog(u"Stopping Device: {0}".format(dev.name))
         try:
-            dev.updateStateOnServer('onOffState', value=False, uiValue=u" ")
+            dev.updateStateOnServer('onOffState', value=False, uiValue=u"Disabled")
         except Exception as error:
             self.debugLog(u"deviceStopComm error. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
@@ -289,31 +290,181 @@ class Plugin(indigo.PluginBase):
         debug_level    = self.pluginPrefs.get('showDebugLevel', 1)
         error_msg_dict = indigo.Dict()
 
-        # Test location setting for devices that must specify one.
         try:
-            location_config = valuesDict['location']
-            if not location_config:
-                error_msg_dict['location'] = u"Please specify a weather location."
-                error_msg_dict['showAlertText'] = u"Location Error.\n\nPlease specify a weather location."
-                return False, valuesDict, error_msg_dict
-            elif " " in location_config:
-                error_msg_dict['location'] = u"The location value can't contain spaces."
-                error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain spaces."
-                return False, valuesDict, error_msg_dict
-            elif "\\" in location_config:
-                error_msg_dict['location'] = u"The location value can't contain a \\ character. Replace it with a / character."
-                error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain a \\ character."
-                return False, valuesDict, error_msg_dict
 
-            # Debug output can contain sensitive data.
-            if debug_level >= 3:
-                self.debugLog(u"typeID: {0}".format(typeID))
-                self.debugLog(u"devId: {0}".format(devId))
-                self.debugLog(u"============ valuesDict ============\n")
-                for key, value in valuesDict.iteritems():
-                    self.debugLog(u"{0}: {1}".format(key, value))
+            # WUnderground Radar Devices
+            if typeID == 'wundergroundRadar':
+
+                if valuesDict['imagename'] == "" or valuesDict['imagename'].isspace():
+                    error_msg_dict['imagename'] = u"You must enter a valid image name."
+                    error_msg_dict['showAlertText'] = u"Image Name Error.\n\nYou must enter a valid image name."
+                    return False, valuesDict, error_msg_dict
+
+                try:
+                    height = int(valuesDict['height'])
+                    width = int(valuesDict['width'])
+                except ValueError:
+                    error_msg_dict['showAlertText'] = u"Image Size Error.\n\nImage size values must be real numbers greater than zero."
+                    return False, valuesDict, error_msg_dict
+
+                if not height >= 100:
+                    error_msg_dict['height'] = u"The image height must be at least 100 pixels."
+                    error_msg_dict['showAlertText'] = u"Height Error.\n\nThe image height must be at least 100 pixels."
+                    return False, valuesDict, error_msg_dict
+
+                if not width >= 100:
+                    error_msg_dict['width'] = u"The image width must be at least 100 pixels."
+                    error_msg_dict['showAlertText'] = u"Width Error.\n\nThe image width must be at least 100 pixels."
+                    return False, valuesDict, error_msg_dict
+
+                if not height == width:
+                    error_msg_dict['height'] = u"Image height and width must be the same."
+                    error_msg_dict['width'] = u"Image height and width must be the same."
+                    error_msg_dict['showAlertText'] = u"Size Error.\n\nFor now, the plugin only supports square radar images. Image height and width must be the same."
+                    return False, valuesDict, error_msg_dict
+
+                try:
+                    num = int(valuesDict['num'])
+                except ValueError:
+                    error_msg_dict['num'] = u"The number of frames must be between 1 - 15."
+                    error_msg_dict['showAlertText'] = u"Frames Error.\n\nThe number of frames must be between 1 - 15."
+                    return False, valuesDict, error_msg_dict
+
+                if not 0 < num <= 15:
+                    error_msg_dict['num'] = u"The number of frames must be between 1 - 15."
+                    error_msg_dict['showAlertText'] = u"Frames Error.\n\nThe number of frames must be between 1 - 15."
+                    return False, valuesDict, error_msg_dict
+
+                try:
+                    timelabelx = int(valuesDict['timelabelx'])
+                    timelabely = int(valuesDict['timelabely'])
+                except ValueError:
+                    error_msg_dict['showAlertText'] = u"Time Stamp Label Error.\n\nThe time stamp location settings must be values greater than or equal to zero."
+                    return False, valuesDict, error_msg_dict
+
+                if not timelabelx >= 0:
+                    error_msg_dict['timelabelx'] = u"The time stamp location setting must be a value greater than or equal to zero."
+                    error_msg_dict['showAlertText'] = u"Time Stamp Label Error.\n\nThe time stamp location setting must be a value greater than or equal to zero."
+                    return False, valuesDict, error_msg_dict
+
+                if not timelabely >= 0:
+                    error_msg_dict['timelabely'] = u"The time stamp location setting must be a value greater than or equal to zero."
+                    error_msg_dict['showAlertText'] = u"Time Stamp Label Error.\n\nThe time stamp location setting must be a value greater than or equal to zero."
+                    return False, valuesDict, error_msg_dict
+
+                # Image Type: Bounding Box
+                if valuesDict['imagetype'] == 'boundingbox':
+
+                    try:
+                        maxlat = float(valuesDict['maxlat'])
+                        maxlon = float(valuesDict['maxlon'])
+                        minlat = float(valuesDict['minlat'])
+                        minlon = float(valuesDict['minlon'])
+                    except ValueError:
+                        error_msg_dict['showAlertText'] = u"Lat/Long Value Error.\n\nLatitude and Longitude values must be expressed as real numbers. Hover over each field to see " \
+                                                          u"descriptions of allowable values."
+                        return False, valuesDict, error_msg_dict
+
+                    if not -90.0 <= minlat <= 90.0:
+                        error_msg_dict['minlat'] = u"The Min Lat must be between -90.0 and 90.0."
+                        error_msg_dict['showAlertText'] = u"Latitude Error.\n\nMin Lat must be between -90.0 and 90.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if not -90.0 <= maxlat <= 90.0:
+                        error_msg_dict['maxlat'] = u"The Max Lat must be between -90.0 and 90.0."
+                        error_msg_dict['showAlertText'] = u"Latitude Error.\n\nMax Lat must be between -90.0 and 90.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if not -180.0 <= minlon <= 180.0:
+                        error_msg_dict['minlon'] = u"The Min Long must be between -180.0 and 180.0."
+                        error_msg_dict['showAlertText'] = u"Longitude Error.\n\nMin Long must be between -180.0 and 180.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if not -180.0 <= maxlon <= 180.0:
+                        error_msg_dict['maxlon'] = u"The Max Long must be between -180.0 and 180.0."
+                        error_msg_dict['showAlertText'] = u"Longitude Error.\n\nMax Long must be between -180.0 and 180.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if abs(minlat) > abs(maxlat):
+                        error_msg_dict['minlat'] = u"The Max Lat must be greater than the Min Lat."
+                        error_msg_dict['maxlat'] = u"The Max Lat must be greater than the Min Lat."
+                        error_msg_dict['showAlertText'] = u"Latitude Error.\n\nMax Lat must be greater than the Min Lat."
+                        return False, valuesDict, error_msg_dict
+
+                    if abs(minlon) > abs(maxlon):
+                        error_msg_dict['minlon'] = u"The Max Long must be greater than the Min Long."
+                        error_msg_dict['maxlon'] = u"The Max Long must be greater than the Min Long."
+                        error_msg_dict['showAlertText'] = u"Longitude Error.\n\nMax Long must be greater than the Min Long."
+                        return False, valuesDict, error_msg_dict
+
+                elif valuesDict['imagetype'] == 'radius':
+                    try:
+                        centerlat = float(valuesDict['centerlat'])
+                        centerlon = float(valuesDict['centerlon'])
+                    except ValueError:
+                        error_msg_dict['showAlertText'] = u"Lat/Long Value Error.\n\nLatitude and Longitude values must be expressed as real numbers. Hover over each field to see " \
+                                                          u"descriptions of allowable values."
+                        return False, valuesDict, error_msg_dict
+
+                    try:
+                        radius = float(valuesDict['radius'])
+                    except ValueError:
+                        error_msg_dict['showAlertText'] = u"Radius Value Error.\n\nThe radius value must be a real number greater than zero"
+                        return False, valuesDict, error_msg_dict
+
+                    if not -90.0 <= centerlat <= 90.0:
+                        error_msg_dict['centerlat'] = u"Center Lat must be between -90.0 and 90.0."
+                        error_msg_dict['showAlertText'] = u"Center Lat Error.\n\nCenter Lat must be between -90.0 and 90.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if not -180.0 <= centerlon <= 180.0:
+                        error_msg_dict['centerlon'] = u"Center Long must be between -180.0 and 180.0."
+                        error_msg_dict['showAlertText'] = u"Center Long Error.\n\nCenter Long must be between -180.0 and 180.0."
+                        return False, valuesDict, error_msg_dict
+
+                    if not radius > 0:
+                        error_msg_dict['radius'] = u"Radius must be greater than zero."
+                        error_msg_dict['showAlertText'] = u"Radius Error.\n\nRadius must be greater than zero."
+                        return False, valuesDict, error_msg_dict
+
+                elif valuesDict['imagetype'] == 'locationbox':
+                    if valuesDict['location'].isspace():
+                        error_msg_dict['location'] = u"You must specify a valid location. Please see the plugin wiki for examples."
+                        error_msg_dict['showAlertText'] = u"Location Error.\n\nYou must specify a valid location. Please see the plugin wiki for examples."
+                        return False, valuesDict, error_msg_dict
+
+                return True
+
             else:
-                self.debugLog(u"Device preferences suppressed. Set debug level to [High] to write them to the log.")
+
+                # Test location setting for devices that must specify one.
+                location_config = valuesDict['location']
+                if not location_config:
+                    error_msg_dict['location'] = u"Please specify a weather location."
+                    error_msg_dict['showAlertText'] = u"Location Error.\n\nPlease specify a weather location."
+                    return False, valuesDict, error_msg_dict
+                elif " " in location_config:
+                    error_msg_dict['location'] = u"The location value can't contain spaces."
+                    error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain spaces."
+                    return False, valuesDict, error_msg_dict
+                elif "\\" in location_config:
+                    error_msg_dict['location'] = u"The location value can't contain a \\ character. Replace it with a / character."
+                    error_msg_dict['showAlertText'] = u"Location Error.\n\nThe location value can not contain a \\ character."
+                    return False, valuesDict, error_msg_dict
+                elif location_config.isspace():
+                    error_msg_dict['location'] = u"Please enter a valid location value."
+                    error_msg_dict['showAlertText'] = u"Location Error.\n\nPlease enter a valid location value."
+                    return False, valuesDict, error_msg_dict
+
+                # Debug output can contain sensitive data.
+                if debug_level >= 3:
+                    self.debugLog(u"typeID: {0}".format(typeID))
+                    self.debugLog(u"devId: {0}".format(devId))
+                    self.debugLog(u"============ valuesDict ============\n")
+                    for key, value in valuesDict.iteritems():
+                        self.debugLog(u"{0}: {1}".format(key, value))
+                else:
+                    self.debugLog(u"Device preferences suppressed. Set debug level to [High] to write them to the log.")
 
         except Exception as error:
             self.debugLog(u"Error in validateDeviceConfigUI(). Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
@@ -914,8 +1065,10 @@ class Plugin(indigo.PluginBase):
             return -99.0
 
     def getSatelliteImage(self, dev):
-        """ The getSatelliteImage() will download a file from a user- specified
-        location and I save it to a user-specified folder on the local server.
+        """ The getSatelliteImage() method will download a file from a user-
+        specified location and save it to a user-specified folder on the local
+        server. This method is used by the Satellite Image Downloader device 
+        type.
         :param dev:
         """
         debug_level = self.pluginPrefs.get('showDebugLevel', 1)
@@ -940,12 +1093,14 @@ class Plugin(indigo.PluginBase):
                         urllib.urlretrieve(source, destination)
 
                     dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
+                    dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
                     if debug_level >= 2:
                         self.debugLog(u"Image downloader source: {0}".format(source))
                         self.debugLog(u"Image downloader destination: {0}".format(destination))
                         self.debugLog(u"Satellite image downloaded successfully.")
-                    return False
+
+                    return
 
             for image_type in image_types:
                 if image_type not in destination:
@@ -953,9 +1108,119 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('onOffState', value=False, uiValue=u"Bad Type")
                     return False
 
-            new_props = dev.pluginProps
-            new_props['lastChanged'] = indigo.server.getTime()
-            dev.replacePluginPropsOnServer(new_props)
+        except Exception as error:
+            self.errorLog(u"Error downloading satellite image. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
+            dev.updateStateOnServer('onOffState', value=False, uiValue=u"No comm")
+            return False
+
+    def     getWUradar(self, dev):
+        """ The getWUradar() method will download a satellite image from 
+        Weather Underground. The construction of the image is based upon user
+        preferences defined in the WUnderground Radar device type.
+        :param dev:
+        """
+
+        try:
+            debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+            if debug_level >= 3:
+                self.debugLog(u"getSatelliteImage() method called.")
+
+            location = ''
+            name = self.pluginPrefs.get('imagename', 'WUradar')
+            parms = ''
+
+            parms_dict = {
+                'centerlat': float(dev.pluginProps.get('centerlat', 41.25)),
+                'centerlon': float(dev.pluginProps.get('centerlon', -87.65)),
+                'delay': int(dev.pluginProps.get('delay', 25)),
+                'feature': dev.pluginProps.get('feature', True),
+                'height': int(dev.pluginProps.get('height', 500)),
+                'imagetype': dev.pluginProps.get('imagetype', 'radius'),
+                'maxlat': float(dev.pluginProps.get('maxlat', 43.0)),
+                'maxlon': float(dev.pluginProps.get('maxlon', -90.5)),
+                'minlat': float(dev.pluginProps.get('minlat', 39.0)),
+                'minlon': float(dev.pluginProps.get('minlon', -86.5)),
+                'newmaps': dev.pluginProps.get('newmaps', False),
+                'noclutter': dev.pluginProps.get('noclutter', True),
+                'num': int(dev.pluginProps.get('num', 10)),
+                'radius': float(dev.pluginProps.get('radius', 150)),
+                'radunits': dev.pluginProps.get('radunits', 'nm'),
+                'rainsnow': dev.pluginProps.get('rainsnow', True),
+                'reproj.automerc': dev.pluginProps.get('Mercator', False),
+                'smooth': dev.pluginProps.get('smooth', 1),
+                'timelabel.x': int(dev.pluginProps.get('timelabelx', 10)),
+                'timelabel.y': int(dev.pluginProps.get('timelabely', 20)),
+                'timelabel': dev.pluginProps.get('timelabel', True),
+                'width': int(dev.pluginProps.get('width', 500)),
+            }
+
+            # Type of image
+            if parms_dict['feature']:
+                radartype = 'animatedradar'
+            else:
+                radartype = 'radar'
+
+            # Type of boundary
+            if parms_dict['imagetype'] == 'radius':
+                for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype',):
+                    del parms_dict[key]
+            elif parms_dict['imagetype'] == 'boundingbox':
+                for key in ('centerlat', 'centerlon', 'radius', 'imagetype',):
+                    del parms_dict[key]
+            else:
+                for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype', 'centerlat', 'centerlon', 'radius',):
+                    location = self.pluginPrefs.get('location', 'autoip')
+                    name = ''
+                    del parms_dict[key]
+
+            # If Mercator is 0, del the key
+            if not parms_dict['reproj.automerc']:
+                del parms_dict['reproj.automerc']
+
+            for k, v in parms_dict.iteritems():
+
+                # Convert boolean props to 0/1 for URL encode.
+                if str(v) == 'False':
+                    v = 0
+                elif str(v) == 'True':
+                    v = 1
+
+                # Create string of parms for URL encode.
+                if len(parms) < 1:
+                    parms += "{0}={1}".format(k, v)
+                else:
+                    parms += "&{0}={1}".format(k, v)
+
+            source = 'http://api.wunderground.com/api/{0}/{1}/{2}{3}{4}?{5}'.format(self.pluginPrefs.get('apiKey', ''),
+                                                                                    radartype,
+                                                                                    location,
+                                                                                    name,
+                                                                                    '.gif',
+                                                                                    parms)
+            destination = "/Library/Application Support/Perceptive Automation/Indigo {0}/IndigoWebServer/images/controls/static/{1}.png".format(indigo.server.version.split('.')[0],
+                                                                                                                                                dev.pluginProps.get('imagename', True))
+
+            # If requests doesn't work for some reason, revert to urllib.
+            try:
+                r = requests.get(source, stream=True)
+                with open(destination, 'wb') as img:
+                    for chunk in r.iter_content(2000):
+                        img.write(chunk)
+            except NameError:
+                urllib.urlretrieve(source, destination)
+
+            # Since this uses the API, go increment (or reset) the call counter.
+            self.callCount()
+
+            dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
+            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
+
+            if debug_level >= 2:
+                self.debugLog(u"Radar image source: {0}".format(source))
+                self.debugLog(u"Satellite image downloaded successfully.")
+
+            return
 
         except Exception as error:
             self.errorLog(u"Error downloading satellite image. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
@@ -2955,10 +3220,9 @@ class Plugin(indigo.PluginBase):
 
                     elif dev.enabled:
                         self.debugLog(u"Parse weather data for device: {0}".format(dev.name))
-
                         # Get weather data from Weather Underground
                         dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
-                        if dev.model not in ['Satellite Image Downloader', 'WUnderground Satellite Image Downloader']:
+                        if dev.model not in ['Satellite Image Downloader', 'WUnderground Radar', 'WUnderground Satellite Image Downloader']:
                             self.getWeatherData(dev)
 
                             # If we've successfully downloaded data from Weather Underground, let's unpack it and assign it to the relevant device.
@@ -3052,7 +3316,10 @@ class Plugin(indigo.PluginBase):
                         # Image Downloader devices.
                         elif dev.model in ['Satellite Image Downloader', 'WUnderground Satellite Image Downloader']:
                             self.getSatelliteImage(dev)
-                            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
+
+                        # WUnderground Radar devices.
+                        elif dev.model in ['WUnderground Radar']:
+                            self.getWUradar(dev)
 
             self.debugLog(u"Locations Polled: {0}{1}Weather Underground cycle complete.".format(self.masterWeatherDict.keys(), pad_log))
 
