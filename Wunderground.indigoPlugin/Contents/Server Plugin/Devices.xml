@@ -1969,146 +1969,289 @@
 
             <State id="h01_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 1</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 1</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 1 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 1 (Short)</ControlPageLabel>
             </State>
 
             <State id="h02_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 2</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 2</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 2 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 2 (Short)</ControlPageLabel>
             </State>
 
             <State id="h03_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 3</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 3</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 3 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 3 (Short)</ControlPageLabel>
             </State>
 
             <State id="h04_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 4</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 4</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 4 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 4 (Short)</ControlPageLabel>
             </State>
 
             <State id="h05_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 5</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 5</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 5 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 5 (Short)</ControlPageLabel>
             </State>
 
             <State id="h06_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 6</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 6</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 6 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 6 (Short)</ControlPageLabel>
             </State>
 
             <State id="h07_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 7</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 7</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 7 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 7 (Short)</ControlPageLabel>
             </State>
 
             <State id="h08_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 8</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 8</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 8 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 8 (Short)</ControlPageLabel>
             </State>
 
             <State id="h09_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 9</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 9</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 9 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 9 (Short)</ControlPageLabel>
             </State>
 
             <State id="h10_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 10</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 10</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 10 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 10 (Short)</ControlPageLabel>
             </State>
 
             <State id="h11_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 11</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 11</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 11 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 11 (Short)</ControlPageLabel>
             </State>
 
             <State id="h12_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 12</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 12</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 12 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 12 (Short)</ControlPageLabel>
             </State>
 
             <State id="h13_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 13</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 13</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 13 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 13 (Short)</ControlPageLabel>
             </State>
 
             <State id="h14_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 14</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 14</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 14 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 14 (Short)</ControlPageLabel>
             </State>
 
             <State id="h15_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 15</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 15</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 15 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 15 (Short)</ControlPageLabel>
             </State>
 
             <State id="h16_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 16</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 16</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 16 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 16 (Short)</ControlPageLabel>
             </State>
 
             <State id="h17_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 17</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 17</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 17 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 17 (Short)</ControlPageLabel>
             </State>
 
             <State id="h18_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 18</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 18</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 18 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 18 (Short)</ControlPageLabel>
             </State>
 
             <State id="h19_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 19</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 19</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 19 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 19 (Short)</ControlPageLabel>
             </State>
 
             <State id="h20_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 20</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 20</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 20 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 20 (Short)</ControlPageLabel>
             </State>
 
             <State id="h21_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 21</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 21</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 21 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 21 (Short)</ControlPageLabel>
             </State>
 
             <State id="h22_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 22</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 22</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 22 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 22 (Short)</ControlPageLabel>
             </State>
 
             <State id="h23_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 23</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 23</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 23 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 23 (Short)</ControlPageLabel>
             </State>
 
             <State id="h24_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Hour 24</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Hour 24</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Hour 24 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 24 (Short)</ControlPageLabel>
+            </State>
+            <State id="h01_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 1 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 1 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h02_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 2 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 2 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h03_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 3 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 3 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h04_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 4 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 4 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h05_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 5 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 5 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h06_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 6 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 6 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h07_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 7 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 7 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h08_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 8 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 8 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h09_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 9 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 9 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h10_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 10 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 10 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h11_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 11 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 11 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h12_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 12 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 12 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h13_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 13 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 13 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h14_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 14 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 14 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h15_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 15 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 15 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h16_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 16 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 16 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h17_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 17 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 17 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h18_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 18 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 18 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h19_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 19 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 19 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h20_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 20 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 20 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h21_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 21 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 21 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h22_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 22 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 22 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h23_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 23 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 23 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="h24_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Hour 24 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Hour 24 (Long)</ControlPageLabel>
             </State>
 
             <State id="h01_windDegrees">
@@ -2759,14 +2902,14 @@
                 <Label>Frame:</Label>
             </Field>
 
-            <Field id="delay" type="menu" defaultValue="50" visibleBindingId="feature" visibleBindingValue="true"
+            <Field id="delay" type="menu" defaultValue="25" visibleBindingId="feature" visibleBindingValue="true"
                    tooltip="Please select the animation delay (25 - 100 in hundredths of a second).">
                 <Label>Delay:</Label>
                     <List>
                         <Option value="25">25</Option>
-                        <Option value="25">50*</Option>
-                        <Option value="25">75</Option>
-                        <Option value="25">100</Option>
+                        <Option value="50">50*</Option>
+                        <Option value="75">75</Option>
+                        <Option value="100">100</Option>
                     </List>
             </Field>
 
@@ -3620,62 +3763,122 @@
 
             <State id="d01_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 1</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 1</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 1 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 1 (Short)</ControlPageLabel>
             </State>
 
             <State id="d02_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 2</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 2</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 2 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 2 (Short)</ControlPageLabel>
             </State>
 
             <State id="d03_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 3</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 3</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 3 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 3 (Short)</ControlPageLabel>
             </State>
 
             <State id="d04_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 4</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 4</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 4 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 4 (Short)</ControlPageLabel>
             </State>
 
             <State id="d05_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 5</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 5</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 5 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 5 (Short)</ControlPageLabel>
             </State>
 
             <State id="d06_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 6</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 6</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 6 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 6 (Short)</ControlPageLabel>
             </State>
 
             <State id="d07_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 7</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 7</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 7 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 7 (Short)</ControlPageLabel>
             </State>
 
             <State id="d08_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 8</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 8</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 8 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 8 (Short)</ControlPageLabel>
             </State>
 
             <State id="d09_windDir">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Wind Direction - Day 9</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 9</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 9 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 9 (Short)</ControlPageLabel>
             </State>
 
             <State id="d10_windDir">
                 <ValueType>Integer</ValueType>
-                <TriggerLabel>Wind Direction - Day 10</TriggerLabel>
-                <ControlPageLabel>Wind Direction - Day 10</ControlPageLabel>
+                <TriggerLabel>Wind Direction - Day 10 (Short)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 10 (Short)</ControlPageLabel>
+            </State>
+
+            <State id="d01_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 1 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 1 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d02_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 2 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 2 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d03_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 3 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 3 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d04_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 4 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 4 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d05_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 5 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 5 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d06_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 6 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 6 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d07_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 7 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 7 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d08_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 8 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 8 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d09_windDirLong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Wind Direction - Day 9 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 9 (Long)</ControlPageLabel>
+            </State>
+
+            <State id="d10_windDirLong">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Wind Direction - Day 10 (Long)</TriggerLabel>
+                <ControlPageLabel>Wind Direction - Day 10 (Long)</ControlPageLabel>
             </State>
 
             <State id="d01_windDegrees">
@@ -4855,6 +5058,12 @@ plugin updates within the WUnderground plugin settings dialog.
                 <ControlPageLabel>Current Conditions - Heat Index</ControlPageLabel>
             </State>
 
+            <State id="neighborhood">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Neighborhood</TriggerLabel>
+                <ControlPageLabel>Neighborhood</ControlPageLabel>
+            </State>
+
             <State id="relativeHumidity">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Current Conditions - Humidity</TriggerLabel>
@@ -4941,8 +5150,14 @@ plugin updates within the WUnderground plugin settings dialog.
 
             <State id="windDIR">
                 <ValueType>String</ValueType>
-                <TriggerLabel>Current Conditions - Wind Direction</TriggerLabel>
-                <ControlPageLabel>Current Conditions - Wind Direction</ControlPageLabel>
+                <TriggerLabel>Current Conditions - Wind Direction (Short)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Wind Direction (Short)</ControlPageLabel>
+            </State>
+
+            <State id="windDIRlong">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Conditions - Wind Direction (Long)</TriggerLabel>
+                <ControlPageLabel>Current Conditions - Wind Direction (Long)</ControlPageLabel>
             </State>
 
             <State id="windGust">

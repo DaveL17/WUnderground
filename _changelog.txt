@@ -1,5 +1,22 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.1
+- Adds new state to Weather devices 'neighborhood' which is the neighborhood
+  name of the current weather location. If neighborhood is not supported, the
+  plugin will return 'Location not supported.'
+- Adds new state to Weather devices 'windDIRlong' which is the verbose wind
+  direction: 'north', 'north northwest', etc.
+- Adds new state to 10 day Weather Forecast devices 'dxx_windDirLong' which
+  is the verbose wind direction:  'north', 'north northwest', etc.
+- Adds new state to 24 hour Weather Forecast devices 'hxx_windDirLong' which
+  is the verbose wind direction:  'north', 'north northwest', etc.
+- Fixes bug in windDIR (and associated wind states) where only the cardinal
+  directions were converted to long strings - 'N' --> 'North', 'NE' --> 'NE'.
+  Now all wind short strings use abbreviated wind dirs 'N' --> 'N'.
+- Fixes bug in setting of animation delays for WUnderground Radar devices (the
+  delay was being set to an empty string by default--which is not a valid
+  option.)
+
 v1.1.0
 - Implements new device type for creating satellite imagery via the
   WUnderground API.

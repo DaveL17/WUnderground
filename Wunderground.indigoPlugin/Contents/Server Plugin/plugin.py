@@ -61,6 +61,8 @@ http://www.wunderground.com/weather/api/d/terms.html.
 # TODO: Move weather summary sent to config.json - has to be on a device-specific basis.  'summary_sent' = {dev_id: false, dev_id: true}?
 # TODO: Account for existing settings.json so that plugin updates don't overwrite existing data.  (relocate file?)
 # TODO: Deprecate proper_icon_name?
+# TODO: Any additional device config validation needed for any devices?
+# TODO: Add a fourth location option to radar device to pick up lat/long from the Indigo server (modified radius)
 
 
 import datetime as dt
@@ -87,7 +89,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -1032,16 +1034,42 @@ class Plugin(indigo.PluginBase):
         if debug_level >= 3:
             self.debugLog(u"{0}: fixWind() method called.".format(stateName))
 
-        if val in ["N", "n", "north"]:
-            val = u"North"
-        elif val in ["E", "e", "east"]:
-            val = u"East"
-        elif val in ["S", "s", "south"]:
-            val = u"South"
-        elif val in ["W", "w", "west"]:
-            val = u"West"
-        else:
-            pass
+        # if val in ["N", "n", "north"]:
+        #     val = u"North"
+        # elif val in ["E", "e", "east"]:
+        #     val = u"East"
+        # elif val in ["S", "s", "south"]:
+        #     val = u"South"
+        # elif val in ["SW", "sw", "southwest"]:
+        #     val = u"Southwest"
+        # elif val in ["W", "w", "west"]:
+        #     val = u"West"
+        # elif val in ["WNW", "wnw", "west northwest"]:
+        #     val = u"West Northwest"
+        # else:
+        #     pass
+
+        wind_list = [('N', 'north'),
+                     ('NNE', 'north northwest'),
+                     ('NE', 'northeast'),
+                     ('ENE', 'east northeast'),
+                     ('E', 'east'),
+                     ('ESE', 'east southeast'),
+                     ('SE', 'southeast'),
+                     ('SSE', 'south southeast'),
+                     ('S', 'south'),
+                     ('SSW', 'south southwest'),
+                     ('SW', 'southwest'),
+                     ('WSW', 'west southwest'),
+                     ('W', 'west'),
+                     ('WNW', 'west northwest'),
+                     ('NW', 'northwest'),
+                     ('NNW', 'north northwest'),
+                     ]
+
+        for direction in wind_list:
+            if val == direction[0]:
+                val = direction[1]
 
         return val
 
@@ -1833,14 +1861,12 @@ class Plugin(indigo.PluginBase):
         try:
 
             # Degrees Fahrenheit (float)
-            temp_f = self.masterWeatherDict[self.location]['current_observation']['temp_f']
-            temp_f = self.floatEverything(u"temp_f", temp_f)
+            temp_f = self.floatEverything(u"temp_f", self.masterWeatherDict[self.location]['current_observation']['temp_f'])
             temp_f, temp_f_ui = self.fixCorruptedData('temp_f', temp_f)
             temp_f_str = u"{0}".format(temp_f)
 
             # Degree Centigrade (float)
-            temp_c = self.masterWeatherDict[self.location]['current_observation']['temp_c']
-            temp_c = self.floatEverything(u"temp_c", temp_c)
+            temp_c = self.floatEverything(u"temp_c", self.masterWeatherDict[self.location]['current_observation']['temp_c'])
             temp_c, temp_c_ui = self.fixCorruptedData('temp_c', temp_c)
             temp_c_str = u"{0}".format(temp_c)
 
@@ -1925,13 +1951,23 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentWeather', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['weather']))
 
             # Barometric pressure trend (string: "+", "0", "-")
-            pressure_trend = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['pressure_trend'])
-            pressure_trend = self.fixPressureSymbol(pressure_trend)
+            pressure_trend = self.fixPressureSymbol(u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['pressure_trend']))
             dev.updateStateOnServer('pressureTrend', value=u"{0}".format(pressure_trend))
 
+            # Neighborhood for this weather location (string: "Neighborhood Name")
+            try:
+                for key in self.masterWeatherDict[self.location]['location']['nearby_weather_stations']['pws']['station']:
+                    if key['id'] == station_id:
+                        dev.updateStateOnServer('neighborhood', value="{0}".format(key['neighborhood'].encode('UTF-8')))
+                    else:
+                        dev.updateStateOnServer('neighborhood', value=u"Location not supported.")
+
+            except Exception as e:
+                indigo.server.log(u"{0}".format(e))
+                dev.updateStateOnServer('neighborhood', value=u"Location not supported.")
+
             # Solar Radiation (string: "0" or greater, not always provided as a value that can float (sometimes = ""). Some sites don't report it.)
-            s_rad = self.masterWeatherDict[self.location]['current_observation']['solarradiation']
-            s_rad = self.floatEverything(u"Solar Radiation", s_rad)
+            s_rad = self.floatEverything(u"Solar Radiation", self.masterWeatherDict[self.location]['current_observation']['solarradiation'])
             if s_rad < 0:
                 s_rad = -99
             dev.updateStateOnServer('solarradiation', value=s_rad)
@@ -1950,10 +1986,13 @@ class Plugin(indigo.PluginBase):
                 uv = '--'
             dev.updateStateOnServer('uv', value=u"{0}".format(uv))
 
-            # Wind direction in alpha (string: N, NNE, NE, ENE...)
+            # Short Wind direction in alpha (string: N, NNE, NE, ENE...)
             wind_dir = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_dir'])
-            wind_dir = self.fixWind(u"windDIR", wind_dir)
             dev.updateStateOnServer('windDIR', value=wind_dir)
+
+            # Long Wind direction in alpha (string: North, North Northeast, Northeast, East Northeast...)
+            wind_dir_long = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_dir'])
+            dev.updateStateOnServer('windDIRlong', value=self.fixWind(u"windDIRlong", wind_dir_long))
 
             # Wind direction (integer: 0 - 359 -- units: degrees)
             wind_degrees = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_degrees'])
@@ -1967,8 +2006,7 @@ class Plugin(indigo.PluginBase):
                 self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
             # Relative Humidity (string: "80%")
-            relative_humidity = self.masterWeatherDict[self.location]['current_observation']['relative_humidity']
-            relative_humidity = relative_humidity.strip('%')
+            relative_humidity = self.masterWeatherDict[self.location]['current_observation']['relative_humidity'].strip('%')
             relative_humidity, relative_humidity_ui = self.fixCorruptedData(u"relativeHumidity", relative_humidity)
             relative_humidity = self.floatEverything(u"relativeHumidity", relative_humidity)
             dev.updateStateOnServer('relativeHumidity',
@@ -1986,22 +2024,19 @@ class Plugin(indigo.PluginBase):
             try:
                 if self.configMenuUnits == 'M':
 
-                    history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (M)", history_high)
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (M)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (M)", history_high_ui)))
 
-                    history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (M)", history_low)
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (M)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (M)", history_low_ui)))
 
-                    history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (M)", history_pop)
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm'])
                     history_pop = self.floatEverything(u"historyPop (M)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
@@ -2010,66 +2045,57 @@ class Plugin(indigo.PluginBase):
                 # Note that there is not presently any data here for wind, so there is no difference between 'MS' and 'M'.  That could change later if
                 # winds are added.
                 if self.configMenuUnits == 'MS':
-                    history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (MS)", history_high)
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (MS)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (MS)", history_high_ui)))
 
-                    history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (MS)", history_low)
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (MS)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (MS)", history_low_ui)))
 
-                    history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (MS)", history_pop)
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm'])
                     history_pop = self.floatEverything(u"historyPop (MS)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
                                             uiValue=u"{0}".format(self.uiRainFormat("historyPop (MS)", history_pop_ui)))
 
                 elif self.configMenuUnits == 'I':
-                    history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (I)", history_high)
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (I)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (I)", history_high_ui)))
 
-                    history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (I)", history_low)
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (I)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (I)", history_low_ui)))
 
-                    history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (I)", history_pop)
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi'])
                     history_pop = self.floatEverything(u"historyPop (I)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
                                             uiValue=u"{0}".format(self.uiRainFormat(u"historyPop (I)", history_pop_ui)))
 
                 elif self.configMenuUnits == 'S':
-                    history_high = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi']
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (S)", history_high)
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi'])
                     history_high = self.floatEverything(u"historyHigh (S)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (S)", history_high_ui)))
 
-                    history_low = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi']
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (S)", history_low)
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi'])
                     history_low = self.floatEverything(u"historyLow (S)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
                                             uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (S)", history_low_ui)))
 
-                    history_pop = self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (S)", history_pop)
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi'])
                     history_pop = self.floatEverything(u"historyPop (S)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
@@ -2087,20 +2113,17 @@ class Plugin(indigo.PluginBase):
             if self.configMenuUnits in ['M', 'MS']:
 
                 # Dew Point (integer: -20 -- units: Centigrade)
-                dewpoint = self.masterWeatherDict[self.location]['current_observation']['dewpoint_c']
-                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewpointC (M, MS)", dewpoint)
+                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewpointC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['dewpoint_c'])
                 dewpoint = self.floatEverything(u"dewpointC (M, MS)", dewpoint)
                 dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(u"dewpointC (M, MS)", dewpoint_ui)))
 
                 # Feels Like (string: "-20" -- units: Centigrade)
-                feelslike = self.masterWeatherDict[self.location]['current_observation']['feelslike_c']
-                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (M, MS)", feelslike)
+                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['feelslike_c'])
                 feelslike = self.floatEverything(u"feelsLikeC (M, MS)", feelslike)
                 dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(u"feelsLikeC (M, MS)", feelslike_ui)))
 
                 # Heat Index (string: "20", "NA" -- units: Centigrade)
-                heat_index = self.masterWeatherDict[self.location]['current_observation']['heat_index_c']
-                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (M, MS)", heat_index)
+                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['heat_index_c'])
                 heat_index = self.floatEverything(u"heatIndexC (M, MS)", heat_index)
                 if heat_index == "NA":
                     dev.updateStateOnServer('heatIndex', value=heat_index)
@@ -2116,14 +2139,12 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(u"precipToday (M, MS)", precip_today_ui)))
 
                 # Precipitation Last Hour (string: "0", "2" -- units: mm)
-                precip_1hr = self.masterWeatherDict[self.location]['current_observation']['precip_1hr_metric']
-                precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHourMM (M, MS)", precip_1hr)
+                precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHourMM (M, MS)", self.masterWeatherDict[self.location]['current_observation']['precip_1hr_metric'])
                 precip_1hr = self.floatEverything(u"precipOneHour (M, MS)", precip_1hr)
                 dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(u"precipOneHour (M, MS)", precip_1hr_ui)))
 
                 # Barometric Pressure (string: "1039" -- units: mb)
-                pressure = self.masterWeatherDict[self.location]['current_observation']['pressure_mb']
-                pressure, pressure_ui = self.fixCorruptedData(u"pressureMB (M, MS)", pressure)
+                pressure, pressure_ui = self.fixCorruptedData(u"pressureMB (M, MS)", self.masterWeatherDict[self.location]['current_observation']['pressure_mb'])
                 pressure = self.floatEverything(u"pressureMB (M, MS)", pressure)
                 dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
 
@@ -2137,14 +2158,12 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('pressureIcon', value=pressure_str)
 
                 # Visibility (string: "16.1" -- units: km)
-                visibility = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['visibility_km'])
-                visibility, visibility_ui = self.fixCorruptedData(u"visibility (M, MS)", visibility)
+                visibility, visibility_ui = self.fixCorruptedData(u"visibility (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['visibility_km']))
                 visibility = self.floatEverything(u"visibility (M, MS)", visibility)
                 dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, self.distanceUnits))
 
                 # Wind Chill (string: "17" -- units: Centigrade)
-                windchill = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['windchill_c'])
-                windchill, windchill_ui = self.fixCorruptedData(u"windChillC (M, MS)", windchill)
+                windchill, windchill_ui = self.fixCorruptedData(u"windChillC (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['windchill_c']))
                 windchill = self.floatEverything(u"windChillC (M, MS)", windchill)
                 if windchill == "NA":
                     dev.updateStateOnServer('windchill', value=windchill)
@@ -2152,8 +2171,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(u"windChillC (M, MS)", windchill_ui)))
 
                 # Wind Gust (string: "19.3" -- units: kph)
-                wind_gust = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_gust_kph'])
-                wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (M, MS)", wind_gust)
+                wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_gust_kph']))
                 wind_gust = self.floatEverything(u"windGust (M, MS)", wind_gust)
 
                 # Report wind speed in KPH or MPS depending on user prefs. 1 KPH = 0.277778 MPS
@@ -2175,8 +2193,7 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Wind Speed (float: 1.6 -- units: kph)
-                wind_speed = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_kph'])
-                wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (M, MS)", wind_speed)
+                wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_kph']))
                 wind_speed = self.floatEverything(u"windKPH (M, MS)", wind_speed)
 
                 # Report wind speed in KPH or MPS depending on user prefs. 1 KPH = 0.277778 MPS
@@ -2225,20 +2242,17 @@ class Plugin(indigo.PluginBase):
             elif self.configMenuUnits == "I":
 
                 # Dew Point (integer: -20 -- units: Centigrade)
-                dewpoint = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['dewpoint_c'])
-                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewPoint (I)", dewpoint)
+                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewPoint (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['dewpoint_c']))
                 dewpoint = self.floatEverything(u"dewpoint (I)", dewpoint)
                 dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(u"dewpointC (I)", dewpoint_ui)))
 
                 # Feels Like (string: "-20" -- units: Centigrade)
-                feelslike = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['feelslike_c'])
-                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (I)", feelslike)
+                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['feelslike_c']))
                 feelslike = self.floatEverything(u"feelsLikeC (I)", feelslike)
                 dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(u"feelsLikeC (I)", feelslike_ui)))
 
                 # Heat Index (string: "20", "NA" -- units: Centigrade)
-                heat_index = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['heat_index_c'])
-                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (I)", heat_index)
+                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['heat_index_c']))
                 heat_index = self.floatEverything(u"heatIndexC (I)", heat_index)
                 if heat_index == "NA":
                     dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(heat_index_ui))
@@ -2260,8 +2274,8 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(u"precipOneHour (I)", precip_1hr_ui)))
 
                 # Barometric Pressure (string: "1039" -- units: mb)
-                pressure = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['pressure_mb'])
-                pressure, pressure_ui = self.fixCorruptedData(u"pressure (I)", pressure)
+                pressure = self.masterWeatherDict[self.location]['current_observation']['pressure_mb']
+                pressure, pressure_ui = self.fixCorruptedData(u"pressure (I)", u"{0}".format(pressure))
                 pressure = self.floatEverything(u"pressure (I)", pressure)
                 dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
 
@@ -2831,11 +2845,11 @@ class Plugin(indigo.PluginBase):
                                                 uiValue=u"{0}{1}".format(fore_snow, self.snowAmountUnits))
 
                     if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
-                        wind_dir = u"{0}".format(item['wdir']['dir'])
-                        dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=self.fixWind(u"foreWindHourlyDir", wind_dir))
+                        dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=u"{0}".format(item['wdir']['dir']))
                     else:
                         wind_dir = u"{0}".format(item['wdir']['degrees'])
                         dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=wind_dir)
+                    dev.updateStateOnServer(u"h{0}_windDirLong".format(fore_counter_text), value=self.fixWind(u"h{0}_windDirLong".format(fore_counter_text), item['wdir']['dir']))
                     dev.updateStateOnServer(u"h{0}_windDegrees".format(fore_counter_text), value=item['wdir']['degrees'], uiValue=u"{0}".format(item['wdir']['degrees']))
 
                     # Hourly forecast icon (all day).
@@ -3028,13 +3042,14 @@ class Plugin(indigo.PluginBase):
                     # Wind direction (text or degrees.)
                     if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
                         avg_wind_dir_state = u"d{0}_windDir".format(fore_counter_text)
-                        avg_wind_dir = self.fixWind(u"foreAvgWindTenDayDir", u"{0}".format(item['avewind']['dir']))
+                        avg_wind_dir = u"{0}".format(item['avewind']['dir'])
                         dev.updateStateOnServer(avg_wind_dir_state, value=avg_wind_dir)
                     else:
                         avg_wind_dir_state = u"d{0}_windDir".format(fore_counter_text)
                         avg_wind_dir = u"{0}".format(item['avewind']['degrees'])
                         dev.updateStateOnServer(avg_wind_dir_state, value=avg_wind_dir)
                     avg_wind_dir = item['avewind']['degrees']
+                    dev.updateStateOnServer(u"d{0}_windDirLong".format(fore_counter_text), value=self.fixWind(u"d{0}_windDirLong".format(fore_counter_text), item['avewind']['dir']))
                     dev.updateStateOnServer(u"d{0}_windDegrees".format(fore_counter_text), value=avg_wind_dir)
 
                     # Forecast icon (all day).
