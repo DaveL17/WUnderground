@@ -89,7 +89,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 kDefaultPluginSettings = {
     u"dailyCallCounter": 0,
@@ -1955,16 +1955,15 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('pressureTrend', value=u"{0}".format(pressure_trend))
 
             # Neighborhood for this weather location (string: "Neighborhood Name")
-            try:
-                for key in self.masterWeatherDict[self.location]['location']['nearby_weather_stations']['pws']['station']:
-                    if key['id'] == station_id:
-                        dev.updateStateOnServer('neighborhood', value="{0}".format(key['neighborhood'].encode('UTF-8')))
-                    else:
-                        dev.updateStateOnServer('neighborhood', value=u"Location not supported.")
+            neighborhood = u""
+            for key in self.masterWeatherDict[self.location]['location']['nearby_weather_stations']['pws']['station']:
+                if key['id'] == unicode(station_id):
+                    neighborhood = "{0}".format(key['neighborhood'].encode('UTF-8'))
+                    break  # We've found a match so let's move on
+                else:
+                    neighborhood = u"Location not found."
 
-            except Exception as e:
-                indigo.server.log(u"{0}".format(e))
-                dev.updateStateOnServer('neighborhood', value=u"Location not supported.")
+            dev.updateStateOnServer('neighborhood', value="{0}".format(neighborhood.encode('UTF-8')))
 
             # Solar Radiation (string: "0" or greater, not always provided as a value that can float (sometimes = ""). Some sites don't report it.)
             s_rad = self.floatEverything(u"Solar Radiation", self.masterWeatherDict[self.location]['current_observation']['solarradiation'])

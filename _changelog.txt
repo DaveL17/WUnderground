@@ -1,5 +1,8 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.2
+-
+
 v1.1.1
 - Adds new state to Weather devices 'neighborhood' which is the neighborhood
   name of the current weather location. If neighborhood is not supported, the
