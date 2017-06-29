@@ -2858,14 +2858,21 @@
                 <Label>Radius Settings:</Label>
             </Field>
 
-            <Field id="centerlat" type="textfield" defaultValue="41.25" visibleBindingId="imagetype" visibleBindingValue="radius"
+            <Field id="centerlat" type="textfield" defaultValue="0" visibleBindingId="imagetype" visibleBindingValue="radius"
                    tooltip="Please enter the center latitude for the image (-90.0 - 90.0).">
                 <Label>Center Lat:</Label>
             </Field>
 
-            <Field id="centerlon" type="textfield" defaultValue="-87.65" visibleBindingId="imagetype" visibleBindingValue="radius"
+            <Field id="centerlon" type="textfield" defaultValue="0" visibleBindingId="imagetype" visibleBindingValue="radius"
                    tooltip="Please enter the center longitude for the image (-180.0 - 180.0).">
                 <Label>Center Long:</Label>
+            </Field>
+
+            <Field id="getLatLong" type="button" visibleBindingId="imagetype" visibleBindingValue="radius"
+                   tooltip="Click to obtain latitude and longitude from the Indigo server. To cancel the changes, cancel this dialog box (do not save changes).">
+                <Label/>
+                <Title>Get Lat / Long:</Title>
+                <CallbackMethod>getLatLong</CallbackMethod>
             </Field>
 
             <Field id="radius" type="textfield" defaultValue="150" visibleBindingId="imagetype" visibleBindingValue="radius"

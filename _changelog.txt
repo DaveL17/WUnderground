@@ -1,7 +1,19 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.3
+- Adds new feature to WU Radar devices to populate lat/long from the Indigo
+  server.
+- Fixes bug in setting barometric 'pressureIcon' value for metric (M) and
+  Mixed SI Wind (MS) weather devices. Harmonizes setting of icon value across
+  all units types.
+- Fixes bug in setting of weather device 'historyDate' value where the value
+  was being set more than once when history data was not available. Now will
+  be set to 'Not available' instead of '--'.
+- Code refinements.
+
 v1.1.2
--
+- Fixes bug in setting neighborhood state where neighborhood was always set to
+  the last neighborhood in the for loop.
 
 v1.1.1
 - Adds new state to Weather devices 'neighborhood' which is the neighborhood
