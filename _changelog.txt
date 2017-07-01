@@ -1,5 +1,14 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.5
+- New plugin configuration feature which shows the number of API calls for
+  the current day.
+- Improved use of Indigo API for plugin settings to reduce server load and
+  eliminate need for separate settings file.
+- Enhanced debug logging.
+- Fixed bug in reporting offline weather site time to properly reflect down-
+  time.
+
 v1.1.3
 - Adds new feature to WU Radar devices to populate lat/long from the Indigo
   server.

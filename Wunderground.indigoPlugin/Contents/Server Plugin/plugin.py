@@ -62,14 +62,13 @@ For information regarding the use of this plugin, see the license located in
 the plugin package or located on GitHub:
 https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 """
-# TODO: Move weather summary sent to config.json - has to be on a device-specific basis.  'summary_sent' = {dev_id: false, dev_id: true}?
-# TODO: Account for existing settings.json so that plugin updates don't overwrite existing data.  (relocate file?)
 # TODO: Deprecate proper_icon_name_all_day? Do it for WU 7.
-# TODO: Copenhagen is updating, but the current observation datetime is not current.  Better option?
+# TODO: Allow each device to update on its own frequency.
+# TODO: Simplify the emailForecast code.
+# TODO: Add parms to method calls in debug output.  See itemlisttemperatureformat
 
 import datetime as dt
 import indigoPluginUpdateChecker
-import pluginConfig
 import simplejson
 import socket
 import sys
@@ -91,28 +90,26 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.3"
+__version__ = "1.1.5"
 
-kDefaultPluginSettings = {
-    u"dailyCallCounter": 0,
-    u"dailyCallDay": "2000-01-01",
-    u"dailyCallLimitReached": False
-}
 kDefaultPluginPrefs = {
-    u'alertLogging': False,         # Write severe weather alerts to the log?
-    u'apiKey': "",                  # WU requires the api key.
-    u'callCounter': 500,            # WU call limit based on UW plan.
-    u'downloadInterval': 900,       # Frequency of weather updates.
-    u'itemListTempDecimal': 1,      # Precision for Indigo Item List.
-    u'language': "EN",              # Language for WU text.
-    u'noAlertLogging': False,       # Suppresses "no active alerts" logging.
-    u'showDebugInfo': False,        # Verbose debug logging?
-    u'showDebugLevel': 1,           # Low, Medium or High debug output.
-    u'uiHumidityDecimal': 1,        # Precision for Indigo UI display (humidity).
-    u'uiTempDecimal': 1,            # Precision for Indigo UI display (temperature).
-    u'uiWindDecimal': 1,            # Precision for Indigo UI display (wind).
-    u'updaterEmail': "",            # Email to notify of plugin updates.
-    u'updaterEmailsEnabled': False  # Notification of plugin updates wanted.
+    u'alertLogging': False,           # Write severe weather alerts to the log?
+    u'apiKey': "",                    # WU requires the api key.
+    u'callCounter': 500,              # WU call limit based on UW plan.
+    u'dailyCallCounter': 0,           # Number of API calls today.
+    u'dailyCallDay': '1970-01-01',    # API call counter date.
+    u'dailyCallLimitReached': False,  # Has the daily call limit been reached?
+    u'downloadInterval': 900,         # Frequency of weather updates.
+    u'itemListTempDecimal': 1,        # Precision for Indigo Item List.
+    u'language': "EN",                # Language for WU text.
+    u'noAlertLogging': False,         # Suppresses "no active alerts" logging.
+    u'showDebugInfo': False,          # Verbose debug logging?
+    u'showDebugLevel': 1,             # Low, Medium or High debug output.
+    u'uiHumidityDecimal': 1,          # Precision for Indigo UI display (humidity).
+    u'uiTempDecimal': 1,              # Precision for Indigo UI display (temperature).
+    u'uiWindDecimal': 1,              # Precision for Indigo UI display (wind).
+    u'updaterEmail': "",              # Email to notify of plugin updates.
+    u'updaterEmailsEnabled': False    # Notification of plugin updates wanted.
 }
 
 pad_log = u"{0}{1}".format('\n', " " * 34)  # 34 spaces to align with log margin.
@@ -122,21 +119,11 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        self.configMenuUnits     = "S"
-        self.configWindDirUnits  = "DIR"
-        self.configWindSpdUnits  = "AVG"
-        self.distanceUnits       = " "
-        self.itemListUiUnits     = "S"
-        self.itemListUnits       = "S"
-        self.location            = "autoip"
-        self.percentageUnits     = " "
-        self.pressureUnits       = " "
-        self.rainAmountUnits     = " "
-        self.rainUnits           = " "
-        self.snowAmountUnits     = " "
-        self.temperatureUnits    = " "
-        self.weatherSummaryEmail = False
-        self.windUnits           = " "
+        self.debug = self.pluginPrefs['showDebugInfo']
+        self.masterWeatherDict = {}
+        self.masterTriggerDict = {}
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
+        self.wuOnline = True
 
         indigo.server.log(u"")
         indigo.server.log(u"{0:=^130}".format(" Initializing New Plugin Session "))
@@ -146,18 +133,6 @@ class Plugin(indigo.PluginBase):
         indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
         indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
         indigo.server.log(u"{0:=^130}".format(""))
-
-        self.debug             = self.pluginPrefs.get('showDebugInfo', False)
-        self.masterWeatherDict = {}
-        self.masterTriggerDict = {}
-        self.wuOnline          = True
-
-        # Initialize plugin updater variables.
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
-
-        # Lays the groundwork for moving dynamic plugin settings from Indigo preferences file to a plugin config.json file. Load the default settings when the plugin is initialized.
-        self.config      = pluginConfig.config(self)
-        self.wu_settings = self.config.load(kDefaultPluginSettings)
 
         # Convert old debugLevel scale to new scale.
         if not 0 < self.pluginPrefs['showDebugLevel'] <= 3:
@@ -169,7 +144,7 @@ class Plugin(indigo.PluginBase):
                 self.pluginPrefs['showDebugLevel'] = 1
 
         # If debug is turned on and set to high, warn the user of potential risks.
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+        if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"{0}{1}Caution! Debug set to high. Output contains sensitive information (API key, location, email, etc.{1}{0})".format('=' * 98, pad_log))
 
             self.sleep(3)
@@ -194,19 +169,19 @@ class Plugin(indigo.PluginBase):
         """ Start communication with plugin devices. """
         self.debugLog(u"Starting Device: {0}".format(dev.name))
 
-        temperature_units = dev.pluginProps.get('temperatureUnits', u" ")
-
         dev.stateListOrDisplayStateIdChanged()  # Check to see if the device profile has changed.
 
+        # For devices that display the temperature as their UI state, set them to a value we already have.
         try:
-            # For devices that display the temperature as their UI state, set them to a value we already have.
             if dev.model in ['WUnderground Device', 'WUnderground Weather', 'WUnderground Weather Device', 'Weather Underground', 'Weather']:
-                dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}{1}".format(dev.states['temp'], temperature_units))
+                dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}{1}".format(dev.states['temp'], dev.pluginProps['temperatureUnits']))
+
             else:
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"Enabled")
+
         except Exception as error:
             self.debugLog(u"Error setting deviceUI temperature field. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-            self.debugLog(u"No existing data to use. itemList temp will be updated momentarily.")
+            self.debugLog(u"No existing data to use. UI temp will be updated momentarily.")
 
         # Set all device icons to off.
         for attr in ['SensorOff', 'TemperatureSensorOff']:
@@ -236,13 +211,14 @@ class Plugin(indigo.PluginBase):
         also be called. """
         self.debugLog(u"closedPrefsConfigUi() method called.")
 
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+        debug_level = valuesDict['showDebugLevel']
+        show_debug = valuesDict['showDebugInfo']
 
         if userCancelled:
             self.debugLog(u"  User prefs dialog cancelled.")
 
         if not userCancelled:
-            self.debug = valuesDict.get('showDebugInfo', False)
+            self.debug = show_debug
 
             # Debug output can contain sensitive data.
             if debug_level >= 3:
@@ -253,37 +229,36 @@ class Plugin(indigo.PluginBase):
                 self.debugLog(u"Plugin preferences suppressed. Set debug level to [High] to write them to the log.")
 
             if self.debug:
-                self.debugLog(u"  Debugging on.{0}Debug level set to [Low (1), Medium (2), High (3)]: {1}".format(pad_log, debug_level))
-                self.pluginPrefs['showDebugLevel'] = valuesDict['showDebugLevel']
+                self.debugLog(u"  Debugging on.{0}Debug level set to [Low (1), Medium (2), High (3)]: {1}".format(pad_log, show_debug))
             else:
                 self.debugLog(u"Debugging off.")
 
-            self.debugLog(u"  User prefs saved.")
+            self.debugLog(u"User prefs saved.")
 
     def toggleDebugEnabled(self):
         """ Toggle debug on/off. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if not self.debug:
             self.pluginPrefs['showDebugInfo'] = True
             self.debug = True
             self.debugLog(u"Debugging on. Debug level set to [Low (1), Medium (2), High (3)]: {0}".format(debug_level))
 
-            # Debug output can contain sensitive info, show only if debug_level is high.
+            # Debug output can contain sensitive info, show only if debug level is high.
             if debug_level >= 3:
                 self.debugLog(u"{0}{1}Caution! Debug set to high. Output contains sensitive information (API key, location, email, etc.{1}{0}".format('=' * 98, pad_log))
             else:
                 self.debugLog(u"Plugin preferences suppressed. Set debug level to [High] to write them to the log.")
         else:
-            self.debug = False
             self.pluginPrefs['showDebugInfo'] = False
+            self.debug = False
             indigo.server.log(u"Debugging off.")
 
     def validateDeviceConfigUi(self, valuesDict, typeID, devId):
         """ Validate select device config menu settings. """
         self.debugLog(u"validateDeviceConfigUi() method called.")
 
-        debug_level    = self.pluginPrefs.get('showDebugLevel', 1)
         error_msg_dict = indigo.Dict()
 
         try:
@@ -453,7 +428,7 @@ class Plugin(indigo.PluginBase):
                     return False, valuesDict, error_msg_dict
 
                 # Debug output can contain sensitive data.
-                if debug_level >= 3:
+                if self.pluginPrefs['showDebugLevel'] >= 3:
                     self.debugLog(u"typeID: {0}".format(typeID))
                     self.debugLog(u"devId: {0}".format(devId))
                     self.debugLog(u"============ valuesDict ============\n")
@@ -464,7 +439,6 @@ class Plugin(indigo.PluginBase):
 
         except Exception as error:
             self.debugLog(u"Error in validateDeviceConfigUI(). Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-            pass
 
         return True
 
@@ -522,7 +496,6 @@ class Plugin(indigo.PluginBase):
 
         except Exception as error:
             self.debugLog(u"Exception in validatePrefsConfigUi API key test. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-            pass
 
         return True, valuesDict
 
@@ -531,38 +504,40 @@ class Plugin(indigo.PluginBase):
         ensure that the plugin doesn't go over a user-defined limit. The limit
         is set within the plugin config dialog. """
 
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+        calls_made = self.pluginPrefs['dailyCallCounter']  # Calls today so far
+        calls_max = self.pluginPrefs['callCounter']  # Max calls allowed per day
+        debug_level = self.pluginPrefs['showDebugLevel']
+        download_interval = self.pluginPrefs['downloadInterval']
 
         if debug_level >= 3:
             self.debugLog(u"callCount() method called.")
 
-        calls_max  = int(self.pluginPrefs.get('callCounter', 500))  # Max calls allowed per day
-        sleep_time = int(self.pluginPrefs.get('downloadInterval', 900))
-
         # See if we have exceeded the daily call limit.  If we have, set the "dailyCallLimitReached" flag to be true.
-        if self.wu_settings['dailyCallCounter'] >= calls_max:
-            self.wu_settings['dailyCallLimitReached'] = True
+        if calls_made >= calls_max:
             indigo.server.log(u"Daily call limit ({0}) reached. Taking the rest of the day off.".format(calls_max))
             self.debugLog(u"  Setting call limiter to: True")
-            self.sleep(sleep_time)
+
+            self.pluginPrefs['dailyCallLimitReached'] = True
+
+            self.sleep(download_interval)
 
         # Daily call limit has not been reached. Increment the call counter (and ensure that call limit flag is set to False.
         else:
             # Increment call counter and write it out to the preferences dict.
-            self.wu_settings['dailyCallLimitReached'] = False
-            self.wu_settings['dailyCallCounter'] += 1
+            self.pluginPrefs['dailyCallLimitReached'] = False
+            self.pluginPrefs['dailyCallCounter'] += 1
 
             # Calculate how many calls are left for debugging purposes.
-            calls_left = calls_max - self.wu_settings['dailyCallCounter']
-            self.debugLog(u"  {0} callsLeft = ({1} - {2})".format(calls_left, calls_max, self.wu_settings['dailyCallCounter']))
+            calls_left = calls_max - calls_made
+            self.debugLog(u"  {0} callsLeft = ({1} - {2})".format(calls_left, calls_max, calls_made))
 
     def callDay(self):
         """ Manages the day for the purposes of maintaining the call counter
         and the flag for the daily forecast email message. """
-        call_day           = self.wu_settings['dailyCallDay']
-        call_limit_reached = self.wu_settings['dailyCallLimitReached']
-        debug_level        = int(self.pluginPrefs.get('showDebugLevel', 1))
-        sleep_time         = int(self.pluginPrefs.get('downloadInterval', 900))
+        call_day           = self.pluginPrefs['dailyCallDay']
+        call_limit_reached = self.pluginPrefs['dailyCallLimitReached']
+        debug_level        = self.pluginPrefs['showDebugLevel']
+        sleep_time         = self.pluginPrefs['downloadInterval']
         todays_date        = dt.datetime.today().date()
         today_str          = u"{0}".format(todays_date)
         today_unstr        = dt.datetime.strptime(call_day, "%Y-%m-%d")
@@ -574,21 +549,19 @@ class Plugin(indigo.PluginBase):
         if debug_level >= 2:
             self.debugLog(u"  callDay: {0}".format(call_day))
             self.debugLog(u"  dailyCallLimitReached: {0}".format(call_limit_reached))
+            self.debugLog(u"  Is todays_date: {0} greater than dailyCallDay: {1}?".format(todays_date, today_unstr_conv))
 
         # Check if callDay is a default value and set to today if it is.
         if call_day in ["", "2000-01-01"]:
             self.debugLog(u"  Initializing variable dailyCallDay: {0}".format(today_str))
-            self.wu_settings['dailyCallDay'] = today_str
 
-        if debug_level >= 2:
-            self.debugLog(u"  Is todays_date: {0} greater than dailyCallDay: {1}?".format(todays_date, today_unstr_conv))
+            self.pluginPrefs['dailyCallDay'] = today_str
 
         # Reset call counter and call day because it's a new day.
         if todays_date > today_unstr_conv:
-            self.debugLog(u"Resetting call counter (new day.)")
-            self.wu_settings['dailyCallCounter'] = 0
-            self.wu_settings['dailyCallLimitReached'] = False
-            self.wu_settings['dailyCallDay'] = today_str
+            self.pluginPrefs['dailyCallCounter'] = 0
+            self.pluginPrefs['dailyCallLimitReached'] = False
+            self.pluginPrefs['dailyCallDay'] = today_str
 
             # If it's a new day, reset the forecast email sent flags.
             for dev in indigo.devices.itervalues('self'):
@@ -597,42 +570,38 @@ class Plugin(indigo.PluginBase):
                         dev.updateStateOnServer('weatherSummaryEmailSent', value=False)
                 except Exception as error:
                     self.debugLog(u"Exception updating weather summary email sent value. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                    pass
-
-            self.updater.checkVersionPoll()
 
             if debug_level >= 2:
                 self.debugLog(u"  Today is a new day. Reset the call counter.\n"
                               u"  Reset dailyCallLimitReached to: False\n"
                               u"  Reset dailyCallCounter to: 0\n"
                               u"  Update dailyCallDay to: {0}".format(today_str))
+            self.updater.checkVersionPoll()
+
         else:
             if debug_level >= 2:
                 self.debugLog(u"    Today is not a new day.")
-            pass
-
-        # Has the daily call limit been reached?
-        if debug_level >= 2:
-            self.debugLog(u"  Has the call limit been reached?")
 
         if call_limit_reached:
             indigo.server.log(u"    Daily call limit reached. Taking the rest of the day off.")
             self.sleep(sleep_time)
+
         else:
             if debug_level >= 2:
                 self.debugLog(u"    The daily call limit has not been reached.")
-            pass
 
     def checkVersionNow(self):
         """ The checkVersionNow() method will call the Indigo Plugin Update
         Checker based on a user request. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"checkVersionNow() method called.")
 
         try:
             self.updater.checkVersionNow()
+
         except Exception as error:
             self.errorLog(u"Error checking plugin update status. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             return False
@@ -643,14 +612,15 @@ class Plugin(indigo.PluginBase):
         the Indigo Logs folder. If a weather data log exists for that day, it
         will be replaced. With a new day, a new log file will be created (file
         name contains the date.) """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        file_name = '{0}/{1} Wunderground.txt'.format(indigo.server.getLogsFolderPath(), dt.datetime.today().date())
 
         if debug_level >= 3:
             self.debugLog(u"dumpTheJSON() method called.")
 
         try:
-            file_name = '{0}/{1} Wunderground.txt'.format(indigo.server.getLogsFolderPath(), dt.datetime.today().date())
-            logfile   = open(file_name, "w")
+            logfile = open(file_name, "w")
 
             # This works, but PyCharm doesn't like it as Unicode.  Bad inspection?
             logfile.write(u"Weather Underground JSON Data Log\n")
@@ -673,14 +643,18 @@ class Plugin(indigo.PluginBase):
         """ The emailForecast() method will construct and send a summary of
         select weather information to the user based on the email address
         specified for plugin update notifications. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        config_menu_units = dev.pluginProps['configMenuUnits']
+        debug_level    = self.pluginPrefs['showDebugLevel']
+        email_list     = []
+        location       = dev.pluginProps['location']
+        summary_wanted = dev.pluginProps['weatherSummaryEmail']
+        summary_sent   = dev.states['weatherSummaryEmailSent']
 
         if debug_level >= 3:
             self.debugLog(u'emailForecast() method called.')
 
         try:
-            summary_wanted = dev.pluginProps.get('weatherSummaryEmail', False)
-            summary_sent   = dev.states['weatherSummaryEmailSent']
 
             # Legacy device types had this setting improperly established as a string rather than a bool.
             if isinstance(summary_wanted, basestring):
@@ -697,154 +671,153 @@ class Plugin(indigo.PluginBase):
 
             # Test to see if waiting an hour will settle down the forecast email gremlins.
             if summary_wanted and not summary_sent and dt.datetime.now().hour >= 1:
-                email_list = []
 
-                if self.configMenuUnits in ['M', 'MS']:
+                if config_menu_units in ['M', 'MS']:
                     try:
                         email_list.append(u"{0}".format(dev.name))
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
+                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
+                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
                         email_list.append(self.floatEverything("sendMailMaxHumidity",
-                                                               self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                                                               self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['mm']))
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['mm']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("mm.")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']))
+                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[location]['almanac']['temp_high']['record']['C']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_high']['recordyear'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']))
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    email_list.append("C")
-                    try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    try:
-                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']))
+                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[location]['almanac']['temp_low']['record']['C']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']))
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempm']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm']))
+                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipm']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("mm.")
 
-                elif self.configMenuUnits in 'I':
+                elif config_menu_units in 'I':
                     try:
                         email_list.append(u"{0}".format(dev.name))
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['fcttext_metric'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['fcttext_metric'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
+                        email_list.append(self.floatEverything("sendMailHighC", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
+                        email_list.append(self.floatEverything("sendMailLowC", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
                         email_list.append(self.floatEverything("sendMailMaxHumidity",
-                                                               self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                                                               self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("in.")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']))
+                        email_list.append(self.floatEverything("sendMailRecordHighC", self.masterWeatherDict[location]['almanac']['temp_high']['record']['C']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_high']['recordyear'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']))
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    email_list.append("C")
-                    try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    try:
-                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm']))
+                        email_list.append(self.floatEverything("sendMailRecordLowC", self.masterWeatherDict[location]['almanac']['temp_low']['record']['C']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm']))
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempM", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempm']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("C")
                     try:
-                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']))
+                        email_list.append(self.floatEverything("sendMailMinTempM", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempm']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("C")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipM", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipi']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("in.")
@@ -855,73 +828,73 @@ class Plugin(indigo.PluginBase):
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][0]['fcttext'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][0]['fcttext'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['title'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['title'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday'][1]['fcttext'])
+                        email_list.append(self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday'][1]['fcttext'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
                         email_list.append(self.floatEverything("sendMailHighF",
-                                                               self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']))
+                                                               self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("F")
                     try:
                         email_list.append(self.floatEverything("sendMailLowF",
-                                                               self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']))
+                                                               self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("F")
                     try:
                         email_list.append(self.floatEverything("sendMailMaxHumidity",
-                                                               self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
+                                                               self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['maxhumidity']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
+                        email_list.append(self.floatEverything("sendMailQPF", self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday'][0]['qpf_allday']['in']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("in.")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordHighF", self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']))
+                        email_list.append(self.floatEverything("sendMailRecordHighF", self.masterWeatherDict[location]['almanac']['temp_high']['record']['F']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("F")
                     try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear'])
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_high']['recordyear'])
                     except KeyError:
                         email_list.append(u"Not provided")
                     try:
-                        email_list.append(self.floatEverything("sendMailRecordLowF", self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']))
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    email_list.append("F")
-                    try:
-                        email_list.append(self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear'])
-                    except KeyError:
-                        email_list.append(u"Not provided")
-                    try:
-                        email_list.append(self.floatEverything("sendMailMaxTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi']))
+                        email_list.append(self.floatEverything("sendMailRecordLowF", self.masterWeatherDict[location]['almanac']['temp_low']['record']['F']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("F")
                     try:
-                        email_list.append(self.floatEverything("sendMailMinTempI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi']))
+                        email_list.append(self.masterWeatherDict[location]['almanac']['temp_low']['recordyear'])
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    try:
+                        email_list.append(self.floatEverything("sendMailMaxTempI", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempi']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("F")
                     try:
-                        email_list.append(self.floatEverything("sendMailPrecipI", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi']))
+                        email_list.append(self.floatEverything("sendMailMinTempI", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempi']))
+                    except KeyError:
+                        email_list.append(u"Not provided")
+                    email_list.append("F")
+                    try:
+                        email_list.append(self.floatEverything("sendMailPrecipI", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipi']))
                     except KeyError:
                         email_list.append(u"Not provided")
                     email_list.append("in.")
@@ -950,7 +923,7 @@ class Plugin(indigo.PluginBase):
                              u"Low: {d[20]:.0f}{d[21]}\n" \
                              u"Precipitation: {d[22]} {d[23]}\n\n".format(d=email_list)
 
-                indigo.server.sendEmailTo(self.pluginPrefs.get('updaterEmail', ''), subject=u"Daily Weather Summary", body=email_body)
+                indigo.server.sendEmailTo(self.pluginPrefs['updaterEmail'], subject=u"Daily Weather Summary", body=email_body)
                 dev.updateStateOnServer('weatherSummaryEmailSent', value=True)
             else:
                 pass
@@ -971,10 +944,11 @@ class Plugin(indigo.PluginBase):
         to zero. Even though we know that -999 is not the same as zero, it's
         functionally the same. Thanks to "jheddings" for the better
         implementation of this method. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: fixCorruptedData() method called.".format(state_name))
+            self.debugLog(u"fixCorruptedData(self, state_name={0}, val={1})".format(state_name, val))
 
         try:
             real = float(val)
@@ -990,10 +964,11 @@ class Plugin(indigo.PluginBase):
     def fixPressureSymbol(self, val):
         """ Converts the barometric pressure symbol to something more human
         friendly. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
-            self.debugLog(u"fixPressureSymbol() method called.")
+            self.debugLog(u"fixPressureSymbol(self, val={0})".format(val))
 
         try:
             if val == "+":
@@ -1009,15 +984,12 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"Exception in fixPressureSymbol. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             return val
 
-    def fixWind(self, stateName, val):
+    def fixWind(self, state_name, val):
         """ The fixWind() method takes possible wind direction values and
         standardizes them across all device types and all reporting stations to
         ensure that we wind up with values that we can recognize. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
 
-        if debug_level >= 3:
-            self.debugLog(u"{0}: fixWind() method called.".format(stateName))
-
+        debug_level = self.pluginPrefs['showDebugLevel']
         wind_list = [('N', 'north'),
                      ('NNE', 'north northwest'),
                      ('NE', 'northeast'),
@@ -1036,6 +1008,9 @@ class Plugin(indigo.PluginBase):
                      ('NNW', 'north northwest'),
                      ]
 
+        if debug_level >= 3:
+            self.debugLog(u"fixWind(self, state_name={0}, val={1})".format(state_name, val))
+
         for direction in wind_list:
             if val == direction[0]:
                 val = direction[1]
@@ -1048,26 +1023,36 @@ class Plugin(indigo.PluginBase):
         Unicode string is returned. This is necessary because Weather
         Underground will send values that won't float even when they're
         supposed to. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: floatEverything() method called.".format(state_name))
+            self.debugLog(u"floatEverything(self, state_name={0}, val={1})".format(state_name, val))
 
         try:
             return float(val)
+
         except (ValueError, TypeError) as error:
             self.debugLog(u"Line {0}  {1}) (val = {2})".format(sys.exc_traceback.tb_lineno, error, val))
             return -99.0
 
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
         """Called when a device configuration dialog is opened. """
-        self.debugLog(u"getDeviceConfigUiValues() called.")
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+
+        if debug_level >= 3:
+            self.debugLog(u"getDeviceConfigUiValues() called.")
 
         return valuesDict
 
     def getLatLong(self, valuesDict, typeId, devId):
         """Called when a device configuration dialog is opened. """
-        self.debugLog(u"getDeviceConfigUiValues() called.")
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+
+        if debug_level >= 3:
+            self.debugLog(u"getDeviceConfigUiValues() called.")
 
         latitude, longitude = indigo.server.getLatitudeAndLongitude()
         valuesDict['centerlat'] = latitude
@@ -1080,10 +1065,10 @@ class Plugin(indigo.PluginBase):
         specified location and save it to a user-specified folder on the local
         server. This method is used by the Satellite Image Downloader device 
         type. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-        destination = dev.pluginProps.get('imageDestinationLocation', '')
+        debug_level = self.pluginPrefs['showDebugLevel']
+        destination = dev.pluginProps['imageDestinationLocation']
         image_types = (".gif", ".jpg", ".jpeg", ".png")
-        source      = dev.pluginProps.get('imageSourceLocation', '')
+        source      = dev.pluginProps['imageSourceLocation']
 
         if debug_level >= 3:
             self.debugLog(u"getSatelliteImage() method called.")
@@ -1122,45 +1107,44 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('onOffState', value=False, uiValue=u"No comm")
             return False
 
-    def     getWUradar(self, dev):
+    def getWUradar(self, dev):
         """ The getWUradar() method will download a satellite image from 
         Weather Underground. The construction of the image is based upon user
         preferences defined in the WUnderground Radar device type. """
 
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location    = ''
+        name        = dev.pluginProps['imagename']
+        parms       = ''
+        parms_dict = {
+            'centerlat': float(dev.pluginProps.get('centerlat', 41.25)),
+            'centerlon': float(dev.pluginProps.get('centerlon', -87.65)),
+            'delay': int(dev.pluginProps.get('delay', 25)),
+            'feature': dev.pluginProps.get('feature', True),
+            'height': int(dev.pluginProps.get('height', 500)),
+            'imagetype': dev.pluginProps.get('imagetype', 'radius'),
+            'maxlat': float(dev.pluginProps.get('maxlat', 43.0)),
+            'maxlon': float(dev.pluginProps.get('maxlon', -90.5)),
+            'minlat': float(dev.pluginProps.get('minlat', 39.0)),
+            'minlon': float(dev.pluginProps.get('minlon', -86.5)),
+            'newmaps': dev.pluginProps.get('newmaps', False),
+            'noclutter': dev.pluginProps.get('noclutter', True),
+            'num': int(dev.pluginProps.get('num', 10)),
+            'radius': float(dev.pluginProps.get('radius', 150)),
+            'radunits': dev.pluginProps.get('radunits', 'nm'),
+            'rainsnow': dev.pluginProps.get('rainsnow', True),
+            'reproj.automerc': dev.pluginProps.get('Mercator', False),
+            'smooth': dev.pluginProps.get('smooth', 1),
+            'timelabel.x': int(dev.pluginProps.get('timelabelx', 10)),
+            'timelabel.y': int(dev.pluginProps.get('timelabely', 20)),
+            'timelabel': dev.pluginProps.get('timelabel', True),
+            'width': int(dev.pluginProps.get('width', 500)),
+        }
+
+        if debug_level >= 3:
+            self.debugLog(u"getSatelliteImage() method called.")
+
         try:
-            debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-
-            if debug_level >= 3:
-                self.debugLog(u"getSatelliteImage() method called.")
-
-            location = ''
-            name = self.pluginPrefs.get('imagename', 'WUradar')
-            parms = ''
-
-            parms_dict = {
-                'centerlat': float(dev.pluginProps.get('centerlat', 41.25)),
-                'centerlon': float(dev.pluginProps.get('centerlon', -87.65)),
-                'delay': int(dev.pluginProps.get('delay', 25)),
-                'feature': dev.pluginProps.get('feature', True),
-                'height': int(dev.pluginProps.get('height', 500)),
-                'imagetype': dev.pluginProps.get('imagetype', 'radius'),
-                'maxlat': float(dev.pluginProps.get('maxlat', 43.0)),
-                'maxlon': float(dev.pluginProps.get('maxlon', -90.5)),
-                'minlat': float(dev.pluginProps.get('minlat', 39.0)),
-                'minlon': float(dev.pluginProps.get('minlon', -86.5)),
-                'newmaps': dev.pluginProps.get('newmaps', False),
-                'noclutter': dev.pluginProps.get('noclutter', True),
-                'num': int(dev.pluginProps.get('num', 10)),
-                'radius': float(dev.pluginProps.get('radius', 150)),
-                'radunits': dev.pluginProps.get('radunits', 'nm'),
-                'rainsnow': dev.pluginProps.get('rainsnow', True),
-                'reproj.automerc': dev.pluginProps.get('Mercator', False),
-                'smooth': dev.pluginProps.get('smooth', 1),
-                'timelabel.x': int(dev.pluginProps.get('timelabelx', 10)),
-                'timelabel.y': int(dev.pluginProps.get('timelabely', 20)),
-                'timelabel': dev.pluginProps.get('timelabel', True),
-                'width': int(dev.pluginProps.get('width', 500)),
-            }
 
             # Type of image
             if parms_dict['feature']:
@@ -1172,12 +1156,14 @@ class Plugin(indigo.PluginBase):
             if parms_dict['imagetype'] == 'radius':
                 for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype',):
                     del parms_dict[key]
+
             elif parms_dict['imagetype'] == 'boundingbox':
                 for key in ('centerlat', 'centerlon', 'radius', 'imagetype',):
                     del parms_dict[key]
+
             else:
                 for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype', 'centerlat', 'centerlon', 'radius',):
-                    location = self.pluginPrefs.get('location', 'autoip')
+                    location = self.pluginPrefs['location']
                     name = ''
                     del parms_dict[key]
 
@@ -1190,23 +1176,20 @@ class Plugin(indigo.PluginBase):
                 # Convert boolean props to 0/1 for URL encode.
                 if str(v) == 'False':
                     v = 0
+
                 elif str(v) == 'True':
                     v = 1
 
                 # Create string of parms for URL encode.
                 if len(parms) < 1:
                     parms += "{0}={1}".format(k, v)
+
                 else:
                     parms += "&{0}={1}".format(k, v)
 
-            source = 'http://api.wunderground.com/api/{0}/{1}/{2}{3}{4}?{5}'.format(self.pluginPrefs.get('apiKey', ''),
-                                                                                    radartype,
-                                                                                    location,
-                                                                                    name,
-                                                                                    '.gif',
-                                                                                    parms)
+            source = 'http://api.wunderground.com/api/{0}/{1}/{2}{3}{4}?{5}'.format(self.pluginPrefs['apiKey'], radartype, location, name, '.gif', parms)
             destination = "/Library/Application Support/Perceptive Automation/Indigo {0}/IndigoWebServer/images/controls/static/{1}.png".format(indigo.server.version.split('.')[0],
-                                                                                                                                                dev.pluginProps.get('imagename', True))
+                                                                                                                                                dev.pluginProps['imagename'])
 
             # If requests doesn't work for some reason, revert to urllib.
             try:
@@ -1217,7 +1200,7 @@ class Plugin(indigo.PluginBase):
             except NameError:
                 urllib.urlretrieve(source, destination)
 
-            # Since this uses the API, go increment (or reset) the call counter.
+            # Since this uses the API, go increment the call counter.
             self.callCount()
 
             dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
@@ -1237,7 +1220,8 @@ class Plugin(indigo.PluginBase):
     def getWeatherData(self, dev):
         """ Grab the JSON for the device. A separate call must be made for each
         weather device because the data are location specific. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"getWeatherData() method called.")
@@ -1246,33 +1230,33 @@ class Plugin(indigo.PluginBase):
             try:
 
                 try:
-                    self.location = dev.pluginProps.get('location', 'autoip')
+                    location = dev.pluginProps['location']
+
                 except Exception as error:
                     self.debugLog(u"Exception retrieving location from device. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
                     indigo.server.log(u"Missing location information for device: {0}. Attempting to automatically determine location using your IP address.".format(dev.name),
                                       type="WUnderground Info", isError=False)
-                    self.location = "autoip"
+                    location = "autoip"
 
-                if self.location in self.masterWeatherDict.keys():
+                if location in self.masterWeatherDict.keys():
                     # We already have the data, so no need to get it again.
                     self.debugLog(u"  Location already in master weather dictionary.")
-                    pass
+
                 else:
                     # We don't have this location's data yet. Go and get the data and add it to the masterWeatherDict.
                     #
                     # 03/30/15, modified by raneil. Improves the odds of dodging the "invalid literal for int() with base 16: ''")
                     # [http://stackoverflow.com/questions/10158701/how-to-capture-output-of-curl-from-python-script]
-                    language = self.pluginPrefs.get('language', "EN")
-                    api_key  = self.pluginPrefs.get('apiKey', '')
+                    # switches to yesterday api instead of history_DATE api.
                     url = (u"http://api.wunderground.com/api/{0}/geolookup/alerts_v11/almanac_v11/astronomy_v11/conditions_v11/forecast_v11/forecast10day_v11/hourly_v11/lang:{1}/"
-                           u"yesterday_v11/tide_v11/q/{2}.json".format(api_key, language, self.location))  # switches to yesterday api instead of history_DATE api.
+                           u"yesterday_v11/tide_v11/q/{2}.json".format(self.pluginPrefs['apiKey'], self.pluginPrefs['language'], location))
 
                     # Debug output can contain sensitive data.
                     if debug_level >= 3:
                         self.debugLog(u"  URL prepared for API call: {0}".format(url))
                     else:
                         self.debugLog(u"Weather Underground URL suppressed. Set debug level to [High] to write it to the log.")
-                    self.debugLog(u"Getting weather data for location: {0}".format(self.location))
+                    self.debugLog(u"Getting weather data for location: {0}".format(location))
 
                     # Start download timer.
                     get_data_time = dt.datetime.now()
@@ -1298,12 +1282,14 @@ class Plugin(indigo.PluginBase):
                             for dev in indigo.devices.itervalues("self"):
                                 dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
                             return
+
                         except urllib2.URLError as error:
                             self.debugLog(u"Unable to reach Weather Underground. - URLError (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno,
                                                                                                                                                         error))
                             for dev in indigo.devices.itervalues("self"):
                                 dev.updateStateOnServer("onOffState", value=False, uiValue=u" ")
                             return
+
                         except Exception as error:
                             self.debugLog(u"Unable to reach Weather Underground. - Exception (Line {0}  {1}) Sleeping until next scheduled poll.".format(sys.exc_traceback.tb_lineno,
                                                                                                                                                          error))
@@ -1314,6 +1300,7 @@ class Plugin(indigo.PluginBase):
                     # Report results of download timer.
                     data_cycle_time = (dt.datetime.now() - get_data_time)
                     data_cycle_time = (dt.datetime.min + data_cycle_time).time()
+
                     if debug_level >= 1 and simplejson_string != "":
                         self.debugLog(u"[{0} download: {1} seconds]".format(dev.name, data_cycle_time.strftime('%S.%f')))
 
@@ -1325,8 +1312,8 @@ class Plugin(indigo.PluginBase):
                         parsed_simplejson = {}
 
                     # Add location JSON to maser weather dictionary.
-                    self.debugLog(u"Adding weather data for {0} to Master Weather Dictionary.".format(self.location))
-                    self.masterWeatherDict[self.location] = parsed_simplejson
+                    self.debugLog(u"Adding weather data for {0} to Master Weather Dictionary.".format(location))
+                    self.masterWeatherDict[location] = parsed_simplejson
 
                     # Go increment (or reset) the call counter.
                     self.callCount()
@@ -1351,27 +1338,27 @@ class Plugin(indigo.PluginBase):
         Indigo Item List. Note: this method needs to return a string rather
         than a Unicode string (for now.) """
 
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+        debug_level = self.pluginPrefs['showDebugLevel']
+        temp_decimal = self.pluginPrefs['itemListTempDecimal']
 
         if debug_level >= 3:
-            self.debugLog(u"itemListTemperatureFormat() method called.")
+            self.debugLog(u"itemListTemperatureFormat(self, val={0})".format(val))
 
-        if self.pluginPrefs.get('itemListTempDecimal', 1) == 0:
-            val = float(val)
-            val = round(val)
-            val = int(val)
-            val = u"{0}".format(val)
-            return val
-        else:
-            val = u"{0}".format(val)
-            if debug_level >= 2:
-                self.debugLog(u"  Returning value unchanged.")
-            return val
+        try:
+            if temp_decimal == 0:
+                val = float(val)
+                return u"{0:0.0f}".format(val)
+            else:
+                return u"{0}".format(val)
+        except ValueError:
+            return u"{0}".format(val)
+
 
     def killAllComms(self):
         """ killAllComms() sets the enabled status of all plugin devices to
         false. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"killAllComms method() called.")
@@ -1379,13 +1366,15 @@ class Plugin(indigo.PluginBase):
         for dev in indigo.devices.itervalues("self"):
             try:
                 indigo.device.enable(dev, value=False)
+
             except Exception as error:
                 self.debugLog(u"Exception when trying to kill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
     def unkillAllComms(self):
         """ unkillAllComms() sets the enabled status of all plugin devices to
         true. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"unkillAllComms method() called.")
@@ -1393,12 +1382,14 @@ class Plugin(indigo.PluginBase):
         for dev in indigo.devices.itervalues("self"):
             try:
                 indigo.device.enable(dev, value=True)
+
             except Exception as error:
                 self.debugLog(u"Exception when trying to unkill all comms. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
     def listOfDevices(self, typeId, valuesDict, targetId, devId):
         """ listOfDevices returns a list of plugin devices. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"listOfDevices method() called.")
@@ -1406,156 +1397,163 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"targetId: {0}".format(targetId))
             self.debugLog(u"devId: {0}".format(devId))
             self.debugLog(u"============ valuesDict ============\n")
+
             for key, value in valuesDict.iteritems():
                 self.debugLog(u"{0}: {1}".format(key, value))
 
         return [(dev.id, dev.name) for dev in indigo.devices.itervalues(filter='self')]
 
-    def uiPercentageFormat(self, state_name, val):
+    def uiPercentageFormat(self, dev, state_name, val):
         """ Adjusts the decimal precision of humidity values for display in
         control pages, etc. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        humidity_decimal = self.pluginPrefs['uiHumidityDecimal']
+        percentage_units = dev.pluginProps['percentageUnits']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: uiPercentageFormat() method called.".format(state_name))
+            self.debugLog(u"uiPercentageFormat(self, dev, state_name={0}, val={1})".format(state_name, val))
 
-        if self.pluginPrefs.get('uiHumidityDecimal', 1) == 0:
+        if humidity_decimal == 0:
             try:
-                val = float(val)
-                val = round(val)
-                val = int(val)
-                val = u"{0}{1}".format(val, self.percentageUnits)
-                return val
-            except Exception as error:
-                self.debugLog(u"Could not convert humidity precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                val = u"{0}".format(val)
-                return val
-        else:
-            return u"{0}{1}".format(val, self.percentageUnits)
+                return u"{0:0.0f}{1}".format(val, percentage_units)
 
-    def uiRainFormat(self, state_name, val):
+            except Exception as error:
+                return u"{0}".format(val)
+        else:
+            return u"{0}{1}".format(val, percentage_units)
+
+    def uiRainFormat(self, dev, state_name, val):
         """ Adjusts the decimal precision of rain values for display in control
         pages, etc. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        rain_units = dev.pluginProps['rainUnits']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: uiRainFormat() method called.".format(state_name))
+            self.debugLog(u"uiRainFormat(self, dev, state_name={0}, val={1}).".format(state_name, val))
 
         if val in ["NA", "N/A", "--", ""]:
             return val
 
         try:
-            val = float(val)
-            return u"{0}{1}".format(val, self.rainUnits)
+            return u"{0}{1}".format(val, rain_units)
+
         except Exception as error:
-            self.debugLog(u"Could not format rain precision value: {0}. Returning unchanged> Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             return u"{0}".format(val)
 
-    def uiTemperatureFormat(self, state_name, val):
+    def uiTemperatureFormat(self, dev, state_name, val):
         """ Adjusts the decimal precision of certain temperature values for
         display in control pages, etc. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        temp_decimal = self.pluginPrefs['uiTempDecimal']
+        temperature_units = dev.pluginProps['temperatureUnits']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: uiTemperatureFormat() method called.".format(state_name))
+            self.debugLog(u"uiTemperatureFormat(self, dev, state_name={0}, val={1})".format(state_name, val))
 
-        if self.pluginPrefs.get('uiTempDecimal', 1) == 0:
+        if temp_decimal == 0:
             try:
-                val = float(val)
-                val = round(val)
-                val = int(val)
-                return u"{0}{1}".format(val, self.temperatureUnits)
+                return u"{0:0.0f}{1}".format(val, temperature_units)
+
             except Exception as error:
-                self.debugLog(u"Could not convert temperature precision of value: {0}. Returning unchanged. (Line {0}  {1})".format(val, sys.exc_traceback.tb_lineno, error))
                 return u"{0}".format("--")
+
         else:
-            return u"{0}{1}".format(val, self.temperatureUnits)
+            return u"{0}{1}".format(val, temperature_units)
 
     def uiWindFormat(self, state_name, val):
         """ Adjusts the decimal precision of certain wind values for display
         in control pages, etc. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        wind_decimal = self.pluginPrefs['uiWindDecimal']
 
         if debug_level >= 3:
-            self.debugLog(u"{0}: uiWindFormat() method called.".format(state_name))
+            self.debugLog(u"uiWindFormat(self, state_name={0}, val={1})".format(state_name, val))
 
         try:
-            if self.pluginPrefs.get('uiWindDecimal', 1) == 0:
+            if wind_decimal == 0:
                 return u"{0:0.0f}".format(float(val))
+
             else:
                 return u"{0:0.1f}".format(float(val))
+
         except Exception as error:
-            self.debugLog(u"Could not convert wind precision of value: {0}. Returning unchanged. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             return u"{0:0.1f}".format(val)
 
     def parseAlmanacData(self, dev):
         """ The parseAlmanacData() method takes almanac data and parses it to
         device states. """
 
-        if self.pluginPrefs.get('showDebugLevel', 1) >= 3:
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+
+        if debug_level >= 3:
             self.debugLog(u"parseAlmanacData() method called.")
 
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Airport Code (String)
             try:
-                dev.updateStateOnServer('airportCode', value=u"{0}".format(self.masterWeatherDict[self.location]['almanac']['airport_code']))
+                dev.updateStateOnServer('airportCode', value=u"{0}".format(self.masterWeatherDict[location]['almanac']['airport_code']))
             except KeyError:
                 dev.updateStateOnServer('airportCode', value=u"--")
 
             try:  # Temp High Normal F (String) converted to Integer
-                temp_high_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['F']
+                temp_high_normal_f = self.masterWeatherDict[location]['almanac']['temp_high']['normal']['F']
                 temp_high_normal_f, temp_high_normal_f_ui = self.fixCorruptedData(u"temp_high_normal_f", temp_high_normal_f)
                 dev.updateStateOnServer('tempHighNormalF',
                                         value=int(temp_high_normal_f),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_high_normal_f", temp_high_normal_f_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_high_normal_f", temp_high_normal_f_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighNormalF', value=-99.0, uiValue=u"--")
 
             try:  # Temp High Normal C (String) converted to Integer
-                temp_high_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['normal']['C']
+                temp_high_normal_c = self.masterWeatherDict[location]['almanac']['temp_high']['normal']['C']
                 temp_high_normal_c, temp_high_normal_c_ui = self.fixCorruptedData(u"temp_high_normal_c", temp_high_normal_c)
                 dev.updateStateOnServer('tempHighNormalC',
                                         value=int(temp_high_normal_c),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_high_normal_c", temp_high_normal_c_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_high_normal_c", temp_high_normal_c_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighNormalC', value=-99.0, uiValue=u"--")
 
             try:  # Temp High Record F (String) converted to Integer
-                temp_high_record_f = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['F']
+                temp_high_record_f = self.masterWeatherDict[location]['almanac']['temp_high']['record']['F']
                 temp_high_record_f, temp_high_record_f_ui = self.fixCorruptedData(u"temp_high_record_f", temp_high_record_f)
                 dev.updateStateOnServer('tempHighRecordF',
                                         value=int(temp_high_record_f),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_high_record_f", temp_high_record_f_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_high_record_f", temp_high_record_f_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighRecordF', value=-99.0, uiValue=u"--")
 
             try:  # Temp High Record C (String) converted to Integer
-                temp_high_record_c = self.masterWeatherDict[self.location]['almanac']['temp_high']['record']['C']
+                temp_high_record_c = self.masterWeatherDict[location]['almanac']['temp_high']['record']['C']
                 temp_high_record_c, temp_high_record_c_ui = self.fixCorruptedData(u"temp_high_record_c", temp_high_record_c)
                 dev.updateStateOnServer('tempHighRecordC',
                                         value=int(temp_high_record_c),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_high_record_c", temp_high_record_c_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_high_record_c", temp_high_record_c_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempHighRecordC', value=-99.0, uiValue=u"--")
 
             try:  # Temp High Record Year (String)
-                temp_high_record_year = self.masterWeatherDict[self.location]['almanac']['temp_high']['recordyear']
+                temp_high_record_year = self.masterWeatherDict[location]['almanac']['temp_high']['recordyear']
                 temp_high_record_year, temp_high_record_year_ui = self.fixCorruptedData(u"temp_high_record_year", temp_high_record_year)
                 dev.updateStateOnServer('tempHighRecordYear',
                                         value=temp_high_record_year,
@@ -1565,45 +1563,45 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('tempHighRecordYear', value=-99.0, uiValue=u"--")
 
             try:  # Temp Low Normal F (String) converted to Integer
-                temp_low_normal_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['F']
+                temp_low_normal_f = self.masterWeatherDict[location]['almanac']['temp_low']['normal']['F']
                 temp_low_normal_f, temp_low_normal_f_ui = self.fixCorruptedData(u"temp_low_normal_f", temp_low_normal_f)
                 dev.updateStateOnServer('tempLowNormalF',
                                         value=int(temp_low_normal_f),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat("temp_low_normal_f", temp_low_normal_f_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_low_normal_f", temp_low_normal_f_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowNormalF', value=-99.0, uiValue=u"--")
 
             try:  # Temp Low Normal C (String) converted to Integer
-                temp_low_normal_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['normal']['C']
+                temp_low_normal_c = self.masterWeatherDict[location]['almanac']['temp_low']['normal']['C']
                 temp_low_normal_c, temp_low_normal_c_ui = self.fixCorruptedData(u"temp_low_normal_c", temp_low_normal_c)
                 dev.updateStateOnServer('tempLowNormalC',
                                         value=int(temp_low_normal_c),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat("temp_low_normal_c", temp_low_normal_c_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_low_normal_c", temp_low_normal_c_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowNormalC', value=-99.0, uiValue=u"--")
 
             try:  # Temp Low Record F (String) converted to Integer
-                temp_low_record_f = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['F']
+                temp_low_record_f = self.masterWeatherDict[location]['almanac']['temp_low']['record']['F']
                 temp_low_record_f, temp_low_record_f_ui = self.fixCorruptedData(u"temp_low_record_f", temp_low_record_f)
                 dev.updateStateOnServer('tempLowRecordF',
                                         value=int(temp_low_record_f),
-                                        uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_low_record_f", temp_low_record_f_ui)))
+                                        uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_low_record_f", temp_low_record_f_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowRecordF', value=-99.0, uiValue=u"--")
 
             try:  # Temp Low Record C (String) converted to Integer
-                temp_low_record_c = self.masterWeatherDict[self.location]['almanac']['temp_low']['record']['C']
+                temp_low_record_c = self.masterWeatherDict[location]['almanac']['temp_low']['record']['C']
                 temp_low_record_c, temp_low_record_c_ui = self.fixCorruptedData(u"temp_low_record_c", temp_low_record_c)
-                dev.updateStateOnServer('tempLowRecordC', value=int(temp_low_record_c), uiValue=u"{0}".format(self.uiTemperatureFormat(u"temp_low_record_c", temp_low_record_c_ui)))
+                dev.updateStateOnServer('tempLowRecordC', value=int(temp_low_record_c), uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"temp_low_record_c", temp_low_record_c_ui)))
             except Exception as error:
                 self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('tempLowRecordC', value=-99.0, uiValue=u"--")
 
             try:  # Temp Low Record Year (String)
-                temp_low_record_year = self.masterWeatherDict[self.location]['almanac']['temp_low']['recordyear']
+                temp_low_record_year = self.masterWeatherDict[location]['almanac']['temp_low']['recordyear']
                 temp_low_record_year, temp_low_record_year_ui = self.fixCorruptedData(u"temp_low_record_year", temp_low_record_year)
                 dev.updateStateOnServer('tempLowRecordYear', value=temp_low_record_year, uiValue=u"{0}".format(temp_low_record_year_ui))
             except Exception as error:
@@ -1611,7 +1609,7 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('tempLowRecordYear', value=-99.0, uiValue=u"--")
 
             new_props = dev.pluginProps
-            new_props['address'] = self.masterWeatherDict[self.location]['current_observation']['station_id']
+            new_props['address'] = self.masterWeatherDict[location]['current_observation']['station_id']
             dev.replacePluginPropsOnServer(new_props)
             dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
@@ -1652,53 +1650,55 @@ class Plugin(indigo.PluginBase):
         Sunrise Minute (Integer: 0 - 59, units: minutes)
         Sunset Hour (Integer: 0 - 23, units: hours)
         Sunset Minute (Integer: 0 - 59, units: minutes) """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
 
         if debug_level >= 3:
             self.debugLog(u"parseAstronomyData() method called.")
 
         try:
 
-            astronomy_dict = {'ageOfMoon': self.masterWeatherDict[self.location]['moon_phase']['ageOfMoon'],
-                              'currentTimeHour': self.masterWeatherDict[self.location]['moon_phase']['current_time']['hour'],
-                              'currentTimeMinute': self.masterWeatherDict[self.location]['moon_phase']['current_time']['minute'],
-                              'hemisphere': self.masterWeatherDict[self.location]['moon_phase']['hemisphere'],
-                              'phaseOfMoon': self.masterWeatherDict[self.location]['moon_phase']['phaseofMoon'],
-                              'sunriseHourMoonphase': self.masterWeatherDict[self.location]['moon_phase']['sunrise']['hour'],
-                              'sunriseHourSunphase': self.masterWeatherDict[self.location]['sun_phase']['sunrise']['hour'],
-                              'sunriseMinuteMoonphase': self.masterWeatherDict[self.location]['moon_phase']['sunrise']['minute'],
-                              'sunriseMinuteSunphase': self.masterWeatherDict[self.location]['sun_phase']['sunrise']['minute'],
-                              'sunsetHourMoonphase': self.masterWeatherDict[self.location]['moon_phase']['sunset']['hour'],
-                              'sunsetHourSunphase': self.masterWeatherDict[self.location]['sun_phase']['sunset']['hour'],
-                              'sunsetMinuteMoonphase': self.masterWeatherDict[self.location]['moon_phase']['sunset']['minute'],
-                              'sunsetMinuteSunphase': self.masterWeatherDict[self.location]['sun_phase']['sunset']['minute']
+            astronomy_dict = {'ageOfMoon': self.masterWeatherDict[location]['moon_phase']['ageOfMoon'],
+                              'currentTimeHour': self.masterWeatherDict[location]['moon_phase']['current_time']['hour'],
+                              'currentTimeMinute': self.masterWeatherDict[location]['moon_phase']['current_time']['minute'],
+                              'hemisphere': self.masterWeatherDict[location]['moon_phase']['hemisphere'],
+                              'phaseOfMoon': self.masterWeatherDict[location]['moon_phase']['phaseofMoon'],
+                              'sunriseHourMoonphase': self.masterWeatherDict[location]['moon_phase']['sunrise']['hour'],
+                              'sunriseHourSunphase': self.masterWeatherDict[location]['sun_phase']['sunrise']['hour'],
+                              'sunriseMinuteMoonphase': self.masterWeatherDict[location]['moon_phase']['sunrise']['minute'],
+                              'sunriseMinuteSunphase': self.masterWeatherDict[location]['sun_phase']['sunrise']['minute'],
+                              'sunsetHourMoonphase': self.masterWeatherDict[location]['moon_phase']['sunset']['hour'],
+                              'sunsetHourSunphase': self.masterWeatherDict[location]['sun_phase']['sunset']['hour'],
+                              'sunsetMinuteMoonphase': self.masterWeatherDict[location]['moon_phase']['sunset']['minute'],
+                              'sunsetMinuteSunphase': self.masterWeatherDict[location]['sun_phase']['sunset']['minute']
                               }
 
             for key, value in astronomy_dict.iteritems():
                 dev.updateStateOnServer(key, value=u"{0}".format(value))
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
-            phase_of_moon = self.masterWeatherDict[self.location]['moon_phase']['phaseofMoon']
+            phase_of_moon = self.masterWeatherDict[location]['moon_phase']['phaseofMoon']
             phase_of_moon.replace(' ', '_')
             dev.updateStateOnServer('phaseOfMoonIcon', value=u"{0}".format(phase_of_moon))
 
             # Percent illuminated is excluded from the astronomy dict for further processing.
-            percent_illuminated = self.masterWeatherDict[self.location]['moon_phase']['percentIlluminated']
+            percent_illuminated = self.masterWeatherDict[location]['moon_phase']['percentIlluminated']
             percent_illuminated = self.floatEverything(u"Percent Illuminated", percent_illuminated)
             dev.updateStateOnServer('percentIlluminated', value=percent_illuminated)
 
             new_props = dev.pluginProps
-            new_props['address'] = self.masterWeatherDict[self.location]['current_observation']['station_id']
+            new_props['address'] = self.masterWeatherDict[location]['current_observation']['station_id']
             dev.replacePluginPropsOnServer(new_props)
 
             dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
@@ -1713,12 +1713,13 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherAlerts() method takes weather alert data and parses
         it to device states. """
 
-        alert_logging     = self.pluginPrefs.get('alertLogging', False)
-        alerts_suppressed = dev.pluginProps.get('suppressWeatherAlerts', False)
-        alerts_wanted     = self.pluginPrefs.get('alertLogging', False)
-        debug_level       = self.pluginPrefs.get('showDebugLevel', False)
-        location_city     = u"{0}".format(self.masterWeatherDict[self.location]['location']['city'])
-        no_alert_logging  = self.pluginPrefs.get('noAlertLogging', False)
+        alert_logging     = self.pluginPrefs['alertLogging']
+        alerts_suppressed = dev.pluginProps['suppressWeatherAlerts']
+        alerts_wanted     = self.pluginPrefs['alertLogging']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+        location_city     = u"{0}".format(self.masterWeatherDict[location]['location']['city'])
+        no_alert_logging  = self.pluginPrefs['noAlertLogging']
 
         if debug_level >= 3:
             self.debugLog(u"parseAlerts() method called.")
@@ -1726,15 +1727,15 @@ class Plugin(indigo.PluginBase):
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Alerts:
             #
@@ -1749,7 +1750,7 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('alertType{0}'.format(alert_counter), value=u" ")
 
             # If there are no alerts:
-            if not self.masterWeatherDict[self.location]['alerts']:
+            if not self.masterWeatherDict[location]['alerts']:
                 dev.updateStateOnServer('alertStatus', value="false", uiValue=u"False")
 
                 if alert_logging and not no_alert_logging and not alerts_suppressed:
@@ -1760,7 +1761,7 @@ class Plugin(indigo.PluginBase):
                 alert_array = []
                 dev.updateStateOnServer('alertStatus', value='true', uiValue=u'True')
 
-                for item in self.masterWeatherDict[self.location]['alerts']:
+                for item in self.masterWeatherDict[location]['alerts']:
                     # Strip whitespace from the ends.
                     alert_text = u"{0}".format(item['message'].strip())
 
@@ -1771,12 +1772,12 @@ class Plugin(indigo.PluginBase):
                 if len(alert_array) == 1:
                     # If user has enabled alert logging, write alert message to the Indigo log.
                     if alert_logging and not alerts_suppressed:
-                        indigo.server.log(u"There is 1 severe weather alert for the {0} location:".format(self.masterWeatherDict[self.location]['location']['city']))
+                        indigo.server.log(u"There is 1 severe weather alert for the {0} location:".format(self.masterWeatherDict[location]['location']['city']))
                 else:
                     # If user has enabled alert logging, write alert message to the Indigo log.
                     if alert_logging and not alerts_suppressed:
                         indigo.server.log(u"There are {0} severe weather alerts for the {1} location:".format(len(alert_array),
-                                                                                                              u"{0}".format(self.masterWeatherDict[self.location]['location']['city'])))
+                                                                                                              u"{0}".format(self.masterWeatherDict[location]['location']['city'])))
 
                     # If user has enabled alert logging, write alert message to the Indigo log.
                     if alert_logging and not alerts_suppressed and len(alert_array) > 4:
@@ -1803,7 +1804,6 @@ class Plugin(indigo.PluginBase):
                         indigo.server.log(u"European weather alert {0}".format(item['attribution']))
                     except (KeyError, Exception) as error:
                         self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-                        pass
 
         except Exception as error:
             self.debugLog(u"Problem parsing weather alert data: Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
@@ -1813,7 +1813,13 @@ class Plugin(indigo.PluginBase):
         """ The parseWeatherData() method takes weather data and parses it to
         Weather Device states. """
 
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+        config_itemlist_ui_units = dev.pluginProps['itemListUiUnits']
+        config_menu_units = dev.pluginProps['configMenuUnits']
+        config_distance_units = dev.pluginProps['distanceUnits']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+        pressure_units = dev.pluginProps['pressureUnits']
+        wind_units = dev.pluginProps['windUnits']
 
         if debug_level >= 3:
             self.debugLog(u"parseWeatherData() method called.")
@@ -1821,25 +1827,25 @@ class Plugin(indigo.PluginBase):
         try:
 
             # Degrees Fahrenheit (float)
-            temp_f = self.floatEverything(u"temp_f", self.masterWeatherDict[self.location]['current_observation']['temp_f'])
+            temp_f = self.floatEverything(u"temp_f", self.masterWeatherDict[location]['current_observation']['temp_f'])
             temp_f, temp_f_ui = self.fixCorruptedData('temp_f', temp_f)
             temp_f_str = u"{0}".format(temp_f)
 
             # Degree Centigrade (float)
-            temp_c = self.floatEverything(u"temp_c", self.masterWeatherDict[self.location]['current_observation']['temp_c'])
+            temp_c = self.floatEverything(u"temp_c", self.masterWeatherDict[location]['current_observation']['temp_c'])
             temp_c, temp_c_ui = self.fixCorruptedData('temp_c', temp_c)
             temp_c_str = u"{0}".format(temp_c)
 
             # Set the value of device state temp depending on user prefs.
-            if self.configMenuUnits in ['M', 'MS', 'I']:
-                dev.updateStateOnServer('temp', value=temp_c, uiValue=u"{0}".format(self.uiTemperatureFormat(u"tempC (M, MS, I)", temp_c_ui)))
+            if config_menu_units in ['M', 'MS', 'I']:
+                dev.updateStateOnServer('temp', value=temp_c, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"tempC (M, MS, I)", temp_c_ui)))
                 try:
                     dev.updateStateOnServer('tempIcon', value=round(temp_c))
                 except ValueError:
                     dev.updateStateOnServer('tempIcon', value=u"{0}".format(temp_c))
 
             else:
-                dev.updateStateOnServer('temp', value=temp_f, uiValue=u"{0}".format(self.uiTemperatureFormat(u"tempF (S)", temp_f_ui)))
+                dev.updateStateOnServer('temp', value=temp_f, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"tempF (S)", temp_f_ui)))
                 try:
                     dev.updateStateOnServer('tempIcon', value=round(temp_f))
                 except ValueError:
@@ -1847,31 +1853,31 @@ class Plugin(indigo.PluginBase):
 
             # Set the display of temperature in the Indigo Item List display, and set the value of onOffState to true since we were able to get the data.
             # This only affects what is displayed in the Indigo UI.
-            if self.itemListUiUnits == "S":  # Displays °F
+            if config_itemlist_ui_units == "S":  # Displays °F
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0} {1}F".format(self.itemListTemperatureFormat(temp_f_str), u'\u00B0'))
 
-            elif self.itemListUiUnits == "M":  # Displays °C
+            elif config_itemlist_ui_units == "M":  # Displays °C
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0} {1}C".format(self.itemListTemperatureFormat(temp_c_str), u'\u00B0'))
 
-            elif self.itemListUiUnits == "SM":  # Displays °F (°C)
+            elif config_itemlist_ui_units == "SM":  # Displays °F (°C)
                 display_value = u"{0} {1}F ({2} {3}C)".format(self.itemListTemperatureFormat(temp_f_str), u'\u00B0', self.itemListTemperatureFormat(temp_c_str), u'\u00B0')
                 dev.updateStateOnServer('onOffState', value=True, uiValue=display_value)
 
-            elif self.itemListUiUnits == "MS":  # Displays °C (°F)
+            elif config_itemlist_ui_units == "MS":  # Displays °C (°F)
                 display_value = u"{0} {1}C ({2} {3}F)".format(self.itemListTemperatureFormat(temp_c_str), u'\u00B0', self.itemListTemperatureFormat(temp_f_str), u'\u00B0')
                 dev.updateStateOnServer('onOffState', value=True, uiValue=display_value)
 
-            elif self.itemListUiUnits == "SN":  # Displays F no units
+            elif config_itemlist_ui_units == "SN":  # Displays F no units
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}".format(temp_f_str))
 
-            elif self.itemListUiUnits == "MN":  # Displays C no units
+            elif config_itemlist_ui_units == "MN":  # Displays C no units
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}".format(temp_c_str))
 
             # Location City (string: "Chicago", "London"...)
-            dev.updateStateOnServer('locationCity', value=u"{0}".format(self.masterWeatherDict[self.location]['location']['city']))
+            dev.updateStateOnServer('locationCity', value=u"{0}".format(self.masterWeatherDict[location]['location']['city']))
 
             # Station ID (string: "PWS NAME")
-            station_id = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['station_id'])
+            station_id = u"{0}".format(self.masterWeatherDict[location]['current_observation']['station_id'])
             dev.updateStateOnServer('stationID', value=u"{0}".format(station_id))
 
             new_props = dev.pluginProps
@@ -1885,7 +1891,7 @@ class Plugin(indigo.PluginBase):
 
             # Icon Name (string: "clear", "cloudy"...)
             # Moving to the v11 version of the plugin may make the icon name adjustments unnecessary.
-            icon_name = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['icon'])
+            icon_name = u"{0}".format(self.masterWeatherDict[location]['current_observation']['icon'])
             dev.updateStateOnServer('properIconNameAllDay', value=u"{0}".format(icon_name))
             dev.updateStateOnServer('properIconName', value=u"{0}".format(icon_name))
 
@@ -1895,26 +1901,26 @@ class Plugin(indigo.PluginBase):
 
             # Conditions which cover all settings:
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Current Weather (string: "Clear", "Cloudy"...)
-            dev.updateStateOnServer('currentWeather', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['weather']))
+            dev.updateStateOnServer('currentWeather', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['weather']))
 
             # Barometric pressure trend (string: "+", "0", "-")
-            pressure_trend = self.fixPressureSymbol(u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['pressure_trend']))
+            pressure_trend = self.fixPressureSymbol(u"{0}".format(self.masterWeatherDict[location]['current_observation']['pressure_trend']))
             dev.updateStateOnServer('pressureTrend', value=u"{0}".format(pressure_trend))
 
             # Neighborhood for this weather location (string: "Neighborhood Name")
             neighborhood = u""
-            for key in self.masterWeatherDict[self.location]['location']['nearby_weather_stations']['pws']['station']:
+            for key in self.masterWeatherDict[location]['location']['nearby_weather_stations']['pws']['station']:
                 if key['id'] == unicode(station_id):
                     # neighborhood = "{0}".format(key['neighborhood'].encode('UTF-8'))
                     neighborhood = key['neighborhood']
@@ -1925,13 +1931,13 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('neighborhood', value="{0}".format(neighborhood.encode('UTF-8')))
 
             # Solar Radiation (string: "0" or greater, not always provided as a value that can float (sometimes = ""). Some sites don't report it.)
-            s_rad = self.floatEverything(u"Solar Radiation", self.masterWeatherDict[self.location]['current_observation']['solarradiation'])
+            s_rad = self.floatEverything(u"Solar Radiation", self.masterWeatherDict[location]['current_observation']['solarradiation'])
             if s_rad < 0:
                 s_rad = -99
             dev.updateStateOnServer('solarradiation', value=s_rad)
 
             # Ultraviolet light (string: equal to or greater than 0. Not always provided as a value that can float, sometimes negative, sometimes non-numeric.)
-            uv = self.masterWeatherDict[self.location]['current_observation']['UV']
+            uv = self.masterWeatherDict[location]['current_observation']['UV']
             try:
                 if float(uv) < 0:
                     uv = '0'
@@ -1945,119 +1951,122 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('uv', value=u"{0}".format(uv))
 
             # Short Wind direction in alpha (string: N, NNE, NE, ENE...)
-            wind_dir = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_dir'])
+            wind_dir = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_dir'])
             dev.updateStateOnServer('windDIR', value=wind_dir)
 
             # Long Wind direction in alpha (string: North, North Northeast, Northeast, East Northeast...)
-            wind_dir_long = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_dir'])
+            wind_dir_long = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_dir'])
             dev.updateStateOnServer('windDIRlong', value=self.fixWind(u"windDIRlong", wind_dir_long))
 
             # Wind direction (integer: 0 - 359 -- units: degrees)
-            wind_degrees = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_degrees'])
+            wind_degrees = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_degrees'])
             wind_degrees, wind_degrees_ui = self.fixCorruptedData(u"windDegrees", wind_degrees)
+
             try:
                 dev.updateStateOnServer('windDegrees', value=int(wind_degrees), uiValue=u"{0}".format(wind_degrees_ui))
+
             except (KeyError, ValueError) as error:
                 self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
                 dev.updateStateOnServer('windDegrees', value=wind_degrees, uiValue=u"{0}".format(wind_degrees_ui))
+
             except Exception as error:
                 self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
             # Relative Humidity (string: "80%")
-            relative_humidity = self.masterWeatherDict[self.location]['current_observation']['relative_humidity'].strip('%')
+            relative_humidity = self.masterWeatherDict[location]['current_observation']['relative_humidity'].strip('%')
             relative_humidity, relative_humidity_ui = self.fixCorruptedData(u"relativeHumidity", relative_humidity)
             relative_humidity = self.floatEverything(u"relativeHumidity", relative_humidity)
             dev.updateStateOnServer('relativeHumidity',
                                     value=relative_humidity,
-                                    uiValue=u"{0}".format(self.uiPercentageFormat(u"relativeHumidity", relative_humidity_ui)))
+                                    uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"relativeHumidity", relative_humidity_ui)))
 
             # History (yesterday's weather):
             try:
-                pretty_date = u"{0}".format(self.masterWeatherDict[self.location]['history']['dailysummary'][0]['date']['pretty'])
+                pretty_date = u"{0}".format(self.masterWeatherDict[location]['history']['dailysummary'][0]['date']['pretty'])
             except (IndexError, KeyError) as error:
                 self.debugLog(u"It appears that history data not available for this location.")
                 pretty_date = u"Not available."
             dev.updateStateOnServer('historyDate', value=pretty_date)
 
             try:
-                if self.configMenuUnits == 'M':
+                if config_menu_units == 'M':
 
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (M)", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (M)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (M)", history_high_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyHigh (M)", history_high_ui)))
 
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (M)", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (M)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (M)", history_low_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyLow (M)", history_low_ui)))
 
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (M)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm'])
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (M)", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipm'])
                     history_pop = self.floatEverything(u"historyPop (M)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
-                                            uiValue=u"{0}".format(self.uiRainFormat("historyPop (M)", history_pop_ui)))
+                                            uiValue=u"{0}".format(self.uiRainFormat(dev, u"historyPop (M)", history_pop_ui)))
 
                 # Note that there is not presently any data here for wind, so there is no difference between 'MS' and 'M'.  That could change later if
                 # winds are added.
-                if self.configMenuUnits == 'MS':
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
+                if config_menu_units == 'MS':
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (MS)", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (MS)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (MS)", history_high_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyHigh (MS)", history_high_ui)))
 
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (MS)", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (MS)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (MS)", history_low_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyLow (MS)", history_low_ui)))
 
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (MS)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipm'])
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (MS)", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipm'])
                     history_pop = self.floatEverything(u"historyPop (MS)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
-                                            uiValue=u"{0}".format(self.uiRainFormat("historyPop (MS)", history_pop_ui)))
+                                            uiValue=u"{0}".format(self.uiRainFormat(dev, u"historyPop (MS)", history_pop_ui)))
 
-                elif self.configMenuUnits == 'I':
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempm'])
+                elif config_menu_units == 'I':
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (I)", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempm'])
                     history_high = self.floatEverything(u"historyHigh (I)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (I)", history_high_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyHigh (I)", history_high_ui)))
 
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempm'])
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (I)", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempm'])
                     history_low = self.floatEverything(u"historyLow (I)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (I)", history_low_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyLow (I)", history_low_ui)))
 
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (I)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi'])
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (I)", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipi'])
                     history_pop = self.floatEverything(u"historyPop (I)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
-                                            uiValue=u"{0}".format(self.uiRainFormat(u"historyPop (I)", history_pop_ui)))
+                                            uiValue=u"{0}".format(self.uiRainFormat(dev, u"historyPop (I)", history_pop_ui)))
 
-                elif self.configMenuUnits == 'S':
-                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['maxtempi'])
+                elif config_menu_units == 'S':
+                    history_high, history_high_ui = self.fixCorruptedData(u"historyHigh (S)", self.masterWeatherDict[location]['history']['dailysummary'][0]['maxtempi'])
                     history_high = self.floatEverything(u"historyHigh (S)", history_high)
                     dev.updateStateOnServer('historyHigh',
                                             value=history_high,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyHigh (S)", history_high_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyHigh (S)", history_high_ui)))
 
-                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['mintempi'])
+                    history_low, history_low_ui = self.fixCorruptedData(u"historyLow (S)", self.masterWeatherDict[location]['history']['dailysummary'][0]['mintempi'])
                     history_low = self.floatEverything(u"historyLow (S)", history_low)
                     dev.updateStateOnServer('historyLow',
                                             value=history_low,
-                                            uiValue=u"{0}".format(self.uiTemperatureFormat(u"historyLow (S)", history_low_ui)))
+                                            uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"historyLow (S)", history_low_ui)))
 
-                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (S)", self.masterWeatherDict[self.location]['history']['dailysummary'][0]['precipi'])
+                    history_pop, history_pop_ui = self.fixCorruptedData(u"historyPop (S)", self.masterWeatherDict[location]['history']['dailysummary'][0]['precipi'])
                     history_pop = self.floatEverything(u"historyPop (S)", history_pop)
                     dev.updateStateOnServer('historyPop',
                                             value=history_pop,
-                                            uiValue=u"{0}".format(self.uiRainFormat(u"historyPop (S)", history_pop_ui)))
+                                            uiValue=u"{0}".format(self.uiRainFormat(dev, u"historyPop (S)", history_pop_ui)))
 
             except (KeyError, Exception):
                 self.debugLog(u"  Data not available for this location.")
@@ -2068,77 +2077,82 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('historyPop', value=-99, uiValue=u"--")
 
             # Metric (M), Mixed SI (MS):
-            if self.configMenuUnits in ['M', 'MS']:
+            if config_menu_units in ['M', 'MS']:
 
                 # Dew Point (integer: -20 -- units: Centigrade)
-                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewpointC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['dewpoint_c'])
+                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewpointC (M, MS)", self.masterWeatherDict[location]['current_observation']['dewpoint_c'])
                 dewpoint = self.floatEverything(u"dewpointC (M, MS)", dewpoint)
-                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(u"dewpointC (M, MS)", dewpoint_ui)))
+                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"dewpointC (M, MS)", dewpoint_ui)))
 
                 # Feels Like (string: "-20" -- units: Centigrade)
-                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['feelslike_c'])
+                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (M, MS)", self.masterWeatherDict[location]['current_observation']['feelslike_c'])
                 feelslike = self.floatEverything(u"feelsLikeC (M, MS)", feelslike)
-                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(u"feelsLikeC (M, MS)", feelslike_ui)))
+                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"feelsLikeC (M, MS)", feelslike_ui)))
 
                 # Heat Index (string: "20", "NA" -- units: Centigrade)
-                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (M, MS)", self.masterWeatherDict[self.location]['current_observation']['heat_index_c'])
+                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (M, MS)", self.masterWeatherDict[location]['current_observation']['heat_index_c'])
                 heat_index = self.floatEverything(u"heatIndexC (M, MS)", heat_index)
+
                 if heat_index == "NA":
                     dev.updateStateOnServer('heatIndex', value=heat_index)
+
                 else:
-                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(u"heatIndexC (M, MS)", heat_index_ui)))
+                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"heatIndexC (M, MS)", heat_index_ui)))
 
                 # Precipitation Today (string: "0", "2" -- units: mm)
-                precip_today = self.masterWeatherDict[self.location]['current_observation']['precip_today_metric']
+                precip_today = self.masterWeatherDict[location]['current_observation']['precip_today_metric']
                 if precip_today in ["", " "]:
                     precip_today = "0"
                 precip_today, precip_today_ui = self.fixCorruptedData(u"precipMM (M, MS)", precip_today)
                 precip_today = self.floatEverything(u"precipToday (M, MS)", precip_today)
-                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(u"precipToday (M, MS)", precip_today_ui)))
+                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipToday (M, MS)", precip_today_ui)))
 
                 # Precipitation Last Hour (string: "0", "2" -- units: mm)
-                precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHourMM (M, MS)", self.masterWeatherDict[self.location]['current_observation']['precip_1hr_metric'])
+                precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHourMM (M, MS)", self.masterWeatherDict[location]['current_observation']['precip_1hr_metric'])
                 precip_1hr = self.floatEverything(u"precipOneHour (M, MS)", precip_1hr)
-                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(u"precipOneHour (M, MS)", precip_1hr_ui)))
+                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipOneHour (M, MS)", precip_1hr_ui)))
 
                 # Barometric Pressure (string: "1039" -- units: mb)
-                pressure, pressure_ui = self.fixCorruptedData(u"pressureMB (M, MS)", self.masterWeatherDict[self.location]['current_observation']['pressure_mb'])
+                pressure, pressure_ui = self.fixCorruptedData(u"pressureMB (M, MS)", self.masterWeatherDict[location]['current_observation']['pressure_mb'])
                 pressure = self.floatEverything(u"pressureMB (M, MS)", pressure)
-                dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
+                dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, pressure_units))
 
                 # Barometric Pressure Icon (string: "1039" -- units: mb)
                 pressure_str = u"{0}".format(int(pressure))
                 try:
                     dev.updateStateOnServer('pressureIcon', value=pressure_str)
+
                 except ValueError as error:
                     dev.updateStateOnServer('pressureIcon', value=pressure_str)
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Visibility (string: "16.1" -- units: km)
-                visibility, visibility_ui = self.fixCorruptedData(u"visibility (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['visibility_km']))
+                visibility, visibility_ui = self.fixCorruptedData(u"visibility (M, MS)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['visibility_km']))
                 visibility = self.floatEverything(u"visibility (M, MS)", visibility)
-                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, self.distanceUnits))
+                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, config_distance_units))
 
                 # Wind Chill (string: "17" -- units: Centigrade)
-                windchill, windchill_ui = self.fixCorruptedData(u"windChillC (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['windchill_c']))
+                windchill, windchill_ui = self.fixCorruptedData(u"windChillC (M, MS)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['windchill_c']))
                 windchill = self.floatEverything(u"windChillC (M, MS)", windchill)
+
                 if windchill == "NA":
                     dev.updateStateOnServer('windchill', value=windchill)
+
                 else:
-                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(u"windChillC (M, MS)", windchill_ui)))
+                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"windChillC (M, MS)", windchill_ui)))
 
                 # Wind Gust (string: "19.3" -- units: kph)
-                wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_gust_kph']))
+                wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (M, MS)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_gust_kph']))
                 wind_gust = self.floatEverything(u"windGust (M, MS)", wind_gust)
 
                 # Report wind speed in KPH or MPS depending on user prefs. 1 KPH = 0.277778 MPS
-                if self.configMenuUnits == 'MS':
+                if config_menu_units == 'MS':
                     wind_gust *= 0.277778
                     wind_gust = self.uiWindFormat(u"wind_gust (M, MS)", wind_gust)
-                    dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, self.windUnits))
+                    dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, wind_units))
                 else:
                     wind_gust = self.uiWindFormat(u"wind_gust (M, MS)", wind_gust)
-                    dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, self.windUnits))
+                    dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, wind_units))
 
                 # Wind Gust Icon (string: 2.4 -> 24, 24.0 -> 240)
                 try:
@@ -2150,17 +2164,17 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Wind Speed (float: 1.6 -- units: kph)
-                wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (M, MS)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_kph']))
+                wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (M, MS)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_kph']))
                 wind_speed = self.floatEverything(u"windKPH (M, MS)", wind_speed)
 
                 # Report wind speed in KPH or MPS depending on user prefs. 1 KPH = 0.277778 MPS
-                if self.configMenuUnits == 'MS':
+                if config_menu_units == 'MS':
                     wind_speed *= 0.277778
                     wind_speed = self.uiWindFormat(u"wind_speed (M, MS)", wind_speed)
-                    dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, self.windUnits))
+                    dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, wind_units))
                 else:
                     wind_speed = self.uiWindFormat(u"wind_speed (M, MS)", wind_speed)
-                    dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, self.windUnits))
+                    dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, wind_units))
 
                 # Wind Speed Icon (string: 2.4 -> 24, 24.0 -> 240)
                 wind_speed = wind_speed.replace('.', '')
@@ -2171,7 +2185,7 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Wind String (string: "From the WSW at 1.0 KPH Gusting to 12.0 KPH" -- units: mph)
-                if self.configMenuUnits == 'MS':
+                if config_menu_units == 'MS':
                     wind_string = (u"From the {0} at {1} MPS Gusting to {2} MPS".format(wind_dir, wind_speed, wind_gust))
                 else:
                     wind_string = (u"From the {0} at {1} KPH Gusting to {2} KPH".format(wind_dir, wind_speed, wind_gust))
@@ -2179,14 +2193,14 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('windString', value=u"{0}".format(wind_string))
 
                 # Wind Short String (string: We construct this. "Wind Dir at Wind Speed")
-                wind_dir = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_dir'])
+                wind_dir = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_dir'])
                 wind_short_string = (u"{0} at {1}".format(wind_dir, wind_speed))
 
-                dev.updateStateOnServer('windShortString', value=u"{0}".format(wind_short_string), uiValue=u"{0}{1}".format(wind_short_string, self.windUnits))
+                dev.updateStateOnServer('windShortString', value=u"{0}".format(wind_short_string), uiValue=u"{0}{1}".format(wind_short_string, wind_units))
 
                 # Wind String Metric (string: "From the WSW at 1.0 KPH Gusting to 12.0 KPH" -- units: kph) Weather Underground doesn't provide a metric
                 # wind string. Let's make our own.
-                if self.configMenuUnits == 'MS':
+                if config_menu_units == 'MS':
                     wind_string_metric = (u"From the {0} at {1} MPS Gusting to {2} MPS".format(wind_dir, wind_speed, wind_gust))
                 else:
                     wind_string_metric = (u"From the {0} at {1} KPH Gusting to {2} KPH".format(wind_dir, wind_speed, wind_gust))
@@ -2194,45 +2208,45 @@ class Plugin(indigo.PluginBase):
                 dev.updateStateOnServer('windStringMetric', value=u"{0}".format(wind_string_metric))
 
             # Mixed (I):  Mixed refers to metric temperatures with Imperial winds and distances. (°C/MPH/in.)
-            elif self.configMenuUnits == "I":
+            elif config_menu_units == "I":
 
                 # Dew Point (integer: -20 -- units: Centigrade)
-                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewPoint (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['dewpoint_c']))
+                dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewPoint (I)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['dewpoint_c']))
                 dewpoint = self.floatEverything(u"dewpoint (I)", dewpoint)
-                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(u"dewpointC (I)", dewpoint_ui)))
+                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"dewpointC (I)", dewpoint_ui)))
 
                 # Feels Like (string: "-20" -- units: Centigrade)
-                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['feelslike_c']))
+                feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeC (I)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['feelslike_c']))
                 feelslike = self.floatEverything(u"feelsLikeC (I)", feelslike)
-                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(u"feelsLikeC (I)", feelslike_ui)))
+                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"feelsLikeC (I)", feelslike_ui)))
 
                 # Heat Index (string: "20", "NA" -- units: Centigrade)
-                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (I)", u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['heat_index_c']))
+                heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexC (I)", u"{0}".format(self.masterWeatherDict[location]['current_observation']['heat_index_c']))
                 heat_index = self.floatEverything(u"heatIndexC (I)", heat_index)
                 if heat_index == "NA":
                     dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(heat_index_ui))
                 else:
-                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(u"heatIndexC (I)", heat_index_ui)))
+                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"heatIndexC (I)", heat_index_ui)))
 
                 # Precipitation Today (string: "0", "0.5" -- units: inches)
-                precip_today = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['precip_today_in'])
+                precip_today = u"{0}".format(self.masterWeatherDict[location]['current_observation']['precip_today_in'])
                 if precip_today in ["", " "]:
                     precip_today = "0"
                 precip_today, precip_today_ui = self.fixCorruptedData(u"precipToday (I)", precip_today)
                 precip_today = self.floatEverything(u"precipToday (I)", precip_today)
-                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(u"precipToday (I)", precip_today_ui)))
+                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipToday (I)", precip_today_ui)))
 
                 # Precipitation Last Hour (string: "0", "0.5" -- units: inches)
-                precip_1hr = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['precip_1hr_in'])
+                precip_1hr = u"{0}".format(self.masterWeatherDict[location]['current_observation']['precip_1hr_in'])
                 precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHour (I)", precip_1hr)
                 precip_1hr = self.floatEverything(u"precipOneHour (I)", precip_1hr)
-                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(u"precipOneHour (I)", precip_1hr_ui)))
+                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipOneHour (I)", precip_1hr_ui)))
 
                 # Barometric Pressure (string: "1039" -- units: mb)
-                pressure = self.masterWeatherDict[self.location]['current_observation']['pressure_mb']
+                pressure = self.masterWeatherDict[location]['current_observation']['pressure_mb']
                 pressure, pressure_ui = self.fixCorruptedData(u"pressure (I)", u"{0}".format(pressure))
                 pressure = self.floatEverything(u"pressure (I)", pressure)
-                dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
+                dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, pressure_units))
 
                 # Barometric Pressure Icon (string: "1039" -- units: mb)
                 pressure_str = u"{0}".format(int(pressure))
@@ -2243,28 +2257,28 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Visibility (string: "16.1" -- units: km)
-                visibility = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['visibility_km'])
+                visibility = u"{0}".format(self.masterWeatherDict[location]['current_observation']['visibility_km'])
                 visibility, visibility_ui = self.fixCorruptedData(u"visibility (I)", visibility)
                 visibility = self.floatEverything(u"visibility (I)", visibility)
-                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, self.distanceUnits))
+                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, config_distance_units))
 
                 # Wind Chill (string: "17" -- units: Centigrade)
-                windchill = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['windchill_c'])
+                windchill = u"{0}".format(self.masterWeatherDict[location]['current_observation']['windchill_c'])
                 windchill, windchill_ui = self.fixCorruptedData(u"windChillC (I)", windchill)
                 windchill = self.floatEverything(u"windChillC (I)", windchill_ui)
 
                 if windchill == "NA":
                     dev.updateStateOnServer('windchill', value=windchill)
                 else:
-                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(u"windChillC (I)", windchill)))
+                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"windChillC (I)", windchill)))
 
                 # Wind Gust (string: "19.3" -- units: mph)
-                wind_gust = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_gust_mph'])
+                wind_gust = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_gust_mph'])
                 wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (I)", wind_gust)
                 wind_gust = self.floatEverything(u"windGust (I)", wind_gust)
                 wind_gust = self.uiWindFormat(u"wind_gust (I)", wind_gust)
 
-                dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, self.windUnits))
+                dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, wind_units))
 
                 # Wind Gust Icon (string: 2.4 -> 24, 24.0 -> 240)
                 try:
@@ -2276,11 +2290,11 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Wind Speed (float: 1.6 -- units: mph)
-                wind_speed = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_mph'])
+                wind_speed = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_mph'])
                 wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (I)", wind_speed)
                 wind_speed = self.floatEverything(u"windSpeed (I)", wind_speed)
                 wind_speed = self.uiWindFormat(u"wind_speed (I)", wind_speed)
-                dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, self.windUnits))
+                dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, wind_units))
 
                 # Wind String Icon (string: 2.4 -> 24, 24.0 -> 240)
                 try:
@@ -2303,7 +2317,7 @@ class Plugin(indigo.PluginBase):
 
                 # Wind Short String (string: We construct this. "Wind Dir at Wind Speed")
                 wind_short_string = (u"{0} at {1}".format(wind_dir, wind_speed))
-                dev.updateStateOnServer('windShortString', value=u"{0}".format(wind_short_string), uiValue=u"{0}{1}".format(wind_short_string, self.windUnits))
+                dev.updateStateOnServer('windShortString', value=u"{0}".format(wind_short_string), uiValue=u"{0}{1}".format(wind_short_string, wind_units))
 
                 # Wind String Metric (We don't need one.)
                 dev.updateStateOnServer('windStringMetric', value=u"")
@@ -2311,47 +2325,47 @@ class Plugin(indigo.PluginBase):
             # Standard (S) [or configMenuUnits somehow undefined]:
             else:
                 # Dew Point (integer: -20 -- units: Fahrenheit)
-                dewpoint = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['dewpoint_f'])
+                dewpoint = u"{0}".format(self.masterWeatherDict[location]['current_observation']['dewpoint_f'])
                 dewpoint, dewpoint_ui = self.fixCorruptedData(u"dewpointF (S)", dewpoint)
                 dewpoint = self.floatEverything(u"dewpointF (S)", dewpoint)
-                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(u"dewpointF (S)", dewpoint_ui)))
+                dev.updateStateOnServer('dewpoint', value=dewpoint, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"dewpointF (S)", dewpoint_ui)))
 
                 # Feels Like (string: "-20" -- units: Fahrenheit)
-                feelslike = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['feelslike_f'])
+                feelslike = u"{0}".format(self.masterWeatherDict[location]['current_observation']['feelslike_f'])
                 feelslike, feelslike_ui = self.fixCorruptedData(u"feelsLikeF (S)", feelslike)
                 feelslike = self.floatEverything(u"feelsLikeF (S)", feelslike)
-                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(u"feelsLikeF (S)", feelslike_ui)))
+                dev.updateStateOnServer('feelslike', value=feelslike, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"feelsLikeF (S)", feelslike_ui)))
 
                 # Heat Index (string: "20", "NA" -- units: Fahrenheit)
-                heat_index = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['heat_index_f'])
+                heat_index = u"{0}".format(self.masterWeatherDict[location]['current_observation']['heat_index_f'])
                 heat_index, heat_index_ui = self.fixCorruptedData(u"heatIndexF (S)", heat_index)
                 heat_index = self.floatEverything(u"heatIndexF (S)", heat_index)
                 if heat_index == "NA":
                     dev.updateStateOnServer('heatIndex', value=heat_index)
                 else:
-                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(u"heatIndexF (S)", heat_index_ui)))
+                    dev.updateStateOnServer('heatIndex', value=heat_index, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"heatIndexF (S)", heat_index_ui)))
 
                 # Precipitation Today (string: "0", "2" -- units: inches)
-                precip_today = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['precip_today_in'])
+                precip_today = u"{0}".format(self.masterWeatherDict[location]['current_observation']['precip_today_in'])
                 if precip_today in ["", " "]:
                     precip_today = "0"
                 precip_today, precip_today_ui = self.fixCorruptedData(u"precipToday (S)", precip_today)
                 precip_today = self.floatEverything(u"precipToday (S)", precip_today)
-                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(u"precipToday (S)", precip_today_ui)))
+                dev.updateStateOnServer('precip_today', value=precip_today, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipToday (S)", precip_today_ui)))
 
                 # Precipitation Last Hour (string: "0", "2" -- units: inches)
-                precip_1hr = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['precip_1hr_in'])
+                precip_1hr = u"{0}".format(self.masterWeatherDict[location]['current_observation']['precip_1hr_in'])
                 precip_1hr, precip_1hr_ui = self.fixCorruptedData(u"precipOneHour (S)", precip_1hr)
                 precip_1hr = self.floatEverything(u"precipOneHour (S)", precip_1hr)
-                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(u"precipOneHour (S)", precip_1hr_ui)))
+                dev.updateStateOnServer('precip_1hr', value=precip_1hr, uiValue=u"{0}".format(self.uiRainFormat(dev, u"precipOneHour (S)", precip_1hr_ui)))
 
                 # Barometric Pressure (string: "30.25" -- units: inches of mercury)
-                pressure = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['pressure_in'])
+                pressure = u"{0}".format(self.masterWeatherDict[location]['current_observation']['pressure_in'])
                 pressure, pressure_ui = self.fixCorruptedData(u"pressure (S)", pressure)
                 pressure = self.floatEverything(u"pressure (S)", pressure)
                 try:
                     pressure = round(pressure, 2)
-                    dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, self.pressureUnits))
+                    dev.updateStateOnServer('pressure', value=pressure, uiValue=u"{0}{1}".format(pressure_ui, pressure_units))
                 except TypeError as error:
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
                     dev.updateStateOnServer('pressure', value=u"{0}".format(pressure))
@@ -2370,27 +2384,27 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Line {0}: {1}".format(sys.exc_traceback.tb_lineno, error))
 
                 # Visibility (string: "16.1" -- units: miles)
-                visibility = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['visibility_mi'])
+                visibility = u"{0}".format(self.masterWeatherDict[location]['current_observation']['visibility_mi'])
                 visibility, visibility_ui = self.fixCorruptedData(u"visibility (S)", visibility)
                 visibility = self.floatEverything(u"visibility (S)", visibility)
-                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, self.distanceUnits))
+                dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(visibility_ui, config_distance_units))
 
                 # Wind Chill (string: "17" -- units: Fahrenheit)
-                windchill = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['windchill_f'])
+                windchill = u"{0}".format(self.masterWeatherDict[location]['current_observation']['windchill_f'])
                 windchill, windchill_ui = self.fixCorruptedData(u"windChillF (S)", windchill)
                 windchill = self.floatEverything(u"windChillF (S)", windchill)
                 if windchill == "NA":
                     dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(windchill_ui))
                 else:
-                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(u"windChillF (S)", windchill_ui)))
+                    dev.updateStateOnServer('windchill', value=windchill, uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"windChillF (S)", windchill_ui)))
 
                 # Wind Gust (string: "19.3" -- units: mph)
-                wind_gust = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_gust_mph'])
+                wind_gust = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_gust_mph'])
                 wind_gust, wind_gust_ui = self.fixCorruptedData(u"windGust (S)", wind_gust)
                 wind_gust = self.floatEverything(u"windGust (S)", wind_gust)
                 wind_gust = self.uiWindFormat(u"wind_gust (S)", wind_gust)
 
-                dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, self.windUnits))
+                dev.updateStateOnServer('windGust', value=wind_gust, uiValue=u"{0}{1}".format(wind_gust_ui, wind_units))
 
                 # Wind Gust Icon (string: 2.4 -> 24, 24.0 -> 240)
                 try:
@@ -2402,11 +2416,11 @@ class Plugin(indigo.PluginBase):
                     self.debugLog(u"Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
                 # Wind Speed (float: 1.6 -- units: mph)
-                wind_speed = u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['wind_mph'])
+                wind_speed = u"{0}".format(self.masterWeatherDict[location]['current_observation']['wind_mph'])
                 wind_speed, wind_speed_ui = self.fixCorruptedData(u"windSpeed (S)", wind_speed)
                 wind_speed = self.floatEverything(u"windSpeed (S)", wind_speed)
                 wind_speed = self.uiWindFormat(u"wind_speed (S)", wind_speed)
-                dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, self.windUnits))
+                dev.updateStateOnServer('windSpeed', value=wind_speed, uiValue=u"{0}{1}".format(wind_speed_ui, wind_units))
 
                 # Wind String Icon (string: 2.4 -> 24, 24.0 -> 240)
                 try:
@@ -2430,7 +2444,7 @@ class Plugin(indigo.PluginBase):
 
                 # Wind Short String (string: We construct this. "Wind Dir at Wind Speed")
                 wind_short_string = u"{0} at {1}".format(wind_dir, wind_speed)
-                dev.updateStateOnServer('windShortString', value=wind_short_string, uiValue=u"{0}{1}".format(wind_short_string, self.windUnits))
+                dev.updateStateOnServer('windShortString', value=wind_short_string, uiValue=u"{0}{1}".format(wind_short_string, wind_units))
 
                 # Wind String Metric (We don't need one.)
                 dev.updateStateOnServer('windStringMetric', value=u"")
@@ -2446,17 +2460,21 @@ class Plugin(indigo.PluginBase):
         parses it to device states (Note that this is only for the weather
         device and not for the hourly or 10 day forecast devices which have
         their own methods. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        config_menu_units = dev.pluginProps['configMenuUnits']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+        wind_units = dev.pluginProps['windUnits']
 
         if debug_level >= 3:
             self.debugLog(u"parseWeatherForecast() method called.")
 
         try:
             # Metric:
-            if self.configMenuUnits in ['M', 'MS']:
+            if config_menu_units in ['M', 'MS']:
 
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday']:
 
                     if fore_counter <= 8:
                         dev.updateStateOnServer(u"foreText{0}".format(fore_counter), value=u"{0}".format(day['fcttext_metric'].lstrip('\n')))
@@ -2465,7 +2483,7 @@ class Plugin(indigo.PluginBase):
                         fore_counter += 1
 
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday']:
 
                     if fore_counter <= 4:
 
@@ -2475,40 +2493,40 @@ class Plugin(indigo.PluginBase):
                         high_celsius = day['high']['celsius']
                         dev.updateStateOnServer(u"foreHigh{0}".format(fore_counter),
                                                 value=self.floatEverything(u"highCelsius (M, MS)", high_celsius),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"highCelsius (M, MS)", high_celsius)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"highCelsius (M, MS)", high_celsius)))
 
                         max_humidity = day['maxhumidity']
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter),
                                                 value=self.floatEverything(u"maxHumidity (M, MS)", max_humidity),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"maxHumidity (M, MS)", max_humidity)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"maxHumidity (M, MS)", max_humidity)))
 
                         low_celsius = day['low']['celsius']
                         dev.updateStateOnServer(u"foreLow{0}".format(fore_counter),
                                                 value=self.floatEverything(u"lowCelsius (M, MS)", low_celsius),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"lowCelsius (M, MS)", low_celsius)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"lowCelsius (M, MS)", low_celsius)))
 
                         fore_pop = day['pop']
                         dev.updateStateOnServer(u"forePop{0}".format(fore_counter),
                                                 value=self.floatEverything(u"forePop (M, MS)", fore_pop),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"forePop (M, MS)", fore_pop)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"forePop (M, MS)", fore_pop)))
 
                         # Wind in KPH or MPS?
                         avg_wind = day['avewind']['mph']
-                        if self.configMenuUnits == 'MS':
+                        if config_menu_units == 'MS':
                             dev.updateStateOnServer(u"foreWind{0}".format(fore_counter),
                                                     value=self.floatEverything(u"windKPH (M, MS)", avg_wind) / 3.6,
-                                                    uiValue=u"{0}{1}".format(avg_wind, self.windUnits))
+                                                    uiValue=u"{0}{1}".format(avg_wind, wind_units))
                         else:
                             dev.updateStateOnServer(u"foreWind{0}".format(fore_counter),
                                                     value=self.floatEverything(u"windMPH (M, MS)", avg_wind),
-                                                    uiValue=u"{0}{1}".format(avg_wind, self.windUnits))
+                                                    uiValue=u"{0}{1}".format(avg_wind, wind_units))
 
                         fore_counter += 1
 
             # Mixed:
-            elif self.configMenuUnits == 'I':
+            elif config_menu_units == 'I':
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday']:
 
                     if fore_counter <= 8:
                         dev.updateStateOnServer(u"foreText{0}".format(fore_counter), value=u"{0}".format(day['fcttext_metric'].lstrip('\n')))
@@ -2517,7 +2535,7 @@ class Plugin(indigo.PluginBase):
                         fore_counter += 1
 
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday']:
 
                     if fore_counter <= 4:
                         dev.updateStateOnServer(u"conditions{0}".format(fore_counter), value=u"{0}".format(day['conditions']))
@@ -2526,34 +2544,34 @@ class Plugin(indigo.PluginBase):
                         high_celsius = day['high']['celsius']
                         dev.updateStateOnServer(u"foreHigh{0}".format(fore_counter),
                                                 value=self.floatEverything(u"highCelsius (I)", high_celsius),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"highCelsius (I)", high_celsius)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"highCelsius (I)", high_celsius)))
 
                         low_celsius = day['low']['celsius']
                         dev.updateStateOnServer(u"foreLow{0}".format(fore_counter),
                                                 value=self.floatEverything(u"low_celsius (I)", low_celsius),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"low_celsius (I)", low_celsius)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"low_celsius (I)", low_celsius)))
 
                         max_humidity = day['maxhumidity']
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter),
                                                 value=self.floatEverything(u"maxHumidity (I)", max_humidity),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"maxHumidity (I)", max_humidity)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"maxHumidity (I)", max_humidity)))
 
                         fore_pop = day['pop']
                         dev.updateStateOnServer(u"forePop{0}".format(fore_counter),
                                                 value=self.floatEverything(u"forePop (I)", fore_pop),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"forePop (I)", fore_pop)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"forePop (I)", fore_pop)))
 
                         avg_wind = day['avewind']['mph']
                         dev.updateStateOnServer(u"foreWind{0}".format(fore_counter),
                                                 value=self.floatEverything(u"windMPH (I)", avg_wind),
-                                                uiValue=u"{0}".format(avg_wind, self.windUnits))
+                                                uiValue=u"{0}".format(avg_wind, wind_units))
 
                         fore_counter += 1
 
             # Standard:
             else:
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['txt_forecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['txt_forecast']['forecastday']:
 
                     if fore_counter <= 8:
                         dev.updateStateOnServer(u"foreText{0}".format(fore_counter), value=u"{0}".format(day['fcttext'].lstrip('\n')))
@@ -2562,7 +2580,7 @@ class Plugin(indigo.PluginBase):
                         fore_counter += 1
 
                 fore_counter = 1
-                for day in self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday']:
+                for day in self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday']:
 
                     if fore_counter <= 4:
                         dev.updateStateOnServer(u"conditions{0}".format(fore_counter), value=u"{0}".format(day['conditions']))
@@ -2571,27 +2589,27 @@ class Plugin(indigo.PluginBase):
                         fore_high = day['high']['fahrenheit']
                         dev.updateStateOnServer(u"foreHigh{0}".format(fore_counter),
                                                 value=self.floatEverything(u"foreHighF (S)", fore_high),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreHighF (S)", fore_high)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreHighF (S)", fore_high)))
 
                         fore_low = day['low']['fahrenheit']
                         dev.updateStateOnServer(u"foreLow{0}".format(fore_counter),
                                                 value=self.floatEverything(u"foreLowF (S)", fore_low),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreLowF (S)", fore_low)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreLowF (S)", fore_low)))
 
                         fore_pop = day['pop']
                         dev.updateStateOnServer(u"forePop{0}".format(fore_counter),
                                                 value=self.floatEverything(u"forePop (S)", fore_pop),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"forePop (S)", fore_pop)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"forePop (S)", fore_pop)))
 
                         humidity = day['maxhumidity']
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter),
                                                 value=self.floatEverything(u"foreHumidity (S)", humidity),
-                                                uiValue=u"{0}".format(self.uiPercentageFormat(u"ForeHumidity (S)", humidity)))
+                                                uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"ForeHumidity (S)", humidity)))
 
                         fore_wind = day['avewind']['mph']
                         dev.updateStateOnServer(u"foreWind{0}".format(fore_counter),
                                                 value=self.floatEverything(u"foreWindMPH (S)", fore_wind),
-                                                uiValue=u"{0}{1}".format(fore_wind, self.windUnits))
+                                                uiValue=u"{0}{1}".format(fore_wind, wind_units))
 
                         fore_counter += 1
 
@@ -2640,7 +2658,13 @@ class Plugin(indigo.PluginBase):
     def parseWeatherHourly(self, dev):
         """ The parseWeatherHourly() method takes hourly weather forecast data
         and parses it to device states. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        config_menu_units = dev.pluginProps['configMenuUnits']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+        rain_units = dev.pluginProps['rainUnits']
+        snow_amount_units = dev.pluginProps['snowAmountUnits']
+        wind_units = dev.pluginProps['windUnits']
 
         if debug_level >= 3:
             self.debugLog(u"parseWeatherHourly() method called.")
@@ -2648,18 +2672,18 @@ class Plugin(indigo.PluginBase):
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=u"{0}".format(current_observation_24hr))
 
             fore_counter = 1
-            hourly_forecast = self.masterWeatherDict[self.location]['hourly_forecast']
+            hourly_forecast = self.masterWeatherDict[location]['hourly_forecast']
             for item in hourly_forecast:
 
                 if fore_counter <= 24:
@@ -2689,106 +2713,106 @@ class Plugin(indigo.PluginBase):
                     fore_pop = item['pop']
                     dev.updateStateOnServer(u"h{0}_precip".format(fore_counter_text),
                                             value=self.floatEverything(u"forePopHourly", fore_pop),
-                                            uiValue=u"{0}".format(self.uiPercentageFormat(u"forePopHourly", fore_pop)))
+                                            uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"forePopHourly", fore_pop)))
 
                     humidity = item['humidity']
                     dev.updateStateOnServer(u"h{0}_humidity".format(fore_counter_text),
                                             value=self.floatEverything(u"foreHumidityHourly", humidity),
-                                            uiValue=u"{0}".format(self.uiPercentageFormat(u"foreHumidityHourly", humidity)))
+                                            uiValue=u"{0}".format(self.uiPercentageFormat(dev, u"foreHumidityHourly", humidity)))
 
                     # Mixed units (°C and MPH):
-                    if self.configMenuUnits == "I":
+                    if config_menu_units == "I":
                         temp_metric = item['temp']['metric']
                         dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreTempHourly (I)", temp_metric),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreTempHourly (I)", temp_metric)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreTempHourly (I)", temp_metric)))
 
                         wind_speed = self.uiWindFormat(u"Hourly Wind (I)", item['wspd']['english'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed.replace('.', '')))
 
                         fore_qpf = item['qpf']['english']
                         dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFHourly (I)", fore_qpf),
-                                                uiValue=u"{0}{1}".format(fore_qpf, self.rainUnits))
+                                                uiValue=u"{0}{1}".format(fore_qpf, rain_units))
 
                         fore_snow = item['snow']['english']
                         dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreSnowHourly (I)", fore_snow),
-                                                uiValue=u"{0}{1}".format(fore_snow, self.snowAmountUnits))
+                                                uiValue=u"{0}{1}".format(fore_snow, snow_amount_units))
 
                     # Metric units (°C and KPH):
-                    elif self.configMenuUnits == "M":
+                    elif config_menu_units == "M":
                         temp_metric = item['temp']['metric']
                         dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreTempHourly (M)", temp_metric),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreTempHourly (M)", temp_metric)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreTempHourly (M)", temp_metric)))
 
                         wind_speed = self.uiWindFormat(u"Hourly Wind (M)", item['wspd']['metric'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed.replace('.', '')))
 
                         fore_qpf = item['qpf']['metric']
                         dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFHourly (M)", fore_qpf),
-                                                uiValue=u"{0}{1}".format(fore_qpf, self.rainUnits))
+                                                uiValue=u"{0}{1}".format(fore_qpf, rain_units))
 
                         fore_snow = item['snow']['metric']
                         dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreSnowHourly (M)", fore_snow),
-                                                uiValue=u"{0}{1}".format(fore_snow, self.snowAmountUnits))
+                                                uiValue=u"{0}{1}".format(fore_snow, snow_amount_units))
 
                     # Metric units, SI Winds (°C and MPS):
-                    elif self.configMenuUnits == "MS":
+                    elif config_menu_units == "MS":
                         temp_metric = item['temp']['metric']
                         dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreTempHourly (MS)", temp_metric),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreTempHourly (MS)", temp_metric)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreTempHourly (MS)", temp_metric)))
 
                         wind_speed = float(item['wspd']['metric'])
                         wind_speed *= 0.277778
                         wind_speed = self.uiWindFormat(u"Hourly Wind (MS)", wind_speed)
                         dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text),
                                                 value=u"{0}".format(wind_speed),
-                                                uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                                                uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed.replace('.', '')))
 
                         fore_qpf = item['qpf']['metric']
                         dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFHourly (MS)", fore_qpf),
-                                                uiValue=u"{0}{1}".format(fore_qpf, self.rainUnits))
+                                                uiValue=u"{0}{1}".format(fore_qpf, rain_units))
 
                         fore_snow = item['snow']['metric']
                         dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreSnowHourly (MS)", fore_snow),
-                                                uiValue=u"{0}{1}".format(fore_snow, self.snowAmountUnits))
+                                                uiValue=u"{0}{1}".format(fore_snow, snow_amount_units))
 
                     # Standard units (°F and MPH) and catch all:
                     else:
                         temp_english = item['temp']['english']
                         dev.updateStateOnServer(u"h{0}_temp".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreTempHourly (S)", temp_english),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreTempHourly (S)", temp_english)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreTempHourly (S)", temp_english)))
 
                         wind_speed = self.uiWindFormat('Hourly Wind (S)', item['wspd']['english'])
-                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=u"{0}".format(wind_speed), uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                        dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=u"{0}".format(wind_speed), uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed.replace('.', '')))
 
                         fore_qpf = item['qpf']['english']
                         dev.updateStateOnServer(u"h{0}_qpf".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreQPFHourly (S)", fore_qpf),
-                                                uiValue=u"{0}{1}".format(fore_qpf, self.rainUnits))
+                                                uiValue=u"{0}{1}".format(fore_qpf, rain_units))
 
                         fore_snow = item['snow']['english']
                         dev.updateStateOnServer(u"h{0}_snow".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreSnowHourly (S)", fore_snow),
-                                                uiValue=u"{0}{1}".format(fore_snow, self.snowAmountUnits))
+                                                uiValue=u"{0}{1}".format(fore_snow, snow_amount_units))
 
-                    if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
+                    if dev.pluginProps['configWindDirUnits'] == "DIR":
                         dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=u"{0}".format(item['wdir']['dir']))
                     else:
                         wind_dir = u"{0}".format(item['wdir']['degrees'])
@@ -2808,7 +2832,7 @@ class Plugin(indigo.PluginBase):
                     fore_counter += 1
 
                     new_props = dev.pluginProps
-                    new_props['address'] = self.masterWeatherDict[self.location]['current_observation']['station_id']
+                    new_props['address'] = self.masterWeatherDict[location]['current_observation']['station_id']
                     dev.replacePluginPropsOnServer(new_props)
                     dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
@@ -2822,8 +2846,13 @@ class Plugin(indigo.PluginBase):
     def parseWeatherTenDay(self, dev):
         """ The parseWeatherTenDay() method takes 10 day forecast data and
         parses it to device states. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-        wind_units  = dev.pluginProps.get('configWindSpdUnits', 'AVG')
+
+        config_menu_units = dev.pluginProps['configMenuUnits']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
+        rain_amount_units = dev.pluginProps['rainAmountUnits']
+        snow_amount_units = dev.pluginProps['snowAmountUnits']
+        wind_units = dev.pluginProps['configWindSpdUnits']
 
         if debug_level >= 3:
             self.debugLog(u"parseWeatherTenDay() method called.")
@@ -2831,18 +2860,18 @@ class Plugin(indigo.PluginBase):
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             fore_counter = 1
-            forecast_day = self.masterWeatherDict[self.location]['forecast']['simpleforecast']['forecastday']
+            forecast_day = self.masterWeatherDict[location]['forecast']['simpleforecast']['forecastday']
             for item in forecast_day:
                 if fore_counter <= 10:
 
@@ -2858,7 +2887,7 @@ class Plugin(indigo.PluginBase):
                     fore_pop = item['pop']
                     dev.updateStateOnServer(u"d{0}_pop".format(fore_counter_text),
                                             value=self.floatEverything(u"forePopTenDay", fore_pop),
-                                            uiValue=self.uiPercentageFormat(u"forePopTenDay", fore_pop))
+                                            uiValue=self.uiPercentageFormat(dev, u"forePopTenDay", fore_pop))
 
                     # Construct Date
                     day = item['date']['day']
@@ -2874,37 +2903,37 @@ class Plugin(indigo.PluginBase):
 
                     # User temperature preference is Standard.
                     # User temperature preference is not Standard (both Metric and Mixed uses kph.)
-                    if self.configMenuUnits in ["M", "MS"]:
+                    if config_menu_units in ["M", "MS"]:
                         # High Temperature
                         high_value = self.floatEverything(u"foreHighTenDay (M, MS)", item['high']['celsius'])
-                        high_value_ui = self.uiTemperatureFormat(u"foreHighTenDay (M, MS)", high_value)
+                        high_value_ui = self.uiTemperatureFormat(dev, u"foreHighTenDay (M, MS)", high_value)
                         dev.updateStateOnServer(u"d{0}_high".format(fore_counter_text), value=high_value, uiValue=u"{0}".format(high_value_ui))
 
                         # Low Temperature
                         low_value = self.floatEverything(u"foreLowTenDay (M, MS)", item['low']['celsius'])
-                        low_value_ui = self.uiTemperatureFormat(u"foreLowTenDay (M, MS)", low_value)
+                        low_value_ui = self.uiTemperatureFormat(dev, u"foreLowTenDay (M, MS)", low_value)
                         dev.updateStateOnServer(u"d{0}_low".format(fore_counter_text), value=low_value, uiValue=u"{0}".format(low_value_ui))
 
                         # Rain Amount
                         qpf_value = self.floatEverything(u"foreQPFTenDay (M, MS)", item['qpf_allday']['mm'])
                         try:
-                            qpf_value_ui = u"{0:0.02f}".format(qpf_value, self.rainAmountUnits)
+                            qpf_value_ui = u"{0:0.02f}".format(qpf_value, rain_amount_units)
                         except ValueError:
-                            qpf_value_ui = u"{0}{1}".format(qpf_value, self.rainAmountUnits)
+                            qpf_value_ui = u"{0}{1}".format(qpf_value, rain_amount_units)
                         dev.updateStateOnServer(u"d{0}_qpf".format(fore_counter_text), value=qpf_value, uiValue=u"{0}".format(qpf_value_ui))
 
                         # Snow Value
                         snow_value = self.floatEverything(u"foreSnowTenDay (M, MS)", item['snow_allday']['cm'])
                         try:
-                            snow_value_ui = u"{0:0.02f}".format(snow_value, self.snowAmountUnits)
+                            snow_value_ui = u"{0:0.02f}".format(snow_value, snow_amount_units)
                         except ValueError:
-                            snow_value_ui = u"{0}{1}".format(snow_value, self.snowAmountUnits)
+                            snow_value_ui = u"{0}{1}".format(snow_value, snow_amount_units)
                         dev.updateStateOnServer(u"d{0}_snow".format(fore_counter_text), value=snow_value, uiValue=u"{0}".format(snow_value_ui))
 
                         # User pref for average wind forecast.
                         if wind_units == "AVG":
                             avg_wind = self.floatEverything(u"foreWindTenDayAvgKPH (M, MS)", item['avewind']['kph'])
-                            if self.configMenuUnits == 'MS':
+                            if config_menu_units == 'MS':
                                 avg_wind *= 0.277778
                             avg_wind = self.uiWindFormat(u"d{0}_windSpeed".format(fore_counter_text), avg_wind)
                             dev.updateStateOnServer(u"d{0}_windSpeed".format(fore_counter_text), value=avg_wind, uiValue=u"{0}".format(avg_wind))
@@ -2912,78 +2941,78 @@ class Plugin(indigo.PluginBase):
                         # User pref for max wind forecast.
                         else:
                             max_wind = self.floatEverything(u"maxWindTenDayKPH (M, MS)", item['maxwind']['kph'])
-                            if self.configMenuUnits == 'MS':
+                            if config_menu_units == 'MS':
                                 max_wind *= 0.277778
                             max_wind = self.uiWindFormat(u"d{0}_windSpeed".format(fore_counter_text), max_wind)
                             dev.updateStateOnServer(u"d{0}_windSpeed".format(fore_counter_text), value=max_wind)
 
                     # User temperature preference is Mixed.
-                    elif self.configMenuUnits == "I":
+                    elif config_menu_units == "I":
                         fore_high = item['high']['celsius']
                         dev.updateStateOnServer(u"d{0}_high".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreHighTenDay (I)", fore_high),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreHighTenDay (I)", fore_high)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreHighTenDay (I)", fore_high)))
 
                         fore_low = item['low']['celsius']
                         dev.updateStateOnServer(u"d{0}_low".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreLowTenDay (I)", fore_low),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreLowTenDay (I)", fore_low)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreLowTenDay (I)", fore_low)))
 
                         fore_qpf = self.floatEverything(u"foreQPFTenDay (I)", item['qpf_allday']['in'])
                         try:
-                            fore_qpf_ui = u"{0:0.2f}{1}".format(fore_qpf, self.rainAmountUnits)
+                            fore_qpf_ui = u"{0:0.2f}{1}".format(fore_qpf, rain_amount_units)
                         except ValueError:
-                            fore_qpf_ui = u"{0}{1}".format(fore_qpf, self.rainAmountUnits)
+                            fore_qpf_ui = u"{0}{1}".format(fore_qpf, rain_amount_units)
                         dev.updateStateOnServer(u"d{0}_qpf".format(fore_counter_text), value=fore_qpf, uiValue=fore_qpf_ui)
 
                         fore_snow = self.floatEverything(u"foreQPFTenDay (I)", item['snow_allday']['in'])
                         try:
-                            fore_snow_ui = u"{0:0.2f}{1}".format(fore_snow, self.snowAmountUnits)
+                            fore_snow_ui = u"{0:0.2f}{1}".format(fore_snow, snow_amount_units)
                         except ValueError:
-                            fore_snow_ui = u"{0}{1}".format(fore_snow, self.snowAmountUnits)
+                            fore_snow_ui = u"{0}{1}".format(fore_snow, snow_amount_units)
                         dev.updateStateOnServer(u"d{0}_snow".format(fore_counter_text), value=fore_snow, uiValue=fore_snow_ui)
 
-                    elif self.configMenuUnits == "S":
+                    elif config_menu_units == "S":
                         fore_high = item['high']['fahrenheit']
                         dev.updateStateOnServer(u"d{0}_high".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreHighTenDay (S)", fore_high),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreHighTenDay (S)", fore_high)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreHighTenDay (S)", fore_high)))
 
                         fore_low = item['low']['fahrenheit']
                         dev.updateStateOnServer(u"d{0}_low".format(fore_counter_text),
                                                 value=self.floatEverything(u"foreLowTenDay (S)", fore_low),
-                                                uiValue=u"{0}".format(self.uiTemperatureFormat(u"foreLowTenDay (S)", fore_low)))
+                                                uiValue=u"{0}".format(self.uiTemperatureFormat(dev, u"foreLowTenDay (S)", fore_low)))
 
                         fore_qpf = self.floatEverything(u"foreQPFTenDay (S)", item['qpf_allday']['in'])
                         try:
-                            fore_qpf_ui = u"{0:0.2f}{1}".format(fore_qpf, self.rainAmountUnits)
+                            fore_qpf_ui = u"{0:0.2f}{1}".format(fore_qpf, rain_amount_units)
                         except ValueError:
-                            fore_qpf_ui = u"{0}{1}".format(fore_qpf, self.rainAmountUnits)
+                            fore_qpf_ui = u"{0}{1}".format(fore_qpf, rain_amount_units)
                         dev.updateStateOnServer(u"d{0}_qpf".format(fore_counter_text), value=fore_qpf, uiValue=fore_qpf_ui)
 
                         fore_snow = self.floatEverything(u"foreSnowTenDay (S)", item['snow_allday']['in'])
                         try:
-                            fore_snow_ui = u"{0:0.2f}{1}".format(fore_snow, self.snowAmountUnits)
+                            fore_snow_ui = u"{0:0.2f}{1}".format(fore_snow, snow_amount_units)
                         except ValueError:
-                            fore_snow_ui = u"{0}{1}".format(fore_snow, self.snowAmountUnits)
+                            fore_snow_ui = u"{0}{1}".format(fore_snow, snow_amount_units)
                         dev.updateStateOnServer(u"d{0}_snow".format(fore_counter_text), value=fore_snow, uiValue=fore_snow_ui)
 
                         if wind_units == "AVG":
                             wind_speed_state = u"d{0}_windSpeed".format(fore_counter_text)
                             wind_speed = self.floatEverything(u"foreAvgWindTenDayMPH (S)", item['avewind']['mph'])
                             wind_speed = self.uiWindFormat(wind_speed_state, wind_speed)
-                            dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                            dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         else:
                             wind_speed_state = u"d{0}_windSpeed".format(fore_counter_text)
                             wind_speed = self.floatEverything(u"foreMaxWindTenDayMPH (S)", item['maxwind']['mph'])
                             wind_speed = self.uiWindFormat(wind_speed_state, wind_speed)
-                            dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, self.windUnits))
+                            dev.updateStateOnServer(wind_speed_state, value=wind_speed, uiValue=u"{0}{1}".format(wind_speed, wind_units))
 
                         dev.updateStateOnServer(u"d{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed.replace('.', '')))
 
                     # Wind direction (text or degrees.)
-                    if dev.pluginProps.get('configWindDirUnits', 'DIR') == "DIR":
+                    if dev.pluginProps['configWindDirUnits'] == "DIR":
                         avg_wind_dir_state = u"d{0}_windDir".format(fore_counter_text)
                         avg_wind_dir = u"{0}".format(item['avewind']['dir'])
                         dev.updateStateOnServer(avg_wind_dir_state, value=avg_wind_dir)
@@ -3002,14 +3031,14 @@ class Plugin(indigo.PluginBase):
                     humidity_state = u"d{0}_humidity".format(fore_counter_text)
                     humidity_value = item['maxhumidity']
                     humidity_value = self.floatEverything(u"foreHumidityTenDay", humidity_value)
-                    humidity_value_ui = self.uiPercentageFormat(u"foreHumidityTenDay", humidity_value)
+                    humidity_value_ui = self.uiPercentageFormat(dev, u"foreHumidityTenDay", humidity_value)
                     dev.updateStateOnServer(humidity_state, value=humidity_value, uiValue=u"{0}".format(humidity_value_ui))
 
                     dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
                     fore_counter += 1
 
                     new_props = dev.pluginProps
-                    new_props['address'] = self.masterWeatherDict[self.location]['current_observation']['station_id']
+                    new_props['address'] = self.masterWeatherDict[location]['current_observation']['station_id']
                     dev.replacePluginPropsOnServer(new_props)
                     dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
 
@@ -3023,28 +3052,30 @@ class Plugin(indigo.PluginBase):
     def parseWeatherTides(self, dev):
         """ The parseWeatherTides() method takes tide data and parses it to
         device states. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        location = dev.pluginProps['location']
 
         if debug_level >= 3:
             self.debugLog(u"parseWeatherTides() method called.")
 
-        tidal_dict = {'tide_info': self.masterWeatherDict[self.location]['tide']['tideInfo'][0]['tideSite'],
-                      'tide_minheight': self.masterWeatherDict[self.location]['tide']['tideSummaryStats'][0]['minheight'],
-                      'tide_maxheight': self.masterWeatherDict[self.location]['tide']['tideSummaryStats'][0]['maxheight']
+        tidal_dict = {'tide_info': self.masterWeatherDict[location]['tide']['tideInfo'][0]['tideSite'],
+                      'tide_minheight': self.masterWeatherDict[location]['tide']['tideSummaryStats'][0]['minheight'],
+                      'tide_maxheight': self.masterWeatherDict[location]['tide']['tideSummaryStats'][0]['maxheight']
                       }
 
         try:
 
             # Current Observation Time (string: "Last Updated on MONTH DD, HH:MM AM/PM TZ")
-            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_time']))
+            dev.updateStateOnServer('currentObservation', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_time']))
 
             # Current Observation Time 24 Hour (string)
-            current_observation_epoch = float(self.masterWeatherDict[self.location]['current_observation']['observation_epoch'])
+            current_observation_epoch = float(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
             current_observation_24hr  = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_observation_epoch))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Current Observation Time Epoch (string)
-            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[self.location]['current_observation']['observation_epoch']))
+            dev.updateStateOnServer('currentObservationEpoch', value=u"{0}".format(self.masterWeatherDict[location]['current_observation']['observation_epoch']))
 
             # Tide location information. This is only appropriate for some locations.
             if tidal_dict['tide_info'] in [u"", u" "]:
@@ -3068,8 +3099,8 @@ class Plugin(indigo.PluginBase):
 
             # Observations
             tide_counter = 1
-            if len(self.masterWeatherDict[self.location]['tide']['tideSummary']):
-                for obs in self.masterWeatherDict[self.location]['tide']['tideSummary']:
+            if len(self.masterWeatherDict[location]['tide']['tideSummary']):
+                for obs in self.masterWeatherDict[location]['tide']['tideSummary']:
                     if tide_counter < 32:
                         dev.updateStateOnServer(u"p{0}_height".format(tide_counter), value=obs['data']['height'])
                         dev.updateStateOnServer(u"p{0}_pretty".format(tide_counter), value=obs['date']['pretty'])
@@ -3077,7 +3108,7 @@ class Plugin(indigo.PluginBase):
                         tide_counter += 1
 
             new_props = dev.pluginProps
-            new_props['address'] = self.masterWeatherDict[self.location]['current_observation']['station_id']
+            new_props['address'] = self.masterWeatherDict[location]['current_observation']['station_id']
             dev.replacePluginPropsOnServer(new_props)
 
             dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
@@ -3100,31 +3131,30 @@ class Plugin(indigo.PluginBase):
         """ The refreshWeatherAction() method calls the refreshWeatherData()
         method to request a complete refresh of all weather data (Actions.XML
         call.) """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"refreshWeatherAction called.")
             self.debugLog(u"valuesDict: {0}".format(valuesDict))
 
-        self.wu_settings = self.config.load(kDefaultPluginSettings)
         self.refreshWeatherData()
 
     def refreshWeatherData(self):
         """ This method refreshes weather data for all devices based on a
         WUnderground general cycle, Action Item or Plugin Menu call. """
-        api_key = self.pluginPrefs.get('apiKey', '')
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-        daily_call_limit_reached = self.wu_settings['dailyCallLimitReached']
-        sleep_time = int(self.pluginPrefs.get('downloadInterval', 900))
+        api_key = self.pluginPrefs['apiKey']
+        daily_call_limit_reached = self.pluginPrefs['dailyCallLimitReached']
+        debug_level = self.pluginPrefs['showDebugLevel']
+        sleep_time = self.pluginPrefs['downloadInterval']
         self.wuOnline = True
-        self.wu_settings = self.config.load(kDefaultPluginSettings)  # Load the default settings each time the plugin cycles to ensure that we have the most current stuff.
 
+        if debug_level >= 3:
+            self.debugLog(u"refreshWeatherData() method called.")
+
+        # Check to see if the daily call limit has been reached.
         try:
 
-            if debug_level >= 3:
-                self.debugLog(u"refreshWeatherData() method called.")
-
-            # Check to see if the daily call limit has been reached.
             if daily_call_limit_reached:
                 self.callDay()
 
@@ -3134,23 +3164,6 @@ class Plugin(indigo.PluginBase):
                 self.masterWeatherDict = {}
 
                 for dev in indigo.devices.itervalues("self"):
-
-                    # Get the current settings in case they've changed.
-                    self.configMenuUnits     = dev.pluginProps.get('configMenuUnits', "S")
-                    self.configWindDirUnits  = dev.pluginProps.get('configWindDirUnits', "DIR")
-                    self.configWindSpdUnits  = dev.pluginProps.get('configWindSpdUnits', "AVG")
-                    self.distanceUnits       = dev.pluginProps.get('distanceUnits', " ")
-                    self.itemListUiUnits     = dev.pluginProps.get('itemListUiUnits', "S")
-                    self.itemListUnits       = dev.pluginProps.get('itemListUnits', "S")
-                    self.location            = dev.pluginProps.get('location', "autoip")
-                    self.percentageUnits     = dev.pluginProps.get('percentageUnits', " ")
-                    self.pressureUnits       = dev.pluginProps.get('pressureUnits', " ")
-                    self.rainAmountUnits     = dev.pluginProps.get('rainAmountUnits', " ")
-                    self.rainUnits           = dev.pluginProps.get('rainUnits', " ")
-                    self.snowAmountUnits     = dev.pluginProps.get('snowAmountUnits', " ")
-                    self.temperatureUnits    = dev.pluginProps.get('temperatureUnits', " ")
-                    self.weatherSummaryEmail = dev.pluginProps.get('weatherSummaryEmail', False)
-                    self.windUnits           = dev.pluginProps.get('windUnits', " ")
 
                     if not self.wuOnline:
                         break
@@ -3178,13 +3191,17 @@ class Plugin(indigo.PluginBase):
                         self.debugLog(u"Parse weather data for device: {0}".format(dev.name))
                         # Get weather data from Weather Underground
                         dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
+
                         if dev.model not in ['Satellite Image Downloader', 'WUnderground Radar', 'WUnderground Satellite Image Downloader']:
+
+                            location = dev.pluginProps['location']
+
                             self.getWeatherData(dev)
 
                             # If we've successfully downloaded data from Weather Underground, let's unpack it and assign it to the relevant device.
                             try:
                                 # If a site location query returns a site unknown (in other words 'querynotfound' result, notify the user).
-                                response = self.masterWeatherDict[self.location]['response']['error']['type']
+                                response = self.masterWeatherDict[location]['response']['error']['type']
                                 if response == 'querynotfound':
                                     self.errorLog(u"Location query for {0} not found. Please ensure that device location follows examples precisely.".format(dev.name))
                                     dev.updateStateOnServer('onOffState', value=False, uiValue=u"Bad Loc")
@@ -3201,13 +3218,13 @@ class Plugin(indigo.PluginBase):
                                 # Estimated Weather Data (integer: 1 if estimated weather)
                                 ignore_estimated = False
                                 try:
-                                    estimated = self.masterWeatherDict[self.location]['current_observation']['estimated']['estimated']
+                                    estimated = self.masterWeatherDict[location]['current_observation']['estimated']['estimated']
                                     if estimated == 1:
                                         self.errorLog(u"These are estimated conditions. There may be other functioning weather stations nearby. ({0})".format(dev.name))
                                         dev.updateStateOnServer('estimated', value="true", uiValue=u"True")
 
                                     # If the user wants to skip updates when weather data are estimated.
-                                    if self.pluginPrefs.get('ignoreEstimated', False):
+                                    if self.pluginPrefs['ignoreEstimated']:
                                         ignore_estimated = True
 
                                 except KeyError as error:
@@ -3228,7 +3245,7 @@ class Plugin(indigo.PluginBase):
                                 #       ensure that known data are retained if the new data is not actually newer that what
                                 #       we already have.
                                 try:
-                                    good_time = dev.states['currentObservationEpoch'] <= self.masterWeatherDict[self.location]['current_observation']['observation_epoch']
+                                    good_time = dev.states['currentObservationEpoch'] <= self.masterWeatherDict[location]['current_observation']['observation_epoch']
                                     if not good_time:
                                         indigo.server.log(u"Latest data are older than data we already have. Skipping {0} update.".format(dev.name))
                                 except KeyError:
@@ -3266,7 +3283,7 @@ class Plugin(indigo.PluginBase):
                                         self.parseWeatherForecast(dev)
                                         dev.updateStateImageOnServer(indigo.kStateImageSel.TemperatureSensorOn)
 
-                                        if self.pluginPrefs.get('updaterEmailsEnabled', False):
+                                        if self.pluginPrefs['updaterEmailsEnabled']:
                                             self.emailForecast(dev)
 
                         # Image Downloader devices.
@@ -3279,16 +3296,15 @@ class Plugin(indigo.PluginBase):
 
             self.debugLog(u"Locations Polled: {0}{1}Weather Underground cycle complete.".format(self.masterWeatherDict.keys(), pad_log))
 
-            self.config.save(self.wu_settings)  # Save custom plugin settings to retain any changes that may have been made.
-
         except Exception as error:
-            self.errorLog(u"Problem parsing Weather data. Error: {0} (Line ({1})".format(sys.exc_traceback.tb_lineno, error))
+            self.errorLog(u"Problem parsing Weather data. Dev: {0} Error: {1} (Line ({2})".format(dev.name, sys.exc_traceback.tb_lineno, error))
 
     def runConcurrentThread(self):
         """ Main plugin thread. """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
-
         self.debugLog(u"runConcurrentThread initiated.")
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        download_interval = self.pluginPrefs['downloadInterval']
 
         if debug_level >= 2:
             self.debugLog(u"Sleeping for 5 seconds to give the host process a chance to catch up (if it needs to.)")
@@ -3297,7 +3313,6 @@ class Plugin(indigo.PluginBase):
         try:
             while True:
                 start_time = dt.datetime.now()
-                sleep_time = int(self.pluginPrefs.get('downloadInterval', 900))
 
                 self.refreshWeatherData()
                 self.fireOfflineDeviceTriggers()
@@ -3305,38 +3320,39 @@ class Plugin(indigo.PluginBase):
                 # Report results of download timer.
                 plugin_cycle_time = (dt.datetime.now() - start_time)
                 plugin_cycle_time = (dt.datetime.min + plugin_cycle_time).time()
+
                 self.debugLog(u"[Plugin execution time: {0} seconds]".format(plugin_cycle_time.strftime('%S.%f')))
-                self.sleep(sleep_time)
+                self.sleep(download_interval)
 
         except self.StopThread as error:
             self.debugLog(u"StopThread: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
             self.debugLog(u"Stopping WUnderground Plugin thread.")
-            pass
 
 # === Triggers ====================================================================================
     def triggerStartProcessing(self, trigger):
         """ triggerStartProcessing is called when the plugin is started. The
         method builds a global dict: {dev.id: (delay, trigger.id) """
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
+        dev_id = str(trigger.pluginProps['listOfDevices'])
 
         if debug_level >= 3:
             self.debugLog(u"triggerStartProcessing method() called.")
 
-        dev_id = str(trigger.pluginProps['listOfDevices'])
         try:
             self.masterTriggerDict[dev_id] = (trigger.pluginProps['offlineTimer'], trigger.id)
+
         except KeyError:
             self.masterTriggerDict[dev_id] = (u'0', trigger.id)
 
     def triggerStopProcessing(self, trigger):
         """"""
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"triggerStopProcessing method() called.")
             self.debugLog(u"trigger: {0}".format(trigger))
-
-        pass
 
     def fireOfflineDeviceTriggers(self):
         """ The fireOfflineDeviceTriggers method will examine the time of the
@@ -3354,7 +3370,8 @@ class Plugin(indigo.PluginBase):
         Note that the trigger will only fire during routine weather update
         cycles and will not be triggered when a data refresh is called from
         the Indigo Plugins menu."""
-        debug_level = self.pluginPrefs.get('showDebugLevel', 1)
+
+        debug_level = self.pluginPrefs['showDebugLevel']
 
         if debug_level >= 3:
             self.debugLog(u"fireOfflineDeviceTriggers method() called.")
@@ -3371,27 +3388,29 @@ class Plugin(indigo.PluginBase):
 
                             if indigo.triggers[trigger_id].pluginTypeId == 'weatherSiteOffline':
 
-                                offline_delta = int(self.masterTriggerDict[str(dev.id)][0])  # User specified offline duration in minutes
-                                offline_delta = dt.timedelta(minutes=offline_delta)
+                                offline_delta = dt.timedelta(minutes=int(self.masterTriggerDict[str(dev.id)][0]))
 
                                 # Convert currentObservationEpoch to a localized datetime object
                                 current_observation = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(dev.states['currentObservationEpoch'])))
                                 current_observation = dt.datetime.strptime(current_observation, '%Y-%m-%d %H:%M:%S')
 
-                                # Compute the time elapsed since last observation
+                                # Time elapsed since last observation
                                 diff = indigo.server.getTime() - current_observation
 
-                                if diff >= offline_delta:  # If the observation is older than offline_delta
-                                    indigo.server.log(u"{0} location appears to be offline (most current observation: {1})".format(dev.name, offline_delta))
+                                # If the observation is older than offline_delta
+                                if diff >= offline_delta:
+                                    indigo.server.log(u"{0} location appears to be offline for {1:}".format(dev.name, diff))
                                     indigo.trigger.execute(trigger_id)
 
-                                elif dev.states['temp'] <= -55.0:  # If the temperature observation is lower than -55 C
+                                # If the temperature observation is lower than -55 C
+                                elif dev.states['temp'] <= -55.0:
                                     indigo.server.log(u"{0} location appears to be offline (reported temperature).".format(dev.name))
                                     indigo.trigger.execute(trigger_id)
 
                             if indigo.triggers[trigger_id].pluginTypeId == 'weatherAlert':
 
-                                if dev.states['alertStatus'] == 'true':  # If at least one severe weather alert exists for the location
+                                # If at least one severe weather alert exists for the location
+                                if dev.states['alertStatus'] == 'true':
                                     indigo.server.log(u"{0} location has at least one severe weather alert.".format(dev.name))
                                     indigo.trigger.execute(trigger_id)
 

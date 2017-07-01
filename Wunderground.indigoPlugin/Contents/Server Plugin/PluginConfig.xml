@@ -14,6 +14,10 @@
 
     <Field id="separator00" type="separator"/>
 
+    <Field id="dailyCallCounter" type="textfield" defaultValue="0" readonly= "true" tooltip="The number of API calls today so far.">
+        <Label>API Calls Today:</Label>
+    </Field>
+
     <Field id="showPluginSettings" type="checkbox" tooltip="Check to show plugin settings.">
         <Label>Plugin Settings:</Label>
         <Description>Show/Hide</Description>
