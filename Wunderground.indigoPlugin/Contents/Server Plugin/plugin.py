@@ -66,9 +66,6 @@ https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 # TODO: Allow each device to update on its own frequency. (WU7)
 # TODO: Add setting to choose when the weather email is sent (WU7)
 # TODO: Set up weather forecast email as a concatenation rather than one big string and consider whether to remove history and record data from email if the data aren't available. (WU7)
-# TODO: Check the setting of the onOffState icon in the Indigo UI for Hourly and Ten Day Forecast Devices (new device didn't go green on first download, but green on second.)
-# TODO: Put in a check to identify locations that don't have almanac data (like 52.45,0.04)
-# TODO: Check unusual error in image downloader device. Said it wasn't a valid location, but it has .png in the path.
 # TODO: Augment nestedLookup to allow for different types of defaults. Instead of using default=u"" attribute, instead send the type of default desired? (i.e., string, float, int, etc.)
 # TODO: Consider an Indigo UI alert if weather alerts are true?
 
@@ -95,7 +92,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.8"
+__version__ = "1.1.9"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?

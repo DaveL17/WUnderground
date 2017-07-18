@@ -1,5 +1,8 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.9
+-
+
 v1.1.8
 - Implements new method for extracting data from WUnderground JSON data.
   [ nestedLookup() ] method should allow the plugin to continue to function
