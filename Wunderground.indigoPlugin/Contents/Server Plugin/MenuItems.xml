@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <MenuItems>
 
-    <MenuItem id="killAllComms">
-        <Name>Disable All WU Devices</Name>
-        <CallbackMethod>killAllComms</CallbackMethod>
+    <MenuItem id="commsUnkillAll">
+        <Name>Enable All WU Devices</Name>
+        <CallbackMethod>commsUnkillAll</CallbackMethod>
     </MenuItem>
 
-    <MenuItem id="unkillAllComms">
-        <Name>Enable All WU Devices</Name>
-        <CallbackMethod>unkillAllComms</CallbackMethod>
+    <MenuItem id="commsKillAll">
+        <Name>Disable All WU Devices</Name>
+        <CallbackMethod>commsKillAll</CallbackMethod>
     </MenuItem>
 
     <MenuItem id="titleSeparator" type="separator"/>
@@ -32,7 +32,7 @@
 
     <MenuItem id="toggleDebug">
         <Name>Toggle Debugging</Name>
-        <CallbackMethod>toggleDebugEnabled</CallbackMethod>
+        <CallbackMethod>debugToggle</CallbackMethod>
     </MenuItem>
 
 </MenuItems>

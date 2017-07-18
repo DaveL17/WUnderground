@@ -29,11 +29,11 @@
 
             <Field id="space03" type="label" visibleBindingId="space02" visibleBindingValue="true" fontSize="small">
                 <Label>- Automatic IP detection (autoip)
-                    - City (i.e., CA/San_Francisco, Canada/Toronto)
-                    - Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
-                    - ICAO Airport Station (i.e., KORD, CYYZ)
-                    - Personal Weather Station (i.e., pws:KMNCHASK10)
-                    - US ZIP (i.e., 12345)
+- City (i.e., CA/San_Francisco, Canada/Toronto)
+- Latitude/Longitude (i.e., 48.86,2.29 or -33.86,151.22)
+- ICAO Airport Station (i.e., KORD, CYYZ)
+- Personal Weather Station (i.e., pws:KMNCHASK10)
+- US ZIP (i.e., 12345)
                 </Label>
             </Field>
 
@@ -2805,18 +2805,18 @@
                 <Description>Location settings (show/hide)</Description>
             </Field>
 
-            <Field id="typelabel" type="label" visibleBindingId="positionlabel" visibleBindingValue="true" fontSize="small" alignWithControl="true">
-                <Label>Location settings control the area covered by the radar image.  A bounding box requires data for the four sides of the image. A radius requires a center point and a radial distance. A location requires a valid WU location (Click the (?) below for additional information). You can hide the location settings once they are configured.</Label>
-            </Field>
-
             <Field id="imagetype" type="menu" defaultValue="radius" visibleBindingId="positionlabel" visibleBindingValue="true"
                    tooltip="Please select the desired method for defining the boundaries of the image.">
                 <Label>Type:</Label>
-                    <List>
-                        <Option value="boundingbox">Bounding Box</Option>
-                        <Option value="locationbox">Location</Option>
-                        <Option value="radius">Radius*</Option>
-                    </List>
+                <List>
+                    <Option value="boundingbox">Bounding Box</Option>
+                    <Option value="locationbox">Location</Option>
+                    <Option value="radius">Radius*</Option>
+                </List>
+            </Field>
+
+            <Field id="typelabel" type="label" visibleBindingId="positionlabel" visibleBindingValue="true" fontSize="small" alignWithControl="true">
+                <Label>Location settings control the area covered by the radar image. You can hide the location settings once they are configured. A bounding box requires data for the four sides of the image. A location requires a valid WU location (Click the (?) below for additional information). A radius requires a center point and a radial distance.</Label>
             </Field>
 
             <Field id="boxeparator" type="separator" visibleBindingId="positionlabel" visibleBindingValue="true"/>
@@ -2892,7 +2892,7 @@
             <Field id="animationseparator" type="separator"/>
 
             <Field id="animationlabel" type="label" fontSize="small">
-                <Label>If animated radar images are desired, tick the Animated box below. Settings are available for the number of frames and frame rotation delay.</Label>
+                <Label>If an animated radar images is desired, tick the Animated box below. Settings are available for the number of frames and frame rotation delay.</Label>
             </Field>
 
             <Field id="feature" type="checkbox" defaultValue="false" tooltip="Please tick if animated radar is desired.">
@@ -4854,11 +4854,6 @@
             <Field id="rainUnits" type="textfield" defaultValue=" in." visibleBindingId="space05" visibleBindingValue="true" tooltip="Appended to all rain values. (0.5 in.)">
                 <Label>Rainfall:</Label>
             </Field>
-
-            <!--<Field id="snowAmountUnits" type="textfield" visibleBindingId="space06" visibleBindingValue="true" defaultValue="in."-->
-                   <!--tooltip="Appended to all snow volume units. (Values reported in either in. or cm.)">-->
-                <!--<Label>Snow:</Label>-->
-            <!--</Field>-->
 
             <Field id="temperatureUnits" type="textfield" visibleBindingId="space05" visibleBindingValue="true" defaultValue="°" tooltip="Appended to all temperature values. (75°)">
                 <Label>Temperature:</Label>
