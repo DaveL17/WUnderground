@@ -1,7 +1,10 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.10
+- Code refinements.
+
 v1.1.9
--
+- Fixes versioning.
 
 v1.1.8
 - Implements new method for extracting data from WUnderground JSON data.

@@ -92,7 +92,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.9"
+__version__ = "1.1.10"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -121,7 +121,7 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        self.debug = self.pluginPrefs['showDebugInfo']
+        self.debug = self.pluginPrefs.get('showDebugInfo', True)
         self.masterWeatherDict = {}
         self.masterTriggerDict = {}
         self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
@@ -365,7 +365,7 @@ class Plugin(indigo.PluginBase):
         # For devices that display the temperature as their UI state, set them to a value we already have.
         try:
             if dev.model in ['WUnderground Device', 'WUnderground Weather', 'WUnderground Weather Device', 'Weather Underground', 'Weather']:
-                dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}{1}".format(dev.states['temp'], dev.pluginProps['temperatureUnits']))
+                dev.updateStateOnServer('onOffState', value=True, uiValue=u"{0}{1}".format(dev.states['temp'], dev.pluginProps.get('temperatureUnits', '')))
 
             else:
                 dev.updateStateOnServer('onOffState', value=True, uiValue=u"Enabled")
@@ -437,8 +437,8 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u'emailForecast() method called.')
 
         try:
-            summary_wanted = dev.pluginProps['weatherSummaryEmail']
-            summary_sent   = dev.states['weatherSummaryEmailSent']
+            summary_wanted = dev.pluginProps.get('weatherSummaryEmail', '')
+            summary_sent   = dev.states.get('weatherSummaryEmailSent', False)
 
             # Legacy devices had this setting improperly established as a string rather than a bool.
             if isinstance(summary_wanted, basestring):
@@ -456,56 +456,58 @@ class Plugin(indigo.PluginBase):
             # If an email summary is wanted and not yet sent today.
             if summary_wanted and not summary_sent and dt.datetime.now().hour >= 1:
 
-                config_menu_units = dev.pluginProps['configMenuUnits']
+                config_menu_units = dev.pluginProps.get('configMenuUnits', '')
                 email_body        = u""
                 email_list        = []
-                default_text      = u"Not available"
                 location          = dev.pluginProps['location']
 
-                almanac_data  = self.masterWeatherDict[location].get('almanac', {})
-                forecast_data = self.masterWeatherDict[location].get('forecast', {})
-                history_data  = self.masterWeatherDict[location].get('history', {})
+                weather_data = self.masterWeatherDict[location]
 
-                forecast_day    = forecast_data.get('txt_forecast', {}).get('forecastday', {})
-                simple_forecast = forecast_data.get('simpleforecast', {}).get('forecastday', {})
-                daily_summary   = history_data.get('dailysummary', [{}])  # Note the dict is in a list.
+                temp_high_record_year        = self.nestedLookup(weather_data, keys=('almanac', 'temp_high', 'recordyear'))
+                temp_low_record_year         = self.nestedLookup(weather_data, keys=('almanac', 'temp_low', 'recordyear'))
+                today_record_high_metric     = self.nestedLookup(weather_data, keys=('almanac', 'temp_high', 'record', 'C'))
+                today_record_high_standard   = self.nestedLookup(weather_data, keys=('almanac', 'temp_high', 'record', 'F'))
+                today_record_low_metric      = self.nestedLookup(weather_data, keys=('almanac', 'temp_low', 'record', 'C'))
+                today_record_low_standard    = self.nestedLookup(weather_data, keys=('almanac', 'temp_low', 'record', 'F'))
 
-                # If a location doesn't support dailysummary, WU returns an empty list [] rather than a list with an empty dict [{}].
-                if len(daily_summary) == 0:
-                    daily_summary = [{}]
+                forecast_today_metric        = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[0]['fcttext_metric']
+                forecast_today_standard      = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[0]['fcttext']
+                forecast_today_title         = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[0]['title']
+                forecast_tomorrow_metric     = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[1]['fcttext_metric']
+                forecast_tomorrow_standard   = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[1]['fcttext']
+                forecast_tomorrow_title      = self.nestedLookup(weather_data, keys=('forecast', 'txt_forecast', 'forecastday'))[1]['title']
+                max_humidity                 = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'maxhumidity'))
+                today_high_metric            = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'high', 'celsius'))
+                today_high_standard          = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'high', 'fahrenheit'))
+                today_low_metric             = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'low', 'celsius'))
+                today_low_standard           = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'low', 'fahrenheit'))
+                today_qpf_metric             = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'qpf_allday', 'mm'))
+                today_qpf_standard           = self.nestedLookup(weather_data, keys=('forecast', 'simpleforecast', 'forecastday', 'qpf_allday', 'in'))
 
-                forecast_today_title         = forecast_day[0]['title']
-                forecast_today_metric        = forecast_day[0]['fcttext_metric']
-                forecast_today_standard      = forecast_day[0]['fcttext']
-                forecast_tomorrow_title      = forecast_day[1]['title']
-                forecast_tomorrow_metric     = forecast_day[1]['fcttext_metric']
-                forecast_tomorrow_standard   = forecast_day[1]['fcttext']
+                yesterday_high_temp_metric   = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'maxtempm'))
+                yesterday_high_temp_standard = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'maxtempi'))
+                yesterday_low_temp_metric    = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'mintempm'))
+                yesterday_low_temp_standard  = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'mintempi'))
+                yesterday_total_qpf_metric   = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'precipm'))
+                yesterday_total_qpf_standard = self.nestedLookup(weather_data, keys=('history', 'dailysummary', 'precipi'))
 
-                today_high_metric            = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailHighC", val=simple_forecast[0]['high']['celsius']))
-                today_high_standard          = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailHighF", val=simple_forecast[0]['high']['fahrenheit']))
-                today_low_metric             = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailLowC", val=simple_forecast[0]['low']['celsius']))
-                today_low_standard           = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailLowF", val=simple_forecast[0]['low']['fahrenheit']))
-                max_humidity                 = u"{0}".format(self.floatEverything(state_name=u"sendMailMaxHumidity", val=simple_forecast[0]['maxhumidity']))
-                today_qpf_metric             = u"{0} nm.".format(self.floatEverything(state_name=u"sendMailQPF", val=simple_forecast[0]['qpf_allday']['mm']))
-                today_qpf_standard           = u"{0} in.".format(self.floatEverything(state_name=u"sendMailQPF", val=simple_forecast[0]['qpf_allday']['in']))
-
-                today_record_high_metric     = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailRecordHighC",
-                                                                                       val=almanac_data.get('temp_high', {}).get('record', {}).get('C', default_text)))
-                today_record_high_standard   = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailRecordHighF",
-                                                                                       val=almanac_data.get('temp_high', {}).get('record', {}).get('F', default_text)))
-                temp_high_record_year        = almanac_data.get('temp_high', {}).get('recordyear', default_text)
-                today_record_low_metric      = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailRecordLowC",
-                                                                                       val=almanac_data.get('temp_low', {}).get('record', {}).get('C', default_text)))
-                today_record_low_standard    = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailRecordLowF",
-                                                                                       val=almanac_data.get('temp_low', {}).get('record', {}).get('F', default_text)))
-                temp_low_record_year         = almanac_data.get('temp_low', {}).get('recordyear', default_text)
-
-                yesterday_high_temp_metric   = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailMaxTempM", val=daily_summary[0].get('maxtempm', default_text)))
-                yesterday_high_temp_standard = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailMaxTempI", val=daily_summary[0].get('maxtempi', default_text)))
-                yesterday_low_temp_metric    = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailMinTempM", val=daily_summary[0].get('mintempm', default_text)))
-                yesterday_low_temp_standard  = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailMinTempI", val=daily_summary[0].get('mintempi', default_text)))
-                yesterday_total_qpf_metric   = u"{0} nm.".format(self.floatEverything(state_name=u"sendMailPrecipM", val=daily_summary[0].get('precipm', default_text)))
-                yesterday_total_qpf_standard = u"{0} in.".format(self.floatEverything(state_name=u"sendMailPrecipM", val=daily_summary[0].get('precipi', default_text)))
+                max_humidity                 = u"{0}".format(self.floatEverything(state_name=u"sendMailMaxHumidity", val=max_humidity))
+                today_high_metric            = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailHighC", val=today_high_metric))
+                today_high_standard          = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailHighF", val=today_high_standard))
+                today_low_metric             = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailLowC", val=today_low_metric))
+                today_low_standard           = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailLowF", val=today_low_standard))
+                today_qpf_metric             = u"{0} nm.".format(self.floatEverything(state_name=u"sendMailQPF", val=today_qpf_metric))
+                today_qpf_standard           = u"{0} in.".format(self.floatEverything(state_name=u"sendMailQPF", val=today_qpf_standard))
+                today_record_high_metric     = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailRecordHighC", val=today_record_high_metric))
+                today_record_high_standard   = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailRecordHighF", val=today_record_high_standard))
+                today_record_low_metric      = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailRecordLowC", val=today_record_low_metric))
+                today_record_low_standard    = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailRecordLowF", val=today_record_low_standard))
+                yesterday_high_temp_metric   = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailMaxTempM", val=yesterday_high_temp_metric))
+                yesterday_high_temp_standard = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailMaxTempI", val=yesterday_high_temp_standard))
+                yesterday_low_temp_metric    = u"{0:.0f}C".format(self.floatEverything(state_name=u"sendMailMinTempM", val=yesterday_low_temp_metric))
+                yesterday_low_temp_standard  = u"{0:.0f}F".format(self.floatEverything(state_name=u"sendMailMinTempI", val=yesterday_low_temp_standard))
+                yesterday_total_qpf_metric   = u"{0} nm.".format(self.floatEverything(state_name=u"sendMailPrecipM", val=yesterday_total_qpf_metric))
+                yesterday_total_qpf_standard = u"{0} in.".format(self.floatEverything(state_name=u"sendMailPrecipM", val=yesterday_total_qpf_standard))
 
                 email_list.append(u"{0}".format(dev.name))
 
@@ -1067,7 +1069,7 @@ class Plugin(indigo.PluginBase):
 
         attribution  = u""
 
-        alerts_suppressed = dev.pluginProps['suppressWeatherAlerts']
+        alerts_suppressed = dev.pluginProps.get('suppressWeatherAlerts', False)
         location          = dev.pluginProps['location']
         weather_data      = self.masterWeatherDict[location]
 
@@ -1262,9 +1264,9 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseForecastData(self, dev) method called.")
 
-        config_menu_units = dev.pluginProps['configMenuUnits']
+        config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
-        wind_units        = dev.pluginProps['windUnits']
+        wind_units        = dev.pluginProps.get('windUnits', '')
 
         weather_data = self.masterWeatherDict[location]
 
@@ -1488,7 +1490,7 @@ class Plugin(indigo.PluginBase):
         """ The parseHourlyData() method takes hourly weather forecast data
         and parses it to device states. """
 
-        config_menu_units = dev.pluginProps['configMenuUnits']
+        config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
 
         weather_data  = self.masterWeatherDict[location]
@@ -1616,7 +1618,7 @@ class Plugin(indigo.PluginBase):
                         dev.updateStateOnServer(u"h{0}_windSpeed".format(fore_counter_text), value=value, uiValue=ui_value)
                         dev.updateStateOnServer(u"h{0}_windSpeedIcon".format(fore_counter_text), value=u"{0}".format(wind_speed_standard).replace('.', ''))
 
-                    if dev.pluginProps['configWindDirUnits'] == "DIR":
+                    if dev.pluginProps.get('configWindDirUnits', '') == "DIR":
                         dev.updateStateOnServer(u"h{0}_windDir".format(fore_counter_text), value=wind_dir, uiValue=wind_dir)
 
                     else:
@@ -1642,9 +1644,9 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseTenDayData(self, dev) method called.")
 
-        config_menu_units = dev.pluginProps['configMenuUnits']
+        config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
-        wind_speed_units  = dev.pluginProps['configWindSpdUnits']
+        wind_speed_units  = dev.pluginProps.get('configWindSpdUnits', '')
         # wind_dir_units    = dev.pluginProps['configWindDirUnits']  # TODO: No longer needed?  There are separate states for degrees and dir now. (WU7)
 
         weather_data = self.masterWeatherDict[location]
@@ -1917,11 +1919,11 @@ class Plugin(indigo.PluginBase):
 
         try:
 
-            config_itemlist_ui_units = dev.pluginProps['itemListUiUnits']
-            config_menu_units        = dev.pluginProps['configMenuUnits']
-            config_distance_units    = dev.pluginProps['distanceUnits']
+            config_itemlist_ui_units = dev.pluginProps.get('itemListUiUnits', '')
+            config_menu_units        = dev.pluginProps.get('configMenuUnits', '')
+            config_distance_units    = dev.pluginProps.get('distanceUnits', '')
             location                 = dev.pluginProps['location']
-            pressure_units           = dev.pluginProps['pressureUnits']
+            pressure_units           = dev.pluginProps.get('pressureUnits', '')
 
             weather_data = self.masterWeatherDict[location]
             history_data = self.nestedLookup(weather_data, keys=('history', 'dailysummary'))
@@ -2550,7 +2552,7 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"uiFormatPercentage(self, dev, state_name={0}, val={1})".format(state_name, val))
 
         humidity_decimal = int(self.pluginPrefs['uiHumidityDecimal'])
-        percentage_units = dev.pluginProps['percentageUnits']
+        percentage_units = dev.pluginProps.get('percentageUnits', '')
 
         try:
             return u"{0:0.{1}f}{2}".format(float(val), int(humidity_decimal), percentage_units)
@@ -2567,9 +2569,9 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"uiFormatRain(self, dev, state_name={0}, val={1}).".format(state_name, val))
 
         try:
-            rain_units = dev.pluginProps['rainUnits']
+            rain_units = dev.pluginProps.get('rainUnits', '')
         except KeyError:
-            rain_units = dev.pluginProps['rainAmountUnits']
+            rain_units = dev.pluginProps.get('rainAmountUnits', '')
 
         if val in ["NA", "N/A", "--", ""]:
             return val
@@ -2592,7 +2594,7 @@ class Plugin(indigo.PluginBase):
             return val
 
         try:
-            return u"{0}{1}".format(val, dev.pluginProps['snowAmountUnits'])
+            return u"{0}{1}".format(val, dev.pluginProps.get('snowAmountUnits', ''))
 
         except ValueError as error:
             self.debugLog(u"Error formatting uiSnow: {0}".format(error))
@@ -2606,7 +2608,7 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"uiFormatTemperature(self, dev, state_name={0}, val={1})".format(state_name, val))
 
         temp_decimal = int(self.pluginPrefs['uiTempDecimal'])
-        temperature_units = dev.pluginProps['temperatureUnits']
+        temperature_units = dev.pluginProps.get('temperatureUnits', '')
 
         try:
             return u"{0:0.{1}f}{2}".format(float(val), int(temp_decimal), temperature_units)
@@ -2620,7 +2622,7 @@ class Plugin(indigo.PluginBase):
         in control pages, etc. """
 
         wind_decimal = self.pluginPrefs['uiWindDecimal']
-        wind_units   = dev.pluginProps['windUnits']
+        wind_units   = dev.pluginProps.get('windUnits', '')
 
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"uiFormatWind(self, state_name={0}, val={1}), dec={2}".format(state_name, val, wind_decimal))
