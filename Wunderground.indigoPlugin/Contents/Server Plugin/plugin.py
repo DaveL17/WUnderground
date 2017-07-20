@@ -179,8 +179,8 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"callCount() method called.")
 
         calls_made = self.pluginPrefs['dailyCallCounter']  # Calls today so far
-        calls_max = self.pluginPrefs['callCounter']  # Max calls allowed per day
-        download_interval = self.pluginPrefs['downloadInterval']
+        calls_max = self.pluginPrefs.get('callCounter', 500)  # Max calls allowed per day
+        download_interval = self.pluginPrefs.get('downloadInterval', 15)
 
         # See if we have exceeded the daily call limit.  If we have, set the "dailyCallLimitReached" flag to be true.
         if calls_made >= calls_max:
@@ -206,9 +206,9 @@ class Plugin(indigo.PluginBase):
         and the flag for the daily forecast email message. """
 
         call_day           = self.pluginPrefs['dailyCallDay']
-        call_limit_reached = self.pluginPrefs['dailyCallLimitReached']
-        debug_level        = self.pluginPrefs['showDebugLevel']
-        sleep_time         = self.pluginPrefs['downloadInterval']
+        call_limit_reached = self.pluginPrefs.get('dailyCallLimitReached', False)
+        debug_level        = self.pluginPrefs.get('showDebugLevel', 1)
+        sleep_time         = self.pluginPrefs.get('downloadInterval', 15)
         todays_date        = dt.datetime.today().date()
         today_str          = u"{0}".format(todays_date)
         today_unstr        = dt.datetime.strptime(call_day, "%Y-%m-%d")
@@ -956,7 +956,7 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"itemListTemperatureFormat(self, val={0})".format(val))
 
         try:
-            if self.pluginPrefs['itemListTempDecimal'] == 0:
+            if self.pluginPrefs.get('itemListTempDecimal', 0) == 0:
                 val = float(val)
                 return u"{0:0.0f}".format(val)
             else:
@@ -1073,10 +1073,9 @@ class Plugin(indigo.PluginBase):
         location          = dev.pluginProps['location']
         weather_data      = self.masterWeatherDict[location]
 
-        alert_logging    = self.pluginPrefs['alertLogging']
-        alerts_wanted    = self.pluginPrefs['alertLogging']
-        debug_level      = self.pluginPrefs['showDebugLevel']
-        no_alert_logging = self.pluginPrefs['noAlertLogging']
+        alert_logging    = self.pluginPrefs.get('alertLogging', True)
+        debug_level      = self.pluginPrefs.get('showDebugLevel', 1)
+        no_alert_logging = self.pluginPrefs.get('noAlertLogging', False)
 
         alerts_data   = self.nestedLookup(weather_data, keys=('alerts',))
         location_city = self.nestedLookup(weather_data, keys=('location', 'city'))
@@ -1164,7 +1163,7 @@ class Plugin(indigo.PluginBase):
                         dev.updateStateOnServer(u"alertExpires{0}".format(alert_counter), value=u"{0}".format(alert_array[alert][3]))
                         alert_counter += 1
 
-                    if alerts_wanted and not alerts_suppressed:
+                    if alert_logging and not alerts_suppressed:
                         indigo.server.log(u"{0}".format(alert_array[alert][2]), type="WUnderground Status")
 
             if attribution != u"":
@@ -1647,7 +1646,7 @@ class Plugin(indigo.PluginBase):
         config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
         wind_speed_units  = dev.pluginProps.get('configWindSpdUnits', '')
-        # wind_dir_units    = dev.pluginProps['configWindDirUnits']  # TODO: No longer needed?  There are separate states for degrees and dir now. (WU7)
+        # wind_dir_units    = dev.pluginProps.get('configWindDirUnits', 'DIR')  # TODO: No longer needed?  There are separate states for degrees and dir now. (WU7)
 
         weather_data = self.masterWeatherDict[location]
         forecast_day = self.masterWeatherDict[location].get('forecast', {}).get('simpleforecast', {}).get('forecastday', {})
@@ -2261,8 +2260,8 @@ class Plugin(indigo.PluginBase):
         WUnderground general cycle, Action Item or Plugin Menu call. """
 
         api_key = self.pluginPrefs['apiKey']
-        daily_call_limit_reached = self.pluginPrefs['dailyCallLimitReached']
-        sleep_time = self.pluginPrefs['downloadInterval']
+        daily_call_limit_reached = self.pluginPrefs.get('dailyCallLimitReached', False)
+        sleep_time = self.pluginPrefs.get('downloadInterval', 15)
         self.wuOnline = True
 
         if self.pluginPrefs['showDebugLevel'] >= 3:
@@ -2340,7 +2339,7 @@ class Plugin(indigo.PluginBase):
                                         dev.updateStateOnServer('estimated', value="true", uiValue=u"True")
 
                                     # If the user wants to skip updates when weather data are estimated.
-                                    if self.pluginPrefs['ignoreEstimated']:
+                                    if self.pluginPrefs.get('ignoreEstimated', False):
                                         ignore_estimated = True
 
                                 except KeyError as error:
@@ -2406,7 +2405,7 @@ class Plugin(indigo.PluginBase):
                                         self.parseForecastData(dev)
                                         dev.updateStateImageOnServer(indigo.kStateImageSel.TemperatureSensorOn)
 
-                                        if self.pluginPrefs['updaterEmailsEnabled']:
+                                        if self.pluginPrefs.get('updaterEmailsEnabled', False):
                                             self.emailForecast(dev)
 
                         # Image Downloader devices.
@@ -2427,7 +2426,7 @@ class Plugin(indigo.PluginBase):
 
         self.debugLog(u"runConcurrentThread initiated.")
 
-        download_interval = int(self.pluginPrefs['downloadInterval'])
+        download_interval = int(self.pluginPrefs.get('downloadInterval', 15))
 
         if self.pluginPrefs['showDebugLevel'] >= 2:
             self.debugLog(u"Sleeping for 5 seconds to give the host process a chance to catch up (if it needs to.)")
@@ -2551,7 +2550,7 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"uiFormatPercentage(self, dev, state_name={0}, val={1})".format(state_name, val))
 
-        humidity_decimal = int(self.pluginPrefs['uiHumidityDecimal'])
+        humidity_decimal = int(self.pluginPrefs.get('uiHumidityDecimal', 1))
         percentage_units = dev.pluginProps.get('percentageUnits', '')
 
         try:
@@ -2607,7 +2606,7 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"uiFormatTemperature(self, dev, state_name={0}, val={1})".format(state_name, val))
 
-        temp_decimal = int(self.pluginPrefs['uiTempDecimal'])
+        temp_decimal = int(self.pluginPrefs.get('uiTempDecimal', 1))
         temperature_units = dev.pluginProps.get('temperatureUnits', '')
 
         try:
@@ -2621,7 +2620,7 @@ class Plugin(indigo.PluginBase):
         """ Adjusts the decimal precision of certain wind values for display
         in control pages, etc. """
 
-        wind_decimal = self.pluginPrefs['uiWindDecimal']
+        wind_decimal = self.pluginPrefs.get('uiWindDecimal', 1)
         wind_units   = dev.pluginProps.get('windUnits', '')
 
         if self.pluginPrefs['showDebugLevel'] >= 3:
