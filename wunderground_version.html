@@ -1,41 +1,14 @@
-Version: 1.1.9
+Version: 1.1.10
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
-WUnderground Plugin v1.1.8 is now available.
+WUnderground Plugin v1.1.10 is now available.
 
-v1.1.9
-- Implements new method for extracting data from WUnderground JSON data.
-  [ nestedLookup() ] method should allow the plugin to continue to function
-  normally if data elements are missing (i.e., WU is supposed to provide them
-  but doesn't.
-
-v1.1.7
-- Complete rework of the underlying code for the following device types:
-    - WUnderground Almanac,
-    - WUnderground Astronomy,
-    - WUnderground Hourly Forecast,
-    - WUnderground Ten Day Forecast,
-    - WUnderground Tides,
-    - WUnderground Weather (alerts, forecast),
-- Revises encoding of JSON dump to logfile.
-- Reverses order of Enable/Disable All WU Devices on the plugin menu.
-- Fixes bug in Weather Device forecast data for KPH and MPS wind.
-- Fixes bug where plugin would fail if a device is missing epoch time.
+- Fixes bug that caused errors for some 10-day forecast devices that didn't
+  have the windUnits preference established.
 - Code refinements.
 
-v1.1.6
-- Fixed bug in conversion of wind direction long state values.
-
-v1.1.5
-- New plugin configuration feature which shows the number of API calls for
-  the current day.
-- Improved use of Indigo API for plugin settings to reduce server load and
-  eliminate need for separate settings file.
-- Enhanced debug logging.
-- Fixes bug in reporting offline weather site time to properly reflect down-
-  time.
-
+Users that are not seeing this error with v1.1.9 do not need to apply this update.
 
 The update can be downloaded at the following link:
 https://davel17.github.io/WUnderground/
