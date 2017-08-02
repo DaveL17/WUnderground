@@ -92,7 +92,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.10"
+__version__ = "1.1.11"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -1777,7 +1777,7 @@ class Plugin(indigo.PluginBase):
                         dev.updateStateOnServer(u"d{0}_windSpeedIcon".format(fore_counter_text), value=unicode(wind_value).replace('.', ''))
 
                     # User preference is Mixed.
-                    elif config_menu_units in ["I", "S"]:
+                    if config_menu_units in ["I", "S"]:
 
                         # QPF Amount
                         value, ui_value = self.fixCorruptedData(state_name=u"d{0}_qpf".format(fore_counter_text), val=fore_qpf_standard)
@@ -1802,7 +1802,7 @@ class Plugin(indigo.PluginBase):
                         dev.updateStateOnServer(u"d{0}_windSpeedIcon".format(fore_counter_text), value=unicode(wind_value).replace('.', ''))
 
                     # User preference is Standard.
-                    elif config_menu_units == "S":
+                    if config_menu_units == "S":
 
                         # High Temperature (Standard)
                         value, ui_value = self.fixCorruptedData(state_name=u"d{0}_high".format(fore_counter_text), val=high_temp_standard)

@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.11
+- Fixes bug that caused errors for some 10-day forecast devices where standard
+  weather units didn't update for high and low temperature.
+
 v1.1.10
 - Fixes bug that caused errors for some 10-day forecast devices that didn't
   have the windUnits preference established.
