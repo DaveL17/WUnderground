@@ -5488,6 +5488,30 @@ plugin updates within the WUnderground plugin settings dialog.
                 <ControlPageLabel>Forecast Humidity - Day 4</ControlPageLabel>
             </State>
 
+            <State id="foreIcon1">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Forecast Icon - Today</TriggerLabel>
+                <ControlPageLabel>Forecast Icon - Today</ControlPageLabel>
+            </State>
+
+            <State id="foreIcon2">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Forecast Icon - Day 2</TriggerLabel>
+                <ControlPageLabel>Forecast Icon - Day 2</ControlPageLabel>
+            </State>
+
+            <State id="foreIcon3">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Forecast Icon - Day 3</TriggerLabel>
+                <ControlPageLabel>Forecast Icon - Day 3</ControlPageLabel>
+            </State>
+
+            <State id="foreIcon4">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Forecast Icon - Day 4</TriggerLabel>
+                <ControlPageLabel>Forecast Icon - Day 4</ControlPageLabel>
+            </State>
+
             <State id="forePop1">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Forecast Precipitation - Today</TriggerLabel>

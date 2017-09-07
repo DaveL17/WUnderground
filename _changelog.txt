@@ -1,5 +1,13 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.12
+- Adds four day weather forecast icons to WUnderground Weather device.
+- Fixes bug in WUnderground Radar devices where location parameter is used.
+- Fixes bug in Weather devices for location state value.
+- Standardizes plugin menu item styles. Menu items with an ellipsis (...)
+  denote that a dialog box will open. Menu items without an ellipsis denote
+  that the plugin will take immediate action.
+
 v1.1.11
 - Fixes bug that caused errors for some 10-day forecast devices where standard
   weather units didn't update for high and low temperature.

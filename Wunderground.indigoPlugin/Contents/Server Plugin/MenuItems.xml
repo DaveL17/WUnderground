@@ -14,19 +14,19 @@
     <MenuItem id="titleSeparator" type="separator"/>
 
     <MenuItem id="refreshWeatherData">
-        <Name>Refresh Data Now...</Name>
+        <Name>Refresh Data Now</Name>
         <CallbackMethod>refreshWeatherData</CallbackMethod>
     </MenuItem>
 
     <MenuItem id="dumpTheXML">
-        <Name>Write Weather Data to File...</Name>
+        <Name>Write Weather Data to File</Name>
         <CallbackMethod>dumpTheJSON</CallbackMethod>
     </MenuItem>
 
     <MenuItem id="titleSeparator1" type="separator"/>
 
     <MenuItem id="checkForUpdates">
-        <Name>Check for Plugin Updates...</Name>
+        <Name>Check for Plugin Updates</Name>
         <CallbackMethod>checkVersionNow</CallbackMethod>
     </MenuItem>
 

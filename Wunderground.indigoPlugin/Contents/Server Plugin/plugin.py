@@ -62,12 +62,8 @@ For information regarding the use of this plugin, see the license located in
 the plugin package or located on GitHub:
 https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 """
-# TODO: Deprecate proper_icon_name_all_day?
-# TODO: Allow each device to update on its own frequency. (WU7)
-# TODO: Add setting to choose when the weather email is sent (WU7)
-# TODO: Set up weather forecast email as a concatenation rather than one big string and consider whether to remove history and record data from email if the data aren't available. (WU7)
-# TODO: Augment nestedLookup to allow for different types of defaults. Instead of using default=u"" attribute, instead send the type of default desired? (i.e., string, float, int, etc.)
-# TODO: Consider an Indigo UI alert if weather alerts are true?
+
+# TODO: Add four forecast icon states to Weather device.
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -87,12 +83,17 @@ try:
 except ImportError:
     pass
 
+try:
+    import pydevd
+except ImportError:
+    pass
+
 __author__ = "DaveL17"
 __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.11"
+__version__ = "1.1.12"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -120,6 +121,8 @@ pad_log = u"{0}{1}".format('\n', " " * 34)  # 34 spaces to align with log margin
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
+
+        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)  # To enable remote PyCharm Debugging, uncomment this line.
 
         self.debug = self.pluginPrefs.get('showDebugInfo', True)
         self.masterWeatherDict = {}
@@ -610,11 +613,11 @@ class Plugin(indigo.PluginBase):
 
         try:
             if val == "+":
-                return u"^"  # TODO: consider a return like: u'\u2B06'.encode('utf-8')
+                return u"^"
             elif val == "-":
-                return u"v"  # TODO: consider a return like: u'\u2B07'.encode('utf-8')
+                return u"v"
             elif val == "0":
-                return u"-"  # TODO: consider a return like u'\u2014\u2014'.encode('utf-8')
+                return u"-"
 
             else:
                 return u"?"
@@ -779,7 +782,7 @@ class Plugin(indigo.PluginBase):
 
             else:
                 for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype', 'centerlat', 'centerlon', 'radius',):
-                    location = self.pluginPrefs['location']
+                    location = dev.pluginProps['location']
                     name = ''
                     del parms_dict[key]
 
@@ -1000,8 +1003,6 @@ class Plugin(indigo.PluginBase):
 
             except StopIteration:
                 return default
-
-        # TODO: think about whether to change empty string values to something indicative of success (like the default text).  There may be situations where and empty string is desirable...
 
         return current
 
@@ -1298,6 +1299,8 @@ class Plugin(indigo.PluginBase):
                         fore_day     = self.nestedLookup(day, keys=('date', 'weekday'))
                         fore_high    = self.nestedLookup(day, keys=('high', 'celsius'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'celsius'))
+                        icon         = self.nestedLookup(day, keys=('icon',))
+                        indigo.server.log(u"{0}".format(icon))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 
@@ -1326,6 +1329,8 @@ class Plugin(indigo.PluginBase):
                         value, ui_value = self.fixCorruptedData(state_name=u"foreHum{0}".format(fore_counter), val=max_humidity)
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"foreHum{0}".format(fore_counter), val=ui_value)
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter), value=value, uiValue=ui_value)
+
+                        dev.updateStateOnServer(u"foreIcon{0}".format(fore_counter), value=icon, uiValue=icon)
 
                         value, ui_value = self.fixCorruptedData(state_name=u"forePop{0}".format(fore_counter), val=pop)
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"forePop{0}".format(fore_counter), val=ui_value)
@@ -1359,6 +1364,7 @@ class Plugin(indigo.PluginBase):
                         fore_day     = self.nestedLookup(day, keys=('date', 'weekday'))
                         fore_high    = self.nestedLookup(day, keys=('high', 'celsius'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'celsius'))
+                        icon         = self.nestedLookup(day, keys=('icon',))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 
@@ -1381,9 +1387,11 @@ class Plugin(indigo.PluginBase):
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"foreHum{0}".format(fore_counter), val=ui_value)
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter), value=value, uiValue=ui_value)
 
+                        dev.updateStateOnServer(u"foreIcon{0}".format(fore_counter), value=value, uiValue=ui_value)
+
                         value, ui_value = self.fixCorruptedData(state_name=u"forePop{0}".format(fore_counter), val=pop)
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"forePop{0}".format(fore_counter), val=ui_value)
-                        dev.updateStateOnServer(u"forePop{0}".format(fore_counter), value=value, uiValue=ui_value)
+                        dev.updateStateOnServer(u"forePop{0}".format(fore_counter), value=icon, uiValue=icon)
 
                         fore_counter += 1
 
@@ -1412,6 +1420,7 @@ class Plugin(indigo.PluginBase):
                         fore_day     = self.nestedLookup(day, keys=('date', 'weekday'))
                         fore_high    = self.nestedLookup(day, keys=('high', 'fahrenheit'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'fahrenheit'))
+                        icon         = self.nestedLookup(day, keys=('icon',))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 
@@ -1433,6 +1442,8 @@ class Plugin(indigo.PluginBase):
                         value, ui_value = self.fixCorruptedData(state_name=u"foreHum{0}".format(fore_counter), val=max_humidity)
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"foreHum{0}".format(fore_counter), val=ui_value)
                         dev.updateStateOnServer(u"foreHum{0}".format(fore_counter), value=value, uiValue=ui_value)
+
+                        dev.updateStateOnServer(u"foreIcon{0}".format(fore_counter), value=icon, uiValue=icon)
 
                         value, ui_value = self.fixCorruptedData(state_name=u"forePop{0}".format(fore_counter), val=pop)
                         ui_value = self.uiFormatPercentage(dev=dev, state_name=u"forePop{0}".format(fore_counter), val=ui_value)
@@ -1646,7 +1657,6 @@ class Plugin(indigo.PluginBase):
         config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
         wind_speed_units  = dev.pluginProps.get('configWindSpdUnits', '')
-        # wind_dir_units    = dev.pluginProps.get('configWindDirUnits', 'DIR')  # TODO: No longer needed?  There are separate states for degrees and dir now. (WU7)
 
         weather_data = self.masterWeatherDict[location]
         forecast_day = self.masterWeatherDict[location].get('forecast', {}).get('simpleforecast', {}).get('forecastday', {})
@@ -1939,7 +1949,7 @@ class Plugin(indigo.PluginBase):
             heat_index_c              = self.nestedLookup(weather_data, keys=('current_observation', 'heat_index_c',))
             heat_index_f              = self.nestedLookup(weather_data, keys=('current_observation', 'heat_index_f',))
             icon                      = self.nestedLookup(weather_data, keys=('current_observation', 'icon',))
-            location_city             = self.nestedLookup(weather_data, keys=('current_observation', 'city',))
+            location_city             = self.nestedLookup(weather_data, keys=('location', 'city',))
             nearby_stations           = self.nestedLookup(weather_data, keys=('location', 'nearby_weather_stations', 'pws', 'station'))
             precip_1hr_m              = self.nestedLookup(weather_data, keys=('current_observation', 'precip_1hr_metric',))
             precip_1hr_in             = self.nestedLookup(weather_data, keys=('current_observation', 'precip_1hr_in',))
