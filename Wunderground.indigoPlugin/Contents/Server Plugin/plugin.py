@@ -93,7 +93,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.12"
+__version__ = "1.1.13"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -1300,7 +1300,6 @@ class Plugin(indigo.PluginBase):
                         fore_high    = self.nestedLookup(day, keys=('high', 'celsius'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'celsius'))
                         icon         = self.nestedLookup(day, keys=('icon',))
-                        indigo.server.log(u"{0}".format(icon))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 
