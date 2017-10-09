@@ -63,7 +63,6 @@ the plugin package or located on GitHub:
 https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 """
 
-# TODO: Add four forecast icon states to Weather device.
 
 import datetime as dt
 import indigoPluginUpdateChecker
@@ -93,7 +92,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.13"
+__version__ = "1.1.14"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -121,8 +120,6 @@ pad_log = u"{0}{1}".format('\n', " " * 34)  # 34 spaces to align with log margin
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
-
-        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)  # To enable remote PyCharm Debugging, uncomment this line.
 
         self.debug = self.pluginPrefs.get('showDebugInfo', True)
         self.masterWeatherDict = {}
@@ -158,6 +155,11 @@ class Plugin(indigo.PluginBase):
                 self.debugLog(u"{0}: {1}".format(key, value))
         else:
             self.debugLog(u"Plugin preference logging is suppressed. Set debug level to [High] to write them to the log.")
+
+        # try:
+        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # except:
+        #     pass
 
     def __del__(self):
         indigo.PluginBase.__del__(self)
@@ -782,7 +784,7 @@ class Plugin(indigo.PluginBase):
 
             else:
                 for key in ('minlat', 'minlon', 'maxlat', 'maxlon', 'imagetype', 'centerlat', 'centerlon', 'radius',):
-                    location = dev.pluginProps['location']
+                    location = u"q/{0}".format(dev.pluginProps['location'])
                     name = ''
                     del parms_dict[key]
 
@@ -1300,6 +1302,7 @@ class Plugin(indigo.PluginBase):
                         fore_high    = self.nestedLookup(day, keys=('high', 'celsius'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'celsius'))
                         icon         = self.nestedLookup(day, keys=('icon',))
+                        indigo.server.log(u"{0}".format(icon))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 

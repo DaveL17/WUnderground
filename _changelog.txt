@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.14
+- Fixes bug in WURadar device when using location type (but does not affect
+  bounding box or radius settings).
+
 v1.1.13
 - Removes logging of new forecast icon states for devices with metric values.
 
