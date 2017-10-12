@@ -92,7 +92,7 @@ __build__ = ""
 __copyright__ = "Copyright 2017 DaveL17"
 __license__ = "MIT"
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.14"
+__version__ = "1.1.15"
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -699,7 +699,7 @@ class Plugin(indigo.PluginBase):
 
                 # If requests doesn't work for some reason, revert to urllib.
                 try:
-                    r = requests.get(source, stream=True)
+                    r = requests.get(source, stream=True, timeout=10)
 
                     with open(destination, 'wb') as img:
                         for chunk in r.iter_content(2000):
@@ -809,12 +809,12 @@ class Plugin(indigo.PluginBase):
                     parms += "&{0}={1}".format(k, v)
 
             source = 'http://api.wunderground.com/api/{0}/{1}/{2}{3}{4}?{5}'.format(self.pluginPrefs['apiKey'], radartype, location, name, '.gif', parms)
-            destination = "/Library/Application Support/Perceptive Automation/Indigo {0}/IndigoWebServer/images/controls/static/{1}.png".format(indigo.server.version.split('.')[0],
+            destination = "/Library/Application Support/Perceptive Automation/Indigo {0}/IndigoWebServer/images/controls/static/{1}.gif".format(indigo.server.version.split('.')[0],
                                                                                                                                                 dev.pluginProps['imagename'])
 
             # If requests doesn't work for some reason, revert to urllib.
             try:
-                r = requests.get(source, stream=True)
+                r = requests.get(source, stream=True, timeout=10)
                 with open(destination, 'wb') as img:
 
                     for chunk in r.iter_content(2000):
@@ -883,7 +883,7 @@ class Plugin(indigo.PluginBase):
 
                     # If requests doesn't work for some reason, try urllib2 instead.
                     try:
-                        f = requests.get(url)
+                        f = requests.get(url, timeout=10)
                         simplejson_string = f.text  # We convert the file to a json object below, so we don't use requests' built-in decoder.
 
                     except NameError:

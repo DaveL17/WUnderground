@@ -1,5 +1,13 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.15
+- Eliminates coercion of image file names that are downloaded using the
+  WURadar device type. Now, all images downloaded with this device will be
+  saved as GIF files. PNG will no longer be supported. If PNG is a somehow
+  requirement, users will need to use the WUnderground Image Downloader device
+  type.
+- Adds timeout parameter to all request library calls (10 second timeouts).
+
 v1.1.14
 - Fixes bug in WURadar device when using location type (bug does not affect
   bounding box or radius settings).
