@@ -66,6 +66,7 @@ https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 
 import datetime as dt
 import indigoPluginUpdateChecker
+import platform
 import simplejson
 import socket
 import sys
@@ -134,6 +135,7 @@ class Plugin(indigo.PluginBase):
         indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
         indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
         indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
+        indigo.server.log(u"{0:<31} {1}".format("Mac OS Version:", platform.mac_ver()[0]))
         indigo.server.log(u"{0:=^130}".format(""))
 
         # Convert old debugLevel scale to new scale.
@@ -809,29 +811,38 @@ class Plugin(indigo.PluginBase):
                     parms += "&{0}={1}".format(k, v)
 
             source = 'http://api.wunderground.com/api/{0}/{1}/{2}{3}{4}?{5}'.format(self.pluginPrefs['apiKey'], radartype, location, name, '.gif', parms)
+            if debug_level >= 3:
+                self.debugLog(u"URL: {0}".format(source))
             destination = "/Library/Application Support/Perceptive Automation/Indigo {0}/IndigoWebServer/images/controls/static/{1}.gif".format(indigo.server.version.split('.')[0],
                                                                                                                                                 dev.pluginProps['imagename'])
-
-            # If requests doesn't work for some reason, revert to urllib.
             try:
                 r = requests.get(source, stream=True, timeout=10)
-                with open(destination, 'wb') as img:
+                self.debugLog(u"Image request status code: {0}".format(r.status_code))
 
-                    for chunk in r.iter_content(2000):
-                        img.write(chunk)
+                if r.status_code == 200:
+                    with open(destination, 'wb') as img:
 
+                        for chunk in r.iter_content(1024):
+                            img.write(chunk)
+
+                    if debug_level >= 2:
+                        self.debugLog(u"Radar image source: {0}".format(source))
+                        self.debugLog(u"Satellite image downloaded successfully.")
+
+                    dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
+                    dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
+
+                else:
+                    self.errorLog(u"Error downloading image file: {0}".format(r.status_code))
+                    raise NameError
+
+            # If requests doesn't work for some reason, revert to urllib.
             except NameError:
-                urllib.urlretrieve(source, destination)
+                r = urllib.urlretrieve(source, destination)
+                self.debugLog(u"Image request status code: {0}".format(r.getcode()))
 
             # Since this uses the API, go increment the call counter.
             self.callCount()
-
-            dev.updateStateOnServer('onOffState', value=True, uiValue=u" ")
-            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
-
-            if debug_level >= 2:
-                self.debugLog(u"Radar image source: {0}".format(source))
-                self.debugLog(u"Satellite image downloaded successfully.")
 
         except Exception as error:
             self.errorLog(u"Error downloading satellite image. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
