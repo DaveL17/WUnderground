@@ -1,31 +1,12 @@
-Version: 1.1.15
+Version: 1.1.16
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
-WUnderground Plugin v1.1.15 is now available.
+WUnderground Plugin v1.1.16 is now available.
 
 Changes:
 
-- Eliminates coercion of image file names that are downloaded using the WURadar device type. Now, all images downloaded with this device will be saved as GIF files. PNG will no longer be supported. If PNG is somehow a requirement, users will need to use the WUnderground Image Downloader device type.
-- Adds timeout to all data download requests (10 second timeouts).
-
-Notes:
-
-When initially released, the WURadar device would take the GIF file that was delivered by Weather Underground and save it with a PNG extension (it did not change the underlying encoding of the image file). This was done to "trick" Indigo into showing the image filename as a static image on the Control Page editor. This version of the plugin eliminates that coercion and saves the file as a GIF file.
-
-If you used this device in combination with a static image on a control page, it will require you to revise the radar image control on your control pages. Instead of a static image, you should change the control to a Refreshing Image URL control and enter the URL for the image using these steps:
-
-1. Type file:// into the URL field of the Control Page editor
-2. Browse to the downloaded radar image file in Finder. It will be located in the /Library/Application Support/Perceptive Automation/Indigo 7/IndigoWebServer/images/controls/static/ folder (replacing "Indigo 7" with your current version number as needed)
-3. Right-click on the file and hold down the Option key
-4. Click on "Copy xxx.gif as Pathname"
-5. Paste this path into the URL field of the Indigo Control Page editor after the file:// you added earlier.
-6. Optional: replace the spaces in the URL with %20 to silence any 'malformed URL' messages.
-
-Your final properly formatted URL will look something like this:
-
-file:///Library/Application%20Support/Perceptive%20Automation/Indigo%207/IndigoWebServer/images/controls/static/WUradar.gif
-
+- WURadar Device: Will now only attempt to write a new image file when WU server responds with a success code.
 
 The update can be downloaded at the following link:
 https://davel17.github.io/WUnderground/
