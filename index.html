@@ -187,11 +187,43 @@
     <li>
         <span>WUnderground Radar (for "real-time" satellite imagery)</span>
         <p>
-            <strong class="warningText">BETA! </strong>The WUnderground Radar Device is used for displaying radar imagery using the Weather Undergeround API directly. In other words,
-            this device will construct a radar image in near real time based on the user-specified configuration. Indigo will automatically save the image file in the appropriate
-            location so that it's available as a Static Image for display in Indigo Control Pages. The image will be updated at the same frequency as the other weather devices. Note
-            that, unlike the WUnderground Image Downloader device, the WUnderground Radar device will use an API call for each refresh (because it relies directly on the Weather
-            Underground API. So you'll need to account for that usage in your daily totals.
+            The WUnderground Radar Device is used for displaying radar imagery through direct use of the Weather Underground API. In other words, this device will construct a radar image
+            in near real time based on the user-specified configuration. The image will be updated at the same frequency as  other weather devices. Note, unlike the WUnderground Image
+            Downloader device, the WUnderground Radar device will use an API call for each refresh cycle (because it relies directly on the Weather Underground API). So you'll need to
+            account for that usage in your daily totals. The image is downloaded and saved as a GIF file (WU does not provide an option to download a PNG file).
+        </p>
+        <p>
+            To configure the WUnderground Radar device, you must tell it not only how the image should appear, but also the necessary location information and boundaries of the image.
+            There are three types of location settings that you can use:
+        </p>
+            <ol>
+                <li>
+                    <strong>Bounding Box:</strong> to use the Bounding Box image type, you must supply the latitude and longitude of the four sides of the box. It is best to begin with
+                    the latitude and longitude of your server and then provide a few extra degrees (plus and minus) which will present an image with your server at the center. Then,
+                    begin to add and subtract fractional degrees to recenter the image to taste.
+                </li>
+                <li>
+                    <strong>Location:</strong> to use the Location image type, you supply location information like you would with any other weather device. See the next section for the
+                    various available options for determining location.
+                </li>
+                <li>
+                    <strong>Radius:</strong> to use the Radius image type, you must supply the latitude and longitude of your server and a radius value from that center point. When
+                    using the Radius type, a button will appear that will allow the plugin to obtain your latitude and longitude values from the Indigo server. The radius can be
+                    specified in either nautical miles or kilometers.
+                </li>
+            </ol>
+        <p>
+            To use the image, add it to a control page as a Refreshing Image URL control. The image is placed in the Indigo Static images folder and the URL to the image should be
+            specified using the following convention:
+        </p>
+        <p style="text-align:center">
+                <code>file:///Library/Application%20Support/Perceptive%20Automation/Indigo%207/IndigoWebServer/images/controls/static/WUradar.gif</code>
+        </p>
+        <p>
+            where <strong>WUradar</strong> is the image name specified in the device configuration settings. You can copy the URL above and use it with the default image name, or change
+            the name to match your custom setting. Note that using <code>%20</code> in place of spaces is optional, but Indigo will rightly complain that a valid URL can not contain
+            spaces (the image should still display correctly on a control page, but may not display properly in the control page editor and an error message will be displayed to the
+            Indigo event log).
         </p>
     </li>
 </ul>
