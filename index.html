@@ -34,6 +34,9 @@
     The WUnderground plugin allows users to create Indigo Home Control Server devices which provide a facility to create individual weather devices that will be linked to
     <a href="https://www.wunderground.com/?apiref=97986dc4c4b7e764">Weather Underground</a>. The plugin provides a bridge between the Weather Underground API service and Indigo.
 </p>
+<p>
+    <span class="warningText">Note: </span>The WUnderground plugin requires access to the Internet in order to work with the Weather Underground API service.
+</p>
 
 <h3>Installation</h3>
 <figure class="TextWrap">
@@ -395,7 +398,7 @@
 
 <h3>Framework</h3>
 <p>
-    The framework of the entire environment as it relates to Indigo is very straightforward. Indigo talks through the plugin to the Weather Underground (WU) servers which return
+    The framework of the entire pluginEnvironment as it relates to Indigo is very straightforward. Indigo talks through the plugin to the Weather Underground (WU) servers which return
     formatted JSON data pertaining to individual geographic locations. Communication is bi-directional, and presently happens through routine calls using common Python communication
     protocols. Plugin users choose a predefined polling interval through a standard plugin configuration setting, the plugin reaches out to the WU servers and requests data, interprets
     the results and passes the results back to user-defined WUnderground devices (Indigo Custom Devices.)

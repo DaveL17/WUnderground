@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Template>
+
+    <Field id="notificationsHeaderSpace" type="label"/>
+    
+    <Field id="notificationsLabel" type="label" alignText="right">
+    <Label>Plugin Update Notifications (optional)</Label>
+    </Field>
+
+    <Field id="separator02" type="separator"/>
+
+    <Field id="showNotificationSettings" type="checkbox" tooltip="Check to show update notification settings.">
+        <Label>Display Settings:</Label>
+        <Description/>
+    </Field>
+
+    <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false" visibleBindingId="showNotificationSettings" visibleBindingValue="true"
+           tooltip="Enables (disables) email notifications.">
+        <Label/>
+        <Description>Enable/Disable Notifications</Description>
+    </Field>
+
+    <Field id="updaterEmail" type="textfield" visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true"
+           tooltip="Please enter the email address to receive notifications of updates to the plugin.">
+        <Label>Email address:</Label>
+    </Field>
+
+    <Field id="space05" type="label" fontSize="small" visibleBindingId="showNotificationSettings" visibleBindingValue="true" alignWithControl="True">
+        <Label>Receive an email alerting you to plugin updates. This feature sends email through Indigo, so you must connect your Indigo server to email as well.</Label>
+    </Field>
+
+</Template>

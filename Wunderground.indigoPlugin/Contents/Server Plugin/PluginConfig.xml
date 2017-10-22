@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <PluginConfig>
-    <Field id="infoLabel00" type="label" fontSize="large">
+
+    <Field id="infoLabel00" type="label">
         <Label>WUnderground Plugin</Label>
     </Field>
 
-    <Field id="space00" type="label" fontSize="small">
+    <Field id="space000" type="label" fontSize="small">
         <Label>Developed by DaveL17</Label>
     </Field>
 
@@ -12,7 +13,13 @@
         <Label>Data provided by Weather Underground, LLC. This plugin and its author are in no way affiliated with Weather Underground.</Label>
     </Field>
 
-    <Field id="separator00" type="separator"/>
+    <Field id="space00" type="label"/>
+
+    <Field id="space001" type="label" alignText="right">
+        <Label>Plugin Settings</Label>
+    </Field>
+
+	<Field id="simpleSeparator0" type="separator"/>
 
     <Field id="dailyCallCounter" type="textfield" defaultValue="0" readonly= "true" tooltip="The number of API calls today so far.">
         <Label>API Calls Today:</Label>
@@ -158,7 +165,7 @@
         <Description>Skip Update if Estimated</Description>
     </Field>
 
-    <Field id="separator02" type="separator"/>
+    <Field id="separator02a" type="separator"/>
 
     <Field id="showTemperatureSettings" type="checkbox" tooltip="Check to show value precision settings.">
         <Label>Value Precision:</Label>
@@ -228,35 +235,22 @@
         <Description>Check to enable.</Description>
     </Field>
 
-    <Field id="separator04" type="separator"/>
+    <!-- Notifications Template -->
+    <Template file="DLFramework/template_notifications.xml" />
 
-    <Field id="showNotificationSettings" type="checkbox" tooltip="Check to show update notification settings.">
-        <Label>Update Notification:</Label>
-        <Description>Show/Hide</Description>
-    </Field>
-
-    <Field id="space05" type="label" fontSize="small">
-        <Label>Receive an email alerting you to plugin updates. This sends email through Indigo, so this option must be configured as well. You can also elect to receive a daily weather
-            summary via email (enable in weather device settings.)
-        </Label>
-    </Field>
-
-    <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false" visibleBindingId="showNotificationSettings" visibleBindingValue="true"
-           tooltip="Enables (disables) email notifications.">
+    <Field id="showDebugSpacer" type="label" tooltip="Check to show debug settings." alignText="Right">
         <Label/>
-        <Description>Enable/Disable</Description>
     </Field>
 
-    <Field id="updaterEmail" type="textfield" visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true"
-           tooltip="Please enter the email address to receive notifications of updates to the plugin.">
-        <Label>Email address:</Label>
+    <Field id="showDebugLabel" type="label" tooltip="Check to show debug settings." alignText="Right">
+        <Label>Debugging</Label>
     </Field>
 
     <Field id="separator05" type="separator"/>
 
     <Field id="showDebugSettings" type="checkbox" tooltip="Check to show debug settings.">
-        <Label>Debugging:</Label>
-        <Description>Show/Hide</Description>
+        <Label>Display Settings:</Label>
+        <Description/>
     </Field>
 
     <Field id="showDebugInfo" type="checkbox" visibleBindingId="showDebugSettings" visibleBindingValue="true" tooltip="Enabling will result in verbose logging.">
@@ -274,12 +268,14 @@
         </List>
     </Field>
 
-    <Field id="space06" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="small">
-        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.
+    <Field id="space06" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
+        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.</Label>
+    </Field>
 
-            Low=Minimal debugging.
-            Medium=All debug logging except sensitive information.
-            High=May contain sensitive information.
+    <Field id="space07" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
+        <Label>Low - Minimal debugging.
+Medium - All debug logging except sensitive information.
+High - May contain sensitive information.
         </Label>
     </Field>
 

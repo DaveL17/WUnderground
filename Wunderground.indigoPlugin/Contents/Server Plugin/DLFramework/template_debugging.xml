@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<Template>
+
+    <Field id="debugHeaderSpace" type="label"/>
+    
+    <Field id="debugLabel" type="label" fontColor="black" alignText="right">
+        <Label>Debugging (optional)</Label>
+    </Field>
+
+    <Field id="separator01" type="separator"/>
+
+    <Field id="showDebugSettings" type="checkbox" tooltip="Check to show debug settings.">
+        <Label>Display Settings:</Label>
+        <Description/>
+    </Field>
+
+    <Field id="showDebugLevel" type="menu" defaultValue="30" visibleBindingId="showDebugSettings" visibleBindingValue="true"
+           tooltip="Controls the amount of debug information written to the log.">
+        <Label>Debug level:</Label>
+        <Description/>
+        <List>
+            <Option value="10">Debugging Messages</Option>
+            <Option value="20">Informational Messages</Option>
+            <Option value="30">Warning Messages</Option>
+            <Option value="40">Error Messages</Option>
+            <Option value="50">Critical Errors Only</Option>
+        </List>
+    </Field>
+
+    <Field id="space06" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
+        <Label>Always be careful when posting debug output to the forums or other public places. You should review it to ensure that it doesn't contain sensitive information.</Label>
+    </Field>
+    
+    <Field id="space07" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
+        <Label>
+Debugging Messages - Step by step plugin logging.
+Informational Messages - Useful information about plugin health.
+Warning Messages - Typically temporary conditions.
+Error Messages - Conditions you might want to address.
+Critical Errors Only - Critical errors should probably be reported.
+        </Label>
+    </Field>
+    
+</Template>

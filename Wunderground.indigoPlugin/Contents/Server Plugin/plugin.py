@@ -63,21 +63,28 @@ the plugin package or located on GitHub:
 https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 """
 
+# =================================== TO DO ===================================
 
+# TODO: reset the call counter at 00:00 Pacific Time (convert local time to match)
+# TODO: add a complete datetime object for sunrise and sunset to the astronomy device
+
+# ================================== IMPORTS ==================================
+
+# Built-in modules
 import datetime as dt
-import indigoPluginUpdateChecker
-import platform
 import simplejson
 import socket
 import sys
 import time
 
 try:
-    import requests  # (weather data)
+    import requests
 except ImportError:
-    import urllib   # (satellite imagery)
-    import urllib2  # (weather data fallback)
+    import urllib
+    import urllib2
 
+# Third-party modules
+from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError:
@@ -88,12 +95,19 @@ try:
 except ImportError:
     pass
 
-__author__ = "DaveL17"
-__build__ = ""
-__copyright__ = "Copyright 2017 DaveL17"
-__license__ = "MIT"
+# My modules
+import DLFramework as dlf
+
+# =================================== HEADER ==================================
+
+__author__    = dlf.DLFramework.__author__
+__copyright__ = dlf.DLFramework.__copyright__
+__license__   = dlf.DLFramework.__license__
+__build__     = dlf.DLFramework.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.16"
+__version__ = "1.1.17"
+
+# =============================================================================
 
 kDefaultPluginPrefs = {
     u'alertLogging': False,           # Write severe weather alerts to the log?
@@ -123,29 +137,24 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
         self.debug = self.pluginPrefs.get('showDebugInfo', True)
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
+
         self.masterWeatherDict = {}
         self.masterTriggerDict = {}
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
         self.wuOnline = True
 
-        indigo.server.log(u"")
-        indigo.server.log(u"{0:=^130}".format(" Initializing New Plugin Session "))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
-        indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
-        indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        indigo.server.log(u"{0:<31} {1}".format("Mac OS Version:", platform.mac_ver()[0]))
-        indigo.server.log(u"{0:=^130}".format(""))
+        # ====================== Initialize DLFramework =======================
 
-        # Convert old debugLevel scale to new scale.
-        if not 0 < self.pluginPrefs['showDebugLevel'] <= 3:
-            if self.pluginPrefs['showDebugLevel'] == "High":
-                self.pluginPrefs['showDebugLevel'] = 3
-            elif self.pluginPrefs['showDebugLevel'] == "Medium":
-                self.pluginPrefs['showDebugLevel'] = 2
-            else:
-                self.pluginPrefs['showDebugLevel'] = 1
+        self.dlf = dlf.DLFramework.Fogbert(self)
+
+        # Log pluginEnvironment information when plugin is first started
+        self.dlf.pluginEnvironment()
+
+        # Convert old debugLevel scale (low, medium, high) to new scale (1, 2, 3).
+        if not 0 < self.pluginPrefs.get('showDebugLevel', 1) <= 3:
+            self.pluginPrefs['showDebugLevel'] = self.dlf.convertDebugLevel(self.pluginPrefs['showDebugLevel'])
+
+        # =====================================================================
 
         # If debug is turned on and set to high, warn the user of potential risks.
         if self.pluginPrefs['showDebugLevel'] >= 3:
@@ -1313,7 +1322,6 @@ class Plugin(indigo.PluginBase):
                         fore_high    = self.nestedLookup(day, keys=('high', 'celsius'))
                         fore_low     = self.nestedLookup(day, keys=('low', 'celsius'))
                         icon         = self.nestedLookup(day, keys=('icon',))
-                        indigo.server.log(u"{0}".format(icon))
                         max_humidity = self.nestedLookup(day, keys=('maxhumidity',))
                         pop          = self.nestedLookup(day, keys=('pop',))
 

@@ -1,5 +1,9 @@
 WUnderground Plugin - Developed by: DaveL17
 
+v1.1.17
+- Code consolidation using DLFramework.
+- Adds note to documentation that the plugin requires Internet access to function.
+
 v1.1.16
 - WURadar Device: Will now only attempt to write a new image file when WU
   server responds with a success code.
