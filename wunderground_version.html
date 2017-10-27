@@ -1,13 +1,41 @@
-Version: 1.1.17
+Version: 6.0.1
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
-WUnderground Plugin v1.1.17 is now available.
+A WUnderground Plugin update is now available.
 
-Changes:
+*** Note: *********************************************************************
+The WUnderground Plugin is being bumped to version 6. This is to indicate that
+it is compatible with Indigo 6 (v1.1.0 of the Indigo API to be precise). This
+release (WUnderground v6.0.1) will be the last version to receive any new
+features. Don't Panic! Should any remaining bugs appear in WUnderground 6, I
+will do my best to fix them.
 
-- Code consolidation using DLFramework.
-- Adds note to documentation that the plugin requires Internet access to function.
+The next version of the WUnderground plugin will be named WUnderground 7 and
+will be bumped to at least v2.0.0 of the Indigo API. All new features from this
+point forward will be targeted to version 7. WUnderground 7 will not be
+compatible with Indigo 6.
+*******************************************************************************
+
+v6.0.1 (1.1.18)
+- Revises the time at which the API call count is reset to correspond to
+  Weather Underground's call count reset time of (00:00 US/Pacific).
+- Changed plugin configuration category "Value Precision" to "Value Display"
+  to more accurately represent the category with the addition of...
+- Adds plugin configuration setting to adjust how dates and times are
+  displayed.
+- Four new states to Astronomy device type:
+  . Sunrise epoch
+  . Sunrise string
+  . Sunset epoch
+  . Sunset string
+- Simplifies plugin configuration dialog.
+- Changes list order of "Value Display" settings to alphabetical.
+- Reduces lines written to debug log.
+- Fixed bug in setting of Address field in Indigo UI for metric Weather
+  devices.
+
+As always, if something doesn't seem quite right, please let me know.
 
 The update can be downloaded at the following link:
 https://davel17.github.io/WUnderground/

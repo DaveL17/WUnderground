@@ -306,6 +306,30 @@
                 <ControlPageLabel>Sunrise Minute (Moon Phase)</ControlPageLabel>
             </State>
 
+            <State id="sunriseEpoch">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Sunrise (Epoch)</TriggerLabel>
+                <ControlPageLabel>Sunrise (Epoch)</ControlPageLabel>
+            </State>
+
+            <State id="sunsetEpoch">
+                <ValueType>Integer</ValueType>
+                <TriggerLabel>Sunset (Epoch)</TriggerLabel>
+                <ControlPageLabel>Sunset (Epoch)</ControlPageLabel>
+            </State>
+
+            <State id="sunriseString">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Sunrise (Label)</TriggerLabel>
+                <ControlPageLabel>Sunrise (Label)</ControlPageLabel>
+            </State>
+
+            <State id="sunsetString">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Sunset (Label)</TriggerLabel>
+                <ControlPageLabel>Sunset (Label)</ControlPageLabel>
+            </State>
+
             <State id="sunsetHourMoonphase">
                 <ValueType>Integer</ValueType>
                 <TriggerLabel>Sunset Hour (Moon Phase)</TriggerLabel>
@@ -2725,9 +2749,7 @@
                     Destination: /any/valid/pathname/image.png</Label>
             </Field>
 
-            <Field id="space01" type="label">
-                <Label/>
-            </Field>
+            <Field id="space01" type="label"/>
 
             <Field id="imageSourceLocation" type="textfield" defaultValue="http://www.url.com/imagefile.png" tooltip="Please enter the URL for the image file you want to download.">
                 <Label>Source Location:</Label>
@@ -2782,9 +2804,7 @@
                 <Label>The WUnderground Radar device takes advantage of the Weather Underground WUndermaps Layer API to construct custom radar images. The image is built using the settings below and is saved as a static image which can then be placed on an Indigo Control Page.</Label>
             </Field>
 
-            <Field id="space01" type="label">
-                <Label/>
-            </Field>
+            <Field id="space01" type="label"/>
 
             <Field id="titleseparator" type="separator"/>
 

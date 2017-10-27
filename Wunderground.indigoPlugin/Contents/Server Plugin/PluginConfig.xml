@@ -21,26 +21,19 @@
 
 	<Field id="simpleSeparator0" type="separator"/>
 
+    <Field id="space01" type="label" fontSize="small" alignWithControl="True">
+        <Label>The plugin requires an API key to retrieve data from Weather Underground.</Label>
+    </Field>
+
+    <Field id="apiKey" type="textfield" defaultValue="apiKey" tooltip="Please enter the Weather Underground API Key (required).">
+        <Label>API key:</Label>
+    </Field>
+
     <Field id="dailyCallCounter" type="textfield" defaultValue="0" readonly= "true" tooltip="The number of API calls today so far.">
         <Label>API Calls Today:</Label>
     </Field>
 
-    <Field id="showPluginSettings" type="checkbox" tooltip="Check to show plugin settings.">
-        <Label>Plugin Settings:</Label>
-        <Description>Show/Hide</Description>
-    </Field>
-
-    <Field id="space01" type="label" fontSize="small">
-        <Label>The plugin requires an API key to retrieve data from Weather Underground.</Label>
-    </Field>
-
-    <Field id="apiKey" type="textfield" defaultValue="apiKey" visibleBindingId="showPluginSettings" visibleBindingValue="true"
-           tooltip="Please enter the Weather Underground API Key (required).">
-        <Label>API key:</Label>
-    </Field>
-
-    <Field id="language" type="menu" defaultValue="EN" visibleBindingId="showPluginSettings" visibleBindingValue="true"
-           tooltip="Please select the desired language. Controls data returned from Weather Underground.">
+    <Field id="language" type="menu" defaultValue="EN" tooltip="Please select the desired language. Controls data returned from Weather Underground.">
         <Label>Language:</Label>
         <List>
             <Option value="F">Afrikaans</Option>
@@ -128,18 +121,17 @@
         </List>
     </Field>
 
-    <Field id="separator01" type="separator"/>
-
-    <Field id="showDownloadSettings" type="checkbox" tooltip="Check to show download settings.">
-        <Label>Download Settings:</Label>
-        <Description>Show/Hide</Description>
+    <Field id="showDownloadSettings" type="label" alignText="Right">
+        <Label>Download Settings</Label>
     </Field>
 
-    <Field id="space02" type="label" fontSize="small">
+    <Field id="separator01" type="separator"/>
+
+    <Field id="space02" type="label" fontSize="small" alignWithControl="True">
         <Label>Controls how often the plugin will reach out to Weather Underground, and the daily limit for the number of downloads.</Label>
     </Field>
 
-    <Field id="downloadInterval" type="menu" defaultValue="900" visibleBindingId="showDownloadSettings" visibleBindingValue="true"
+    <Field id="downloadInterval" type="menu" defaultValue="900"
            tooltip="Please enter the desired frequency for data downloads.">
         <Label>Interval:</Label>
         <List>
@@ -154,93 +146,100 @@
         </List>
     </Field>
 
-    <Field id="callCounter" type="textfield" defaultValue="500" visibleBindingId="showDownloadSettings" visibleBindingValue="true"
-           tooltip="Please enter the maximum number of WU calls for your plan. The base developer plan is 500 downloads per day.">
+    <Field id="callCounter" type="textfield" defaultValue="500" tooltip="Please enter the maximum number of WU calls for your plan. The base developer plan is 500 downloads per day.">
         <Label>Limit:</Label>
     </Field>
 
-    <Field id="ignoreEstimated" type="checkbox" defaultValue="false" visibleBindingId="showDownloadSettings" visibleBindingValue="true"
+    <Field id="ignoreEstimated" type="checkbox" defaultValue="false"
            tooltip="If checked, the plugin will not update weather data if Weather Underground reports that the data are estimated.">
         <Label/>
         <Description>Skip Update if Estimated</Description>
     </Field>
 
+    <Field id="showTemperatureSettings" type="label" alignText="Right">
+        <Label>Value Display:</Label>
+    </Field>
+
     <Field id="separator02a" type="separator"/>
 
-    <Field id="showTemperatureSettings" type="checkbox" tooltip="Check to show value precision settings.">
-        <Label>Value Precision:</Label>
-        <Description>Show/Hide</Description>
+    <Field id="space03" type="label" fontSize="small" alignWithControl="True">
+        <Label>Controls how the plugin displays certain values.</Label>
     </Field>
 
-    <Field id="space03" type="label" fontSize="small">
-        <Label>Controls the precision of certain values displayed by Indigo.</Label>
+    <Field id="uiDateFormat" type="menu" defaultValue="DD-MM-YYYY" tooltip="Please select the desired display format for date values.">
+        <Label>Date UI Value:</Label>
+        <List>
+            <Option value="DD-MM-YYYY">DD-MM-YYYY</Option>
+            <Option value="MM-DD-YYYY">MM-DD-YYYY</Option>
+            <Option value="YYYY-MM-DD">YYYY-MM-DD</Option>
+        </List>
     </Field>
 
-    <Field id="itemListTempDecimal" type="menu" defaultValue="1" visibleBindingId="showTemperatureSettings" visibleBindingValue="true"
+    <Field id="uiHumidityDecimal" type="menu" defaultValue="1" tooltip="Please select the desired number of decimal places to display for humidity values in control pages.">
+        <Label>Humidity UI Value:</Label>
+        <List>
+            <Option value="0">0 decimal places</Option>
+            <Option value="1">1 decimal place</Option>
+        </List>
+    </Field>
+
+    <Field id="itemListTempDecimal" type="menu" defaultValue="1"
            tooltip="Please select the desired number of decimal places to display for temperature values in the item list (main list of Indigo devices.)">
-        <Label>Item List (temperature):</Label>
+        <Label>Temperature Item List:</Label>
         <List>
             <Option value="0">0 decimal places</Option>
             <Option value="1">1 decimal place</Option>
         </List>
     </Field>
 
-    <Field id="uiTempDecimal" type="menu" defaultValue="1" visibleBindingId="showTemperatureSettings" visibleBindingValue="true"
-           tooltip="Please select the desired number of decimal places to display for temperature values in control pages.">
-        <Label>UI Value (temperature):</Label>
+    <Field id="uiTempDecimal" type="menu" defaultValue="1" tooltip="Please select the desired number of decimal places to display for temperature values in control pages.">
+        <Label>Temperature UI Value:</Label>
         <List>
             <Option value="0">0 decimal places</Option>
             <Option value="1">1 decimal place</Option>
         </List>
     </Field>
 
-    <Field id="uiHumidityDecimal" type="menu" defaultValue="1" visibleBindingId="showTemperatureSettings" visibleBindingValue="true"
-           tooltip="Please select the desired number of decimal places to display for humidity values in control pages.">
-        <Label>UI Value (humidity):</Label>
+    <Field id="uiTimeFormat" type="menu" defaultValue="military" tooltip="Please select the desired display format for time values.">
+        <Label>Time UI Value:</Label>
+        <List>
+            <Option value="standard">12 Hour</Option>
+            <Option value="military">24 Hour</Option>
+        </List>
+    </Field>
+
+    <Field id="uiWindDecimal" type="menu" defaultValue="1" tooltip="Please select the desired number of decimal places to display for wind values in control pages.">
+        <Label>Wind UI Value:</Label>
         <List>
             <Option value="0">0 decimal places</Option>
             <Option value="1">1 decimal place</Option>
         </List>
     </Field>
 
-    <Field id="uiWindDecimal" type="menu" defaultValue="1" visibleBindingId="showTemperatureSettings" visibleBindingValue="true"
-           tooltip="Please select the desired number of decimal places to display for wind values in control pages.">
-        <Label>UI Value (wind):</Label>
-        <List>
-            <Option value="0">0 decimal places</Option>
-            <Option value="1">1 decimal place</Option>
-        </List>
+    <Field id="alertLabel" type="label" alignText="Right">
+        <Label>Alert Logging</Label>
     </Field>
 
     <Field id="separator03" type="separator"/>
 
-    <Field id="showAlertSettings" type="checkbox" tooltip="Check to show alert logging settings.">
-        <Label>Alert Logging:</Label>
-        <Description>Show/Hide</Description>
-    </Field>
-
-    <Field id="space04" type="label" fontSize="small">
+    <Field id="space04" type="label" fontSize="small" alignWithControl="True">
         <Label>Controls whether the plugin will write severe weather alert information to the log.</Label>
     </Field>
 
-    <Field id="alertLogging" type="checkbox" defaultValue="false" visibleBindingId="showAlertSettings" visibleBindingValue="true"
+    <Field id="alertLogging" type="checkbox" defaultValue="false"
            tooltip="Enables (disables) logging of severe weather alerts. Checking this box means that you do want to see severe weather alerts in the log. This setting applies to all weather devices.">
-        <Label>Log active alert messages:</Label>
-        <Description>Check to enable.</Description>
+        <Label/>
+        <Description>Enable/Disable Active Alert Messages</Description>
     </Field>
 
-    <Field id="noAlertLogging" type="checkbox" defaultValue="false" visibleBindingId="showAlertSettings" visibleBindingValue="true"
+    <Field id="noAlertLogging" type="checkbox" defaultValue="false"
            tooltip="Hides (shows) log message when there are no severe weather alerts. Checking this box means that you do not want to see these messages in the log. This setting applies to all weather devices.">
-        <Label>Hide "No Alert" messages:</Label>
-        <Description>Check to enable.</Description>
+        <Label/>
+        <Description>Hide "No Alert" Messages</Description>
     </Field>
 
     <!-- Notifications Template -->
     <Template file="DLFramework/template_notifications.xml" />
-
-    <Field id="showDebugSpacer" type="label" tooltip="Check to show debug settings." alignText="Right">
-        <Label/>
-    </Field>
 
     <Field id="showDebugLabel" type="label" tooltip="Check to show debug settings." alignText="Right">
         <Label>Debugging</Label>
@@ -248,18 +247,16 @@
 
     <Field id="separator05" type="separator"/>
 
-    <Field id="showDebugSettings" type="checkbox" tooltip="Check to show debug settings.">
-        <Label>Display Settings:</Label>
-        <Description/>
+    <Field id="space06" type="label" fontSize="small" alignWithControl="True">
+        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.</Label>
     </Field>
 
-    <Field id="showDebugInfo" type="checkbox" visibleBindingId="showDebugSettings" visibleBindingValue="true" tooltip="Enabling will result in verbose logging.">
+    <Field id="showDebugInfo" type="checkbox">
         <Label/>
-        <Description>Enable/Disable</Description>
+        <Description>Enable/Disable Debugging</Description>
     </Field>
 
-    <Field id="showDebugLevel" type="menu" defaultValue="1" visibleBindingId="showDebugSettings" visibleBindingValue="true"
-           tooltip="Controls the amount of debug information written to the log.">
+    <Field id="showDebugLevel" type="menu" defaultValue="1" tooltip="Controls the amount of debug information written to the log.">
         <Label>Debug level:</Label>
         <List>
             <Option value="1">Low</Option>
@@ -268,11 +265,7 @@
         </List>
     </Field>
 
-    <Field id="space06" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
-        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.</Label>
-    </Field>
-
-    <Field id="space07" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
+    <Field id="space07" type="label" fontSize="mini" alignWithControl="True">
         <Label>Low - Minimal debugging.
 Medium - All debug logging except sensitive information.
 High - May contain sensitive information.

@@ -65,13 +65,13 @@ https://github.com/DaveL17/WUnderground/blob/master/LICENSE
 
 # =================================== TO DO ===================================
 
-# TODO: reset the call counter at 00:00 Pacific Time (convert local time to match)
-# TODO: add a complete datetime object for sunrise and sunset to the astronomy device
+# TODO: None
 
 # ================================== IMPORTS ==================================
 
 # Built-in modules
 import datetime as dt
+import pytz
 import simplejson
 import socket
 import sys
@@ -96,16 +96,16 @@ except ImportError:
     pass
 
 # My modules
-import DLFramework as dlf
+import DLFramework.DLFramework as Dave
 
 # =================================== HEADER ==================================
 
-__author__    = dlf.DLFramework.__author__
-__copyright__ = dlf.DLFramework.__copyright__
-__license__   = dlf.DLFramework.__license__
-__build__     = dlf.DLFramework.__build__
+__author__    = Dave.__author__
+__copyright__ = Dave.__copyright__
+__license__   = Dave.__license__
+__build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "1.1.17"
+__version__ = "6.0.01"
 
 # =============================================================================
 
@@ -122,8 +122,10 @@ kDefaultPluginPrefs = {
     u'noAlertLogging': False,         # Suppresses "no active alerts" logging.
     u'showDebugInfo': False,          # Verbose debug logging?
     u'showDebugLevel': 1,             # Low, Medium or High debug output.
+    u'uiDateFormat': u"DD-MM-YYYY",   # Preferred date format string.
     u'uiHumidityDecimal': 1,          # Precision for Indigo UI display (humidity).
     u'uiTempDecimal': 1,              # Precision for Indigo UI display (temperature).
+    u'uiTimeFormat': u"military",     # Preferred time format string.
     u'uiWindDecimal': 1,              # Precision for Indigo UI display (wind).
     u'updaterEmail': "",              # Email to notify of plugin updates.
     u'updaterEmailsEnabled': False    # Notification of plugin updates wanted.
@@ -145,14 +147,18 @@ class Plugin(indigo.PluginBase):
 
         # ====================== Initialize DLFramework =======================
 
-        self.dlf = dlf.DLFramework.Fogbert(self)
+        self.Fogbert   = Dave.Fogbert(self)
+        self.Formatter = Dave.Formatter(self)
+
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
 
         # Log pluginEnvironment information when plugin is first started
-        self.dlf.pluginEnvironment()
+        self.Fogbert.pluginEnvironment()
 
         # Convert old debugLevel scale (low, medium, high) to new scale (1, 2, 3).
         if not 0 < self.pluginPrefs.get('showDebugLevel', 1) <= 3:
-            self.pluginPrefs['showDebugLevel'] = self.dlf.convertDebugLevel(self.pluginPrefs['showDebugLevel'])
+            self.pluginPrefs['showDebugLevel'] = self.Fogbert.convertDebugLevel(self.pluginPrefs['showDebugLevel'])
 
         # =====================================================================
 
@@ -221,11 +227,13 @@ class Plugin(indigo.PluginBase):
         """ Manages the day for the purposes of maintaining the call counter
         and the flag for the daily forecast email message. """
 
+        wu_time_zone       = pytz.timezone('US/Pacific-New')
         call_day           = self.pluginPrefs['dailyCallDay']
         call_limit_reached = self.pluginPrefs.get('dailyCallLimitReached', False)
         debug_level        = self.pluginPrefs.get('showDebugLevel', 1)
         sleep_time         = self.pluginPrefs.get('downloadInterval', 15)
-        todays_date        = dt.datetime.today().date()
+        # todays_date        = dt.datetime.today().date()  # this was the old method, to compare with local server's date
+        todays_date        = dt.datetime.now(wu_time_zone).date()  # this is the new method, to compare with the WU server's date
         today_str          = u"{0}".format(todays_date)
         today_unstr        = dt.datetime.strptime(call_day, "%Y-%m-%d")
         today_unstr_conv   = today_unstr.date()
@@ -600,14 +608,11 @@ class Plugin(indigo.PluginBase):
         functionally the same. Thanks to "jheddings" for the better
         implementation of this method. """
 
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"fixCorruptedData(self, state_name={0}, val={1})".format(state_name, val))
-
         try:
             val = float(val)
 
-            if val < -55.728:  # -99 F = -55.728 C
-                self.debugLog(u"Fixed corrupted data. Returning: {0}, {1}".format(-99.0, u"--"))
+            if val < -55.728:  # -99 F = -55.728 C. No logical value less than -55.7 should be possible.
+                self.debugLog(u"Fixed corrupted data {0}: {1}. Returning: {2}, {3}".format(state_name, val, -99.0, u"--"))
                 return -99.0, u"--"
 
             else:
@@ -621,9 +626,6 @@ class Plugin(indigo.PluginBase):
         """ Converts the barometric pressure symbol to something more human
         friendly. """
 
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"fixPressureSymbol(self, state_name={0}, val={1})".format(state_name, val))
-
         try:
             if val == "+":
                 return u"^"
@@ -636,23 +638,6 @@ class Plugin(indigo.PluginBase):
                 return u"?"
         except Exception as error:
             self.debugLog(u"Exception in fixPressureSymbol. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
-            return val
-
-    def verboseWindNames(self, state_name, val):
-        """ The verboseWindNames() method takes possible wind direction values and
-        standardizes them across all device types and all reporting stations to
-        ensure that we wind up with values that we can recognize. """
-
-        wind_dict = {'N': 'north', 'NNE': 'north northeast', 'NE': 'northeast', 'ENE': 'east northeast', 'E': 'east', 'ESE': 'east southeast', 'SE': 'southeast',
-                     'SSE': 'south southeast', 'S': 'south', 'SSW': 'south southwest', 'SW': 'southwest', 'WSW': 'west southwest', 'W': 'west', 'WNW': 'west northwest',
-                     'NW': 'northwest', 'NNW': 'north northwest'}
-
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"verboseWindNames(self, state_name={0}, val={1})".format(state_name, val))
-
-        try:
-            return wind_dict[val]
-        except KeyError:
             return val
 
     def floatEverything(self, state_name, val):
@@ -1036,6 +1021,11 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"parseAlmanacData(self, dev) method called.")
 
         try:
+
+            # Reload the date and time preferences in case they've changed.
+            self.date_format = self.Formatter.dateFormat()
+            self.time_format = self.Formatter.timeFormat()
+
             location     = dev.pluginProps['location']
             weather_data = self.masterWeatherDict[location]
 
@@ -1063,7 +1053,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservationEpoch', value=current_observation_epoch, uiValue=current_observation_epoch)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(int(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr, uiValue=current_observation_24hr)
 
             for key, value in no_ui_format.iteritems():
@@ -1090,7 +1080,11 @@ class Plugin(indigo.PluginBase):
         """ The parseAlertsData() method takes weather alert data and parses
         it to device states. """
 
-        attribution  = u""
+        # Reload the date and time preferences in case they've changed.
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
+
+        attribution = u""
 
         alerts_suppressed = dev.pluginProps.get('suppressWeatherAlerts', False)
         location          = dev.pluginProps['location']
@@ -1115,7 +1109,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservationEpoch', value=current_observation_epoch, uiValue=current_observation_epoch)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(int(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Alerts: This segment iterates through all available alert information. It retains only the first five alerts. We set all alerts to an empty string each time, and then
@@ -1223,6 +1217,10 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseAstronomyData(self, dev) method called.")
 
+        # Reload the date and time preferences in case they've changed.
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
+
         location = dev.pluginProps['location']
 
         weather_data = self.masterWeatherDict[location]
@@ -1233,8 +1231,8 @@ class Plugin(indigo.PluginBase):
         station_id                = self.nestedLookup(weather_data, keys=('current_observation', 'station_id'))
 
         astronomy_dict = {'ageOfMoon':              self.nestedLookup(weather_data, keys=('moon_phase', 'ageOfMoon')),
-                          'currentTimeHour':        self.nestedLookup(weather_data, keys=('moon_phase', 'current_time','hour')),
-                          'currentTimeMinute':      self.nestedLookup(weather_data, keys=('moon_phase', 'current_time','minute')),
+                          'currentTimeHour':        self.nestedLookup(weather_data, keys=('moon_phase', 'current_time', 'hour')),
+                          'currentTimeMinute':      self.nestedLookup(weather_data, keys=('moon_phase', 'current_time', 'minute')),
                           'hemisphere':             self.nestedLookup(weather_data, keys=('moon_phase', 'hemisphere')),
                           'phaseOfMoon':            self.nestedLookup(weather_data, keys=('moon_phase', 'phaseofMoon')),
                           'sunriseHourMoonphase':   self.nestedLookup(weather_data, keys=('moon_phase', 'sunrise', 'hour')),
@@ -1253,7 +1251,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservationEpoch', value=current_observation_epoch, uiValue=current_observation_epoch)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(int(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr, uiValue=current_observation_24hr)
 
             for key, value in astronomy_dict.iteritems():
@@ -1265,6 +1263,32 @@ class Plugin(indigo.PluginBase):
             # Percent illuminated is excluded from the astronomy dict for further processing.
             percent_illuminated = self.floatEverything(state_name=u"Percent Illuminated", val=percent_illuminated)
             dev.updateStateOnServer('percentIlluminated', value=percent_illuminated, uiValue=u"{0}".format(percent_illuminated))
+
+            # ========================= NEW =========================
+            # Sunrise and Sunset states
+
+            # Get today's date
+            year = dt.datetime.today().year
+            month = dt.datetime.today().month
+            day = dt.datetime.today().day
+            datetime_formatter = "{0} {1}".format(self.date_format, self.time_format)  # Get the latest format preferences
+
+            sunrise = dt.datetime(year, month, day, int(astronomy_dict['sunriseHourMoonphase']), int(astronomy_dict['sunriseMinuteMoonphase']))
+            sunset = dt.datetime(year, month, day, int(astronomy_dict['sunsetHourMoonphase']), int(astronomy_dict['sunsetHourMoonphase']))
+
+            sunrise_string = dt.datetime.strftime(sunrise, datetime_formatter)
+            dev.updateStateOnServer('sunriseString', value=sunrise_string)
+
+            sunset_string = dt.datetime.strftime(sunset, datetime_formatter)
+            dev.updateStateOnServer('sunsetString', value=sunset_string)
+
+            sunrise_epoch = int(time.mktime(sunrise.timetuple()))
+            dev.updateStateOnServer('sunriseEpoch', value=sunrise_epoch)
+
+            sunset_epoch = int(time.mktime(sunset.timetuple()))
+            dev.updateStateOnServer('sunsetEpoch', value=sunset_epoch)
+
+            # ========================= NEW =========================
 
             new_props = dev.pluginProps
             new_props['address'] = station_id
@@ -1539,7 +1563,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservation', value=current_observation_time, uiValue=current_observation_time)
             dev.updateStateOnServer('currentObservationEpoch', value=current_observation_epoch, uiValue=current_observation_epoch)
 
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(int(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=u"{0}".format(current_observation_24hr))
 
             fore_counter = 1
@@ -1675,6 +1699,10 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseTenDayData(self, dev) method called.")
 
+        # Reload the date and time preferences in case they've changed.
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
+
         config_menu_units = dev.pluginProps.get('configMenuUnits', '')
         location          = dev.pluginProps['location']
         wind_speed_units  = dev.pluginProps.get('configWindSpdUnits', '')
@@ -1692,7 +1720,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservationEpoch', value=current_observation_epoch, uiValue=current_observation_epoch)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(float(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             fore_counter = 1
@@ -1734,7 +1762,7 @@ class Plugin(indigo.PluginBase):
                     dev.updateStateOnServer(u"d{0}_day".format(fore_counter_text), value=weekday, uiValue=weekday)
 
                     # Forecast day
-                    forecast_day = time.strftime('%Y-%m-%d', time.localtime(float(forecast_day)))
+                    forecast_day = time.strftime(self.date_format, time.localtime(float(forecast_day)))
                     dev.updateStateOnServer(u"d{0}_date".format(fore_counter_text), value=forecast_day, uiValue=forecast_day)
 
                     # Pop
@@ -1865,6 +1893,10 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseTidesData(self, dev) method called.")
 
+        # Reload the date and time preferences in case they've changed.
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
+
         location = dev.pluginProps['location']
 
         weather_data = self.masterWeatherDict[location]
@@ -1883,7 +1915,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservation', value=current_observation_time, uiValue=current_observation_time)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(float(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Tide location information. This is only appropriate for some locations.
@@ -1946,6 +1978,10 @@ class Plugin(indigo.PluginBase):
 
         if self.pluginPrefs['showDebugLevel'] >= 3:
             self.debugLog(u"parseWeatherData(self, dev) method called.")
+
+        # Reload the date and time preferences in case they've changed.
+        self.date_format = self.Formatter.dateFormat()
+        self.time_format = self.Formatter.timeFormat()
 
         try:
 
@@ -2057,7 +2093,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('currentObservation', value=current_observation_time, uiValue=current_observation_time)
 
             # Current Observation Time 24 Hour (string)
-            current_observation_24hr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(current_observation_epoch)))
+            current_observation_24hr = time.strftime("{0} {1}".format(self.date_format, self.time_format), time.localtime(float(current_observation_epoch)))
             dev.updateStateOnServer('currentObservation24hr', value=current_observation_24hr)
 
             # Current Observation Time Epoch (string)
@@ -2272,11 +2308,11 @@ class Plugin(indigo.PluginBase):
                 visibility, visibility_ui = self.fixCorruptedData(state_name=u"visibility (S)", val=visibility_mi)
                 dev.updateStateOnServer('visibility', value=visibility, uiValue=u"{0}{1}".format(int(round(visibility)), config_distance_units))
 
-                new_props = dev.pluginProps
-                new_props['address'] = station_id
-                dev.replacePluginPropsOnServer(new_props)
+            new_props = dev.pluginProps
+            new_props['address'] = station_id
+            dev.replacePluginPropsOnServer(new_props)
 
-                dev.updateStateImageOnServer(indigo.kStateImageSel.TemperatureSensorOn)
+            dev.updateStateImageOnServer(indigo.kStateImageSel.TemperatureSensorOn)
 
         except IndexError:
             self.errorLog(u"Note: List index out of range. This is likely normal.")
@@ -2578,9 +2614,6 @@ class Plugin(indigo.PluginBase):
         """ Adjusts the decimal precision of percentage values for display in
         control pages, etc. """
 
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"uiFormatPercentage(self, dev, state_name={0}, val={1})".format(state_name, val))
-
         humidity_decimal = int(self.pluginPrefs.get('uiHumidityDecimal', 1))
         percentage_units = dev.pluginProps.get('percentageUnits', '')
 
@@ -2594,9 +2627,6 @@ class Plugin(indigo.PluginBase):
     def uiFormatRain(self, dev, state_name, val):
         """ Adjusts the decimal precision of rain values for display in control
         pages, etc. """
-
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"uiFormatRain(self, dev, state_name={0}, val={1}).".format(state_name, val))
 
         try:
             rain_units = dev.pluginProps.get('rainUnits', '')
@@ -2617,9 +2647,6 @@ class Plugin(indigo.PluginBase):
         """ Adjusts the decimal precision of snow values for display in control
         pages, etc. """
 
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"uiFormatSnow(self, dev, state_name={0}, val={1}).".format(state_name, val))
-
         if val in ["NA", "N/A", "--", ""]:
             return val
 
@@ -2633,9 +2660,6 @@ class Plugin(indigo.PluginBase):
     def uiFormatTemperature(self, dev, state_name, val):
         """ Adjusts the decimal precision of certain temperature values and
         appends the desired units string for display in control pages, etc. """
-
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"uiFormatTemperature(self, dev, state_name={0}, val={1})".format(state_name, val))
 
         temp_decimal = int(self.pluginPrefs.get('uiTempDecimal', 1))
         temperature_units = dev.pluginProps.get('temperatureUnits', '')
@@ -2653,9 +2677,6 @@ class Plugin(indigo.PluginBase):
 
         wind_decimal = self.pluginPrefs.get('uiWindDecimal', 1)
         wind_units   = dev.pluginProps.get('windUnits', '')
-
-        if self.pluginPrefs['showDebugLevel'] >= 3:
-            self.debugLog(u"uiFormatWind(self, state_name={0}, val={1}), dec={2}".format(state_name, val, wind_decimal))
 
         try:
             return u"{0:0.{1}f}{2}".format(float(val), int(wind_decimal), wind_units)
@@ -2905,3 +2926,21 @@ class Plugin(indigo.PluginBase):
             self.debugLog(u"Exception in validatePrefsConfigUi API key test. Error: (Line {0}  {1})".format(sys.exc_traceback.tb_lineno, error))
 
         return True, valuesDict
+
+    def verboseWindNames(self, state_name, val):
+        """ The verboseWindNames() method takes possible wind direction values and
+        standardizes them across all device types and all reporting stations to
+        ensure that we wind up with values that we can recognize. """
+
+        wind_dict = {'N': 'north', 'NNE': 'north northeast', 'NE': 'northeast', 'ENE': 'east northeast', 'E': 'east', 'ESE': 'east southeast', 'SE': 'southeast',
+                     'SSE': 'south southeast', 'S': 'south', 'SSW': 'south southwest', 'SW': 'southwest', 'WSW': 'west southwest', 'W': 'west', 'WNW': 'west northwest',
+                     'NW': 'northwest', 'NNW': 'north northwest'}
+
+        if self.debug and self.pluginPrefs['showDebugLevel'] >= 3:
+            self.debugLog(u"verboseWindNames(self, state_name={0}, val={1}, verbose={2})".format(state_name, val, wind_dict[val]))
+
+        try:
+            return wind_dict[val]
+        except KeyError:
+            return val
+

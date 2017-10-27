@@ -4,34 +4,39 @@
     <Event id="weatherAlert">
         <Name>Severe Weather Alert</Name>
             <ConfigUI>
+
                 <Field id="weatherAlertLabel" type="label">
                     <Label>The Weather Underground Plugin can fire a trigger if a weather location has reported at least one severe weather alert.</Label>
                 </Field>
-                <Field id="weatherAlertSpacer" type="label">
-                    <Label/>
-                </Field>
+
+                <Field id="weatherAlertSpacer" type="label"/>
+
                 <Field id="listOfDevices" type="menu">
                     <Label>Location:</Label>
                     <List class="self" filter="" method="listOfDevices" dynamicReload="true"/>
                 </Field>
+
             </ConfigUI>
     </Event>
     <Event id="weatherSiteOffline">
         <Name>Weather Location Offline</Name>
             <ConfigUI>
+
                 <Field id="offlineTimerLabel" type="label">
                     <Label>The Weather Underground Plugin can fire a trigger if a weather site has stopped reporting.  Enter the number of minutes to wait before an event is triggered. (i.e., 12 hours = 720, Day = 1440, Week = 10080)</Label>
                 </Field>
-                <Field id="offlineTimerSpacer" type="label">
-                    <Label/>
-                </Field>
+
+                <Field id="offlineTimerSpacer" type="label"/>
+
                 <Field id="offlineTimer" type="textfield" defaultValue="60">
                     <Label>Minutes:</Label>
                 </Field>
+
                 <Field id="listOfDevices" type="menu">
                     <Label>Location:</Label>
                     <List class="self" filter="" method="listOfDevices" dynamicReload="true"/>
                 </Field>
+
             </ConfigUI>
     </Event>
 </Events>
