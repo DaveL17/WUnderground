@@ -1,4 +1,4 @@
-Version: 6.0.1
+Version: 6.0.2
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
@@ -17,23 +17,10 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
-v6.0.1 (1.1.18)
-- Revises the time at which the API call count is reset to correspond to
-  Weather Underground's call count reset time of (00:00 US/Pacific).
-- Changed plugin configuration category "Value Precision" to "Value Display"
-  to more accurately represent the category with the addition of...
-- Adds plugin configuration setting to adjust how dates and times are
-  displayed.
-- Four new states to Astronomy device type:
-  . Sunrise epoch
-  . Sunrise string
-  . Sunset epoch
-  . Sunset string
-- Simplifies plugin configuration dialog.
-- Changes list order of "Value Display" settings to alphabetical.
-- Reduces lines written to debug log.
-- Fixed bug in setting of Address field in Indigo UI for metric Weather
-  devices.
+v6.0.2
+- Fixes bug where the [sunriseMinuteSunphase] device state was set incorrectly.
+- Fixes bug where the sunset (moonphase) time was reported incorrectly.
+
 
 As always, if something doesn't seem quite right, please let me know.
 

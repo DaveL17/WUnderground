@@ -13,6 +13,10 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
+v6.0.2
+- Fixes bug where the [sunriseMinuteSunphase] device state was set incorrectly.
+- Fixes bug where the sunset (moonphase) time was reported incorrectly.
+
 v6.0.1 (1.1.18)
 - Revises the time at which the API call count is reset to correspond to
   Weather Underground's call count reset time of (00:00 US/Pacific).

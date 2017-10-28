@@ -105,7 +105,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "6.0.01"
+__version__ = "6.0.02"
 
 # =============================================================================
 
@@ -1238,7 +1238,7 @@ class Plugin(indigo.PluginBase):
                           'sunriseHourMoonphase':   self.nestedLookup(weather_data, keys=('moon_phase', 'sunrise', 'hour')),
                           'sunriseHourSunphase':    self.nestedLookup(weather_data, keys=('sun_phase', 'sunrise', 'hour')),
                           'sunriseMinuteMoonphase': self.nestedLookup(weather_data, keys=('moon_phase', 'sunrise', 'minute')),
-                          'sunriseMinuteSunphase':  self.nestedLookup(weather_data, keys=('sun_phase', 'sunset', 'minute')),
+                          'sunriseMinuteSunphase':  self.nestedLookup(weather_data, keys=('sun_phase', 'sunrise', 'minute')),
                           'sunsetHourMoonphase':    self.nestedLookup(weather_data, keys=('moon_phase', 'sunset', 'hour')),
                           'sunsetHourSunphase':     self.nestedLookup(weather_data, keys=('sun_phase', 'sunset', 'hour')),
                           'sunsetMinuteMoonphase':  self.nestedLookup(weather_data, keys=('moon_phase', 'sunset', 'minute')),
@@ -1274,7 +1274,7 @@ class Plugin(indigo.PluginBase):
             datetime_formatter = "{0} {1}".format(self.date_format, self.time_format)  # Get the latest format preferences
 
             sunrise = dt.datetime(year, month, day, int(astronomy_dict['sunriseHourMoonphase']), int(astronomy_dict['sunriseMinuteMoonphase']))
-            sunset = dt.datetime(year, month, day, int(astronomy_dict['sunsetHourMoonphase']), int(astronomy_dict['sunsetHourMoonphase']))
+            sunset = dt.datetime(year, month, day, int(astronomy_dict['sunsetHourMoonphase']), int(astronomy_dict['sunsetMinuteMoonphase']))
 
             sunrise_string = dt.datetime.strftime(sunrise, datetime_formatter)
             dev.updateStateOnServer('sunriseString', value=sunrise_string)
