@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Template>
 
-    <Field id="debugHeaderSpace" type="label"/>
+    <Field id="debugHeaderSpace" type="label" fontSize="mini"/>
     
     <Field id="debugLabel" type="label" fontColor="black" alignText="right">
         <Label>Debugging (optional)</Label>
@@ -9,13 +9,11 @@
 
     <Field id="separator01" type="separator"/>
 
-    <Field id="showDebugSettings" type="checkbox" tooltip="Check to show debug settings.">
-        <Label>Display Settings:</Label>
-        <Description/>
+    <Field id="space06" type="label" fontSize="small" alignWithControl="True">
+        <Label>Always be careful when posting debug output to the forums or other public places. You should review it to ensure that it doesn't contain sensitive information.</Label>
     </Field>
-
-    <Field id="showDebugLevel" type="menu" defaultValue="30" visibleBindingId="showDebugSettings" visibleBindingValue="true"
-           tooltip="Controls the amount of debug information written to the log.">
+    
+    <Field id="showDebugLevel" type="menu" defaultValue="30" tooltip="Controls the amount of debug information written to the log.">
         <Label>Debug level:</Label>
         <Description/>
         <List>
@@ -27,13 +25,8 @@
         </List>
     </Field>
 
-    <Field id="space06" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
-        <Label>Always be careful when posting debug output to the forums or other public places. You should review it to ensure that it doesn't contain sensitive information.</Label>
-    </Field>
-    
-    <Field id="space07" type="label" visibleBindingId="showDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
-        <Label>
-Debugging Messages - Step by step plugin logging.
+    <Field id="space07" type="label" fontSize="mini" alignWithControl="True">
+        <Label>Debugging Messages - Step by step plugin logging.
 Informational Messages - Useful information about plugin health.
 Warning Messages - Typically temporary conditions.
 Error Messages - Conditions you might want to address.

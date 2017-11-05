@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <Template>
 
+    <Field id="notificationsHeaderSpace" type="label" fontSize="mini"/>
+
     <Field id="notificationsLabel" type="label" alignText="right">
         <Label>Plugin Update Notifications (optional)</Label>
     </Field>
@@ -8,7 +10,7 @@
     <Field id="separator02" type="separator"/>
 
     <Field id="space05" type="label" fontSize="small" alignWithControl="True">
-        <Label>Receive an email alerting you to plugin updates. This feature sends email through Indigo, so you must connect your Indigo server to email as well.</Label>
+        <Label>Receive an email alerting you to plugin updates. This feature sends email through Indigo, so you must connect your Indigo server to a valid email account as well.</Label>
     </Field>
 
     <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false"

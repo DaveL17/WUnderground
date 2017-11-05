@@ -52,7 +52,7 @@ class Fogbert(object):
             string-based setting to account for older plugin versions. Over time, this
             method will become obsolete and should be deprecated.
             """
-            self.plugin.debugLog(u"DLFramework somethingElse method called.")
+            self.plugin.debugLog(u"DLFramework convertDebugLevel method called.")
 
             # If the debug value is High/Medium/Low, it is the old style. Covert it to 3/2/1
             if debug_val in ["High", "Medium", "Low"]:

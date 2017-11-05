@@ -105,7 +105,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "6.0.02"
+__version__ = "6.0.03"
 
 # =============================================================================
 
@@ -2426,13 +2426,18 @@ class Plugin(indigo.PluginBase):
                                 # Note: WUnderground have been known to send data that are 5-6 months old. This flag helps ensure that known data are retained if the new data is not
                                 # actually newer that what we already have.
                                 try:
-                                    # New devices may not have an epoch yet.
+                                    # New devices may not have an epoch value yet.
                                     device_epoch = dev.states['currentObservationEpoch']
                                     try:
                                         device_epoch = int(device_epoch)
                                     except ValueError:
                                         device_epoch = 0
-                                    weather_data_epoch = int(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
+
+                                    # If we don't know the age of the data, we don't update.
+                                    try:
+                                        weather_data_epoch = int(self.masterWeatherDict[location]['current_observation']['observation_epoch'])
+                                    except ValueError:
+                                        weather_data_epoch = 0
 
                                     good_time = device_epoch <= weather_data_epoch
                                     if not good_time:
