@@ -13,7 +13,7 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
-v6.0.3
+v6.0.03
 - Fixes bug where WU sends nonsense epoch value for API data.
 
 v6.0.2
