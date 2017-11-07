@@ -65,10 +65,18 @@ class Fogbert(object):
             
             return debug_val
             
+        def lauchWebPage(self, url):
+            """
+            The launchWebPage method is used to direct a call to the registered
+            default browser and open the page referenced by the parameter 'URL'.
+            """
+            import webbrowser
+            
+            webbrowser.open(url)
 
 class Formatter(object):
         """ 
-        The Formatter class contains methods to provide unique custom data
+        The Formatter class contains methods to provide unique custom data	
         formats as needed.
         """
             

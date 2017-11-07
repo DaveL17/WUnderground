@@ -105,7 +105,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "6.0.03"
+__version__ = "6.0.04"
 
 # =============================================================================
 
@@ -618,7 +618,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return val, str(val)
 
-        except ValueError:
+        except (ValueError, TypeError):
             self.debugLog(u"Fixed corrupted data. Returning: {0}, {1}".format(-99.0, u"--"))
             return -99.0, u"--"
 
