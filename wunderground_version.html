@@ -1,4 +1,4 @@
-Version: 6.0.03
+Version: 6.0.04
 EmailSubject: Wunderground Indigo Plugin - Update Available
 EmailBody: The Wunderground Plugin you are using has been updated.
 
@@ -17,8 +17,10 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
-v6.0.03
-- Fixes bug where WU sends nonsense epoch value for API data.
+v6.0.04
+- Adds additional error handling when Weather Underground sends a data value
+  that is not the of proper Type (i.e., list or dict instead of an expected
+  string).
 
 
 As always, if something doesn't seem quite right, please let me know.
