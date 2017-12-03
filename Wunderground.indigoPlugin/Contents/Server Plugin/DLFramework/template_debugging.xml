@@ -34,4 +34,6 @@ Critical Errors Only - Critical errors should probably be reported.
         </Label>
     </Field>
     
+    <Field id="oldDebugLevel" type="textfield" defaultValue="20" hidden="true">
+    </Field>
 </Template>

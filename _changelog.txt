@@ -13,6 +13,11 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
+v6.0.05
+- Makes the default date format compatible with the required Matplotlib plugin
+  format of YYYY-MM-DD.
+- Fixes API reference from 1.0.0 to 1.0
+
 v6.0.04
 - Adds additional error handling when Weather Underground sends a data value
   that is not the of proper Type (i.e., list or dict instead of an expected

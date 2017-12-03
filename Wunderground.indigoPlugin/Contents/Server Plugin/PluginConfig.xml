@@ -166,7 +166,7 @@
         <Label>Controls how the plugin displays certain values.</Label>
     </Field>
 
-    <Field id="uiDateFormat" type="menu" defaultValue="DD-MM-YYYY" tooltip="Please select the desired display format for date values.">
+    <Field id="uiDateFormat" type="menu" defaultValue="YYYY-MM-DD" tooltip="Please select the desired display format for date values.">
         <Label>Date UI Value:</Label>
         <List>
             <Option value="DD-MM-YYYY">DD-MM-YYYY</Option>

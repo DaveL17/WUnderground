@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>PluginVersion</key>
-	<string>6.0.04</string>
+	<string>6.0.05</string>
 	<key>ServerApiVersion</key>
-	<string>1.0.0</string>
+	<string>1.0</string>
 	<key>IwsApiVersion</key>
 	<string>1.0.0</string>
 	<key>CFBundleDisplayName</key>
