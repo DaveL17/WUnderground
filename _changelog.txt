@@ -13,6 +13,9 @@ point forward will be targeted to version 7. WUnderground 7 will not be
 compatible with Indigo 6.
 *******************************************************************************
 
+v6.0.07
+- Updates plugin update checker to use curl to overcome outdated security of Apple's Python install.
+
 v6.0.06
 - Updates plist link to wiki.
 

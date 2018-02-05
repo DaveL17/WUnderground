@@ -105,7 +105,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "6.0.06"
+__version__ = "6.0.07"
 
 # =============================================================================
 
@@ -139,7 +139,7 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
         self.debug = self.pluginPrefs.get('showDebugInfo', True)
-        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://davel17.github.io/WUnderground/wunderground_version.html")
+        self.updater = indigoPluginUpdateChecker.updateChecker(self, "https://raw.githubusercontent.com/DaveL17/WUnderground/master/wunderground_version.html")
 
         self.masterWeatherDict = {}
         self.masterTriggerDict = {}
