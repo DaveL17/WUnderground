@@ -105,7 +105,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__ = "WUnderground Plugin for Indigo Home Control"
-__version__ = "6.0.05"
+__version__ = "6.0.06"
 
 # =============================================================================
 
